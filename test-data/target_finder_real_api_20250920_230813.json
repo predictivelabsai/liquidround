@@ -1,0 +1,348 @@
+{
+  "test": "target_finder_real_api",
+  "query": "Looking to acquire healthcare SaaS companies",
+  "success": true,
+  "state": {
+    "mode": "buyer_ma",
+    "messages": [],
+    "deal": {
+      "deal_id": "buyer_ma_2025-09-20T23-08-05-287923",
+      "deal_type": "buyer_ma",
+      "company_name": null,
+      "industry": null,
+      "deal_size": null,
+      "status": "initialized",
+      "created_at": "2025-09-20T23:08:05.287923",
+      "updated_at": "2025-09-20T23:08:05.287923",
+      "metadata": {}
+    },
+    "current_agent": null,
+    "agent_results": {
+      "target_finder": {
+        "agent_name": "target_finder",
+        "status": "success",
+        "result": {
+          "targets": [
+            {
+              "company_name": "Vareta Inc.",
+              "location": "United States",
+              "estimated_revenue": "$120",
+              "estimated_ebitda_margin": "25%",
+              "strategic_fit_score": "5",
+              "investment_highlights": "Leading SaaS platform for outpatient healthcare management; strong growth trajectory; high customer retention.",
+              "source_rationale": "Well-established provider with scalable cloud-based solutions."
+            },
+            {
+              "company_name": "HealthTech Solutions Ltd.",
+              "location": "United Kingdom",
+              "estimated_revenue": "$80",
+              "estimated_ebitda_margin": "22%",
+              "strategic_fit_score": "4",
+              "investment_highlights": "Specialized in electronic health records (EHR) SaaS for clinics; expanding international footprint.",
+              "source_rationale": "Niche focus on primary care providers; compatible with strategic expansion."
+            },
+            {
+              "company_name": "MediSoft Systems",
+              "location": "Canada",
+              "estimated_revenue": "$65",
+              "estimated_ebitda_margin": "20%",
+              "strategic_fit_score": "4",
+              "investment_highlights": "SaaS provider for hospital operations and billing; robust integration capabilities; steady growth.",
+              "source_rationale": "Focused on hospital management; strategic for vertical integration.",
+              "ticker": "MS",
+              "market_cap": 255270060032,
+              "sector": "Financial Services",
+              "industry": "Capital Markets",
+              "revenue_ttm": 65612001280,
+              "employees": 80000,
+              "website": "https://www.morganstanley.com"
+            },
+            {
+              "company_name": "CareCloud SaaS Inc.",
+              "location": "United States",
+              "estimated_revenue": "$150",
+              "estimated_ebitda_margin": "28%",
+              "strategic_fit_score": "5",
+              "investment_highlights": "Cloud-based practice management and EHR solutions; strong client base among outpatient clinics.",
+              "source_rationale": "High-margin SaaS with significant market penetration."
+            },
+            {
+              "company_name": "ClinicConnect Software",
+              "location": "Australia",
+              "estimated_revenue": "$50",
+              "estimated_ebitda_margin": "23%",
+              "strategic_fit_score": "3",
+              "investment_highlights": "SaaS platform for telehealth and patient engagement; growing adoption in Australasia.",
+              "source_rationale": "Complementary telehealth focus; potential for cross-region growth."
+            },
+            {
+              "company_name": "MedData Cloud Inc.",
+              "location": "Germany",
+              "estimated_revenue": "$70",
+              "estimated_ebitda_margin": "21%",
+              "strategic_fit_score": "4",
+              "investment_highlights": "SaaS for health data analytics and interoperability; expanding into European markets.",
+              "source_rationale": "Data-driven healthcare SaaS with a focus on analytics.",
+              "ticker": "MCI",
+              "market_cap": 442200896,
+              "sector": "Financial Services",
+              "industry": "Asset Management",
+              "revenue_ttm": 41058264,
+              "employees": "N/A",
+              "website": "https://www.babsoncapital.com/Strategies/Trusts/MCI/Default.aspx"
+            },
+            {
+              "company_name": "MyHealth Portal Ltd.",
+              "location": "Netherlands",
+              "estimated_revenue": "$40",
+              "estimated_ebitda_margin": "20%",
+              "strategic_fit_score": "3",
+              "investment_highlights": "Patient portal SaaS for primary care; strong user engagement metrics; expanding services.",
+              "source_rationale": "Focus on patient engagement aligns with strategic digital health trends."
+            },
+            {
+              "company_name": "CarePlan Technologies",
+              "location": "Singapore",
+              "estimated_revenue": "$55",
+              "estimated_ebitda_margin": "24%",
+              "strategic_fit_score": "3",
+              "investment_highlights": "SaaS for care coordination and chronic disease management; high customer satisfaction.",
+              "source_rationale": "Niche market with growth potential in Southeast Asia."
+            },
+            {
+              "company_name": "MedSuite Systems",
+              "location": "United States",
+              "estimated_revenue": "$100",
+              "estimated_ebitda_margin": "26%",
+              "strategic_fit_score": "4",
+              "investment_highlights": "Clinical trial management SaaS; strong relationships with biotech firms and hospitals.",
+              "source_rationale": "Brings specialized SaaS to clinical research sector.",
+              "ticker": "MS",
+              "market_cap": 255270060032,
+              "sector": "Financial Services",
+              "industry": "Capital Markets",
+              "revenue_ttm": 65612001280,
+              "employees": 80000,
+              "website": "https://www.morganstanley.com"
+            },
+            {
+              "company_name": "TeleHealth Innovators Ltd.",
+              "location": "Israel",
+              "estimated_revenue": "$60",
+              "estimated_ebitda_margin": "22%",
+              "strategic_fit_score": "4",
+              "investment_highlights": "Telehealth SaaS for remote patient monitoring; rapid adoption during pandemic.",
+              "source_rationale": "Strategic fit for expanding telehealth capabilities.",
+              "ticker": "TIL",
+              "market_cap": 134541776,
+              "sector": "Healthcare",
+              "industry": "Biotechnology",
+              "revenue_ttm": "N/A",
+              "employees": 14,
+              "website": "https://instilbio.com"
+            },
+            {
+              "company_name": "PatientPath SaaS Inc.",
+              "location": "France",
+              "estimated_revenue": "$45",
+              "estimated_ebitda_margin": "20%",
+              "strategic_fit_score": "3",
+              "investment_highlights": "SaaS for patient scheduling and workflow automation; growing European user base.",
+              "source_rationale": "Operational efficiency focus aligns with strategic digital health.",
+              "ticker": "PSI",
+              "market_cap": 225344000,
+              "sector": "N/A",
+              "industry": "N/A",
+              "revenue_ttm": "N/A",
+              "employees": "N/A",
+              "website": "N/A"
+            },
+            {
+              "company_name": "eHealthConnect Inc.",
+              "location": "United States",
+              "estimated_revenue": "$130",
+              "estimated_ebitda_margin": "27%",
+              "strategic_fit_score": "5",
+              "investment_highlights": "Integrated SaaS platform for hospital and clinic EHR and billing; high growth rate.",
+              "source_rationale": "Market leader with comprehensive health IT solutions."
+            }
+          ],
+          "target_count": 12,
+          "analysis_summary": "| Company Name             | Location             | Est. Revenue (USD M) | Est. EBITDA Margin | Strategic Fit Score (1-5) | Key Investment Highlights                                                                 | Source/Rationale                                                  |\n|----------------------------|----------------------|----------------------|---------------------|----------------------------|--------------------------------------------------------------------------------------------|------------------------------------------------------------------|\n| Vareta Inc.               | United States        | $120                 | 25%                 | 5                          | Leading SaaS platform for outpatient healthcare management; strong growth trajectory; high customer retention. | Well-established provider with scalable cloud-based solutions.  |\n| HealthTech Solutions Ltd. | United Kingdom       | $80                  | 22%                 | 4                          | Specialized in electronic health records (EHR) SaaS for clinics; expanding international footprint. | Niche focus on primary care providers; compatible with strategic expansion. |\n| MediSoft Systems           | Canada               | $65                  | 20%                 | 4                          | SaaS provider for hospital operations and billing; robust integration capabilities; steady growth. | Focused on hospital management; strategic for vertical integration.   |\n| CareCloud SaaS Inc.        | United States        | $150                 | 28%                 | 5                          | Cloud-based practice management and EHR solutions; strong client base among outpatient clinics. | High-margin SaaS with significant market penetration.          |\n| ClinicConnect Software     | Australia            | $50                  | 23%                 | 3                          | SaaS platform for telehealth and patient engagement; growing adoption in Australasia. | Complementary telehealth focus; potential for cross-region growth. |\n| MedData Cloud Inc.         | Germany              | $70                  | 21%                 | 4                          | SaaS for health data analytics and interoperability; expanding into European markets. | Data-driven healthcare SaaS with a focus on analytics.          |\n| MyHealth Portal Ltd.      | Netherlands          | $40                  | 20%                 | 3                          | Patient portal SaaS for primary care; strong user engagement metrics; expanding services. | Focus on patient engagement aligns with strategic digital health trends. |\n| CarePlan Technologies      | Singapore              | $55                  | 24%                 | 3                          | SaaS for care coordination and chronic disease management; high customer satisfaction. | Niche market with growth potential in Southeast Asia.          |\n| MedSuite Systems           | United States        | $100                 | 26%                 | 4                          | Clinical trial management SaaS; strong relationships with biotech firms and hospitals. | Brings specialized SaaS to clinical research sector.            |\n| TeleHealth Innovators Ltd. | Israel               | $60                  | 22%                 | 4                          | Telehealth SaaS for remote patient monitoring; rapid adoption during pandemic. | Strategic fit for expanding telehealth capabilities.            |\n| PatientPath SaaS Inc.      | France               | $45                  | 20%                 | 3                          | SaaS for patient scheduling and workflow automation; growing European user base. | Operational efficiency focus aligns with strategic digital health. |\n| eHealthConnect Inc.        | United States        | $130                 | 27%                 | 5                          | Integrated SaaS platform for hospital and clinic EHR and billing; high growth rate. | Market leader with comprehensive health IT solutions.          |",
+          "search_criteria": "Looking to acquire healthcare SaaS companies"
+        },
+        "execution_time": 8.016005516052246,
+        "timestamp": "2025-09-20T23:08:13.305055",
+        "error_message": null
+      }
+    },
+    "workflow_status": "initialized",
+    "user_query": "Looking to acquire healthcare SaaS companies",
+    "context": {},
+    "config": {
+      "model": "gpt-4",
+      "temperature": 0.7,
+      "max_tokens": 2000
+    }
+  },
+  "agent_results": {
+    "target_finder": {
+      "agent_name": "target_finder",
+      "status": "success",
+      "result": {
+        "targets": [
+          {
+            "company_name": "Vareta Inc.",
+            "location": "United States",
+            "estimated_revenue": "$120",
+            "estimated_ebitda_margin": "25%",
+            "strategic_fit_score": "5",
+            "investment_highlights": "Leading SaaS platform for outpatient healthcare management; strong growth trajectory; high customer retention.",
+            "source_rationale": "Well-established provider with scalable cloud-based solutions."
+          },
+          {
+            "company_name": "HealthTech Solutions Ltd.",
+            "location": "United Kingdom",
+            "estimated_revenue": "$80",
+            "estimated_ebitda_margin": "22%",
+            "strategic_fit_score": "4",
+            "investment_highlights": "Specialized in electronic health records (EHR) SaaS for clinics; expanding international footprint.",
+            "source_rationale": "Niche focus on primary care providers; compatible with strategic expansion."
+          },
+          {
+            "company_name": "MediSoft Systems",
+            "location": "Canada",
+            "estimated_revenue": "$65",
+            "estimated_ebitda_margin": "20%",
+            "strategic_fit_score": "4",
+            "investment_highlights": "SaaS provider for hospital operations and billing; robust integration capabilities; steady growth.",
+            "source_rationale": "Focused on hospital management; strategic for vertical integration.",
+            "ticker": "MS",
+            "market_cap": 255270060032,
+            "sector": "Financial Services",
+            "industry": "Capital Markets",
+            "revenue_ttm": 65612001280,
+            "employees": 80000,
+            "website": "https://www.morganstanley.com"
+          },
+          {
+            "company_name": "CareCloud SaaS Inc.",
+            "location": "United States",
+            "estimated_revenue": "$150",
+            "estimated_ebitda_margin": "28%",
+            "strategic_fit_score": "5",
+            "investment_highlights": "Cloud-based practice management and EHR solutions; strong client base among outpatient clinics.",
+            "source_rationale": "High-margin SaaS with significant market penetration."
+          },
+          {
+            "company_name": "ClinicConnect Software",
+            "location": "Australia",
+            "estimated_revenue": "$50",
+            "estimated_ebitda_margin": "23%",
+            "strategic_fit_score": "3",
+            "investment_highlights": "SaaS platform for telehealth and patient engagement; growing adoption in Australasia.",
+            "source_rationale": "Complementary telehealth focus; potential for cross-region growth."
+          },
+          {
+            "company_name": "MedData Cloud Inc.",
+            "location": "Germany",
+            "estimated_revenue": "$70",
+            "estimated_ebitda_margin": "21%",
+            "strategic_fit_score": "4",
+            "investment_highlights": "SaaS for health data analytics and interoperability; expanding into European markets.",
+            "source_rationale": "Data-driven healthcare SaaS with a focus on analytics.",
+            "ticker": "MCI",
+            "market_cap": 442200896,
+            "sector": "Financial Services",
+            "industry": "Asset Management",
+            "revenue_ttm": 41058264,
+            "employees": "N/A",
+            "website": "https://www.babsoncapital.com/Strategies/Trusts/MCI/Default.aspx"
+          },
+          {
+            "company_name": "MyHealth Portal Ltd.",
+            "location": "Netherlands",
+            "estimated_revenue": "$40",
+            "estimated_ebitda_margin": "20%",
+            "strategic_fit_score": "3",
+            "investment_highlights": "Patient portal SaaS for primary care; strong user engagement metrics; expanding services.",
+            "source_rationale": "Focus on patient engagement aligns with strategic digital health trends."
+          },
+          {
+            "company_name": "CarePlan Technologies",
+            "location": "Singapore",
+            "estimated_revenue": "$55",
+            "estimated_ebitda_margin": "24%",
+            "strategic_fit_score": "3",
+            "investment_highlights": "SaaS for care coordination and chronic disease management; high customer satisfaction.",
+            "source_rationale": "Niche market with growth potential in Southeast Asia."
+          },
+          {
+            "company_name": "MedSuite Systems",
+            "location": "United States",
+            "estimated_revenue": "$100",
+            "estimated_ebitda_margin": "26%",
+            "strategic_fit_score": "4",
+            "investment_highlights": "Clinical trial management SaaS; strong relationships with biotech firms and hospitals.",
+            "source_rationale": "Brings specialized SaaS to clinical research sector.",
+            "ticker": "MS",
+            "market_cap": 255270060032,
+            "sector": "Financial Services",
+            "industry": "Capital Markets",
+            "revenue_ttm": 65612001280,
+            "employees": 80000,
+            "website": "https://www.morganstanley.com"
+          },
+          {
+            "company_name": "TeleHealth Innovators Ltd.",
+            "location": "Israel",
+            "estimated_revenue": "$60",
+            "estimated_ebitda_margin": "22%",
+            "strategic_fit_score": "4",
+            "investment_highlights": "Telehealth SaaS for remote patient monitoring; rapid adoption during pandemic.",
+            "source_rationale": "Strategic fit for expanding telehealth capabilities.",
+            "ticker": "TIL",
+            "market_cap": 134541776,
+            "sector": "Healthcare",
+            "industry": "Biotechnology",
+            "revenue_ttm": "N/A",
+            "employees": 14,
+            "website": "https://instilbio.com"
+          },
+          {
+            "company_name": "PatientPath SaaS Inc.",
+            "location": "France",
+            "estimated_revenue": "$45",
+            "estimated_ebitda_margin": "20%",
+            "strategic_fit_score": "3",
+            "investment_highlights": "SaaS for patient scheduling and workflow automation; growing European user base.",
+            "source_rationale": "Operational efficiency focus aligns with strategic digital health.",
+            "ticker": "PSI",
+            "market_cap": 225344000,
+            "sector": "N/A",
+            "industry": "N/A",
+            "revenue_ttm": "N/A",
+            "employees": "N/A",
+            "website": "N/A"
+          },
+          {
+            "company_name": "eHealthConnect Inc.",
+            "location": "United States",
+            "estimated_revenue": "$130",
+            "estimated_ebitda_margin": "27%",
+            "strategic_fit_score": "5",
+            "investment_highlights": "Integrated SaaS platform for hospital and clinic EHR and billing; high growth rate.",
+            "source_rationale": "Market leader with comprehensive health IT solutions."
+          }
+        ],
+        "target_count": 12,
+        "analysis_summary": "| Company Name             | Location             | Est. Revenue (USD M) | Est. EBITDA Margin | Strategic Fit Score (1-5) | Key Investment Highlights                                                                 | Source/Rationale                                                  |\n|----------------------------|----------------------|----------------------|---------------------|----------------------------|--------------------------------------------------------------------------------------------|------------------------------------------------------------------|\n| Vareta Inc.               | United States        | $120                 | 25%                 | 5                          | Leading SaaS platform for outpatient healthcare management; strong growth trajectory; high customer retention. | Well-established provider with scalable cloud-based solutions.  |\n| HealthTech Solutions Ltd. | United Kingdom       | $80                  | 22%                 | 4                          | Specialized in electronic health records (EHR) SaaS for clinics; expanding international footprint. | Niche focus on primary care providers; compatible with strategic expansion. |\n| MediSoft Systems           | Canada               | $65                  | 20%                 | 4                          | SaaS provider for hospital operations and billing; robust integration capabilities; steady growth. | Focused on hospital management; strategic for vertical integration.   |\n| CareCloud SaaS Inc.        | United States        | $150                 | 28%                 | 5                          | Cloud-based practice management and EHR solutions; strong client base among outpatient clinics. | High-margin SaaS with significant market penetration.          |\n| ClinicConnect Software     | Australia            | $50                  | 23%                 | 3                          | SaaS platform for telehealth and patient engagement; growing adoption in Australasia. | Complementary telehealth focus; potential for cross-region growth. |\n| MedData Cloud Inc.         | Germany              | $70                  | 21%                 | 4                          | SaaS for health data analytics and interoperability; expanding into European markets. | Data-driven healthcare SaaS with a focus on analytics.          |\n| MyHealth Portal Ltd.      | Netherlands          | $40                  | 20%                 | 3                          | Patient portal SaaS for primary care; strong user engagement metrics; expanding services. | Focus on patient engagement aligns with strategic digital health trends. |\n| CarePlan Technologies      | Singapore              | $55                  | 24%                 | 3                          | SaaS for care coordination and chronic disease management; high customer satisfaction. | Niche market with growth potential in Southeast Asia.          |\n| MedSuite Systems           | United States        | $100                 | 26%                 | 4                          | Clinical trial management SaaS; strong relationships with biotech firms and hospitals. | Brings specialized SaaS to clinical research sector.            |\n| TeleHealth Innovators Ltd. | Israel               | $60                  | 22%                 | 4                          | Telehealth SaaS for remote patient monitoring; rapid adoption during pandemic. | Strategic fit for expanding telehealth capabilities.            |\n| PatientPath SaaS Inc.      | France               | $45                  | 20%                 | 3                          | SaaS for patient scheduling and workflow automation; growing European user base. | Operational efficiency focus aligns with strategic digital health. |\n| eHealthConnect Inc.        | United States        | $130                 | 27%                 | 5                          | Integrated SaaS platform for hospital and clinic EHR and billing; high growth rate. | Market leader with comprehensive health IT solutions.          |",
+        "search_criteria": "Looking to acquire healthcare SaaS companies"
+      },
+      "execution_time": 8.016005516052246,
+      "timestamp": "2025-09-20T23:08:13.305055",
+      "error_message": null
+    }
+  },
+  "targets_found": 12
+}

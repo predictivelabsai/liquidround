@@ -1,0 +1,7 @@
+{
+  "test": "openai_api_connectivity",
+  "success": false,
+  "api_key_present": true,
+  "error": "Error code: 400 - {'error': 'Unsupported model. Only the following models are allowed: gemini-2.5-flash, gpt-4.1-mini, gpt-4.1-nano'}",
+  "error_type": "BadRequestError"
+}

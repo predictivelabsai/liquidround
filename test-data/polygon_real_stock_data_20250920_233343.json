@@ -1,0 +1,65 @@
+{
+  "test": "polygon_real_stock_data",
+  "results": [
+    {
+      "ticker": "AAPL",
+      "success": true,
+      "data": {
+        "open": 241.225,
+        "high": 246.3,
+        "low": 240.2106,
+        "close": 245.5,
+        "volume": 163741314.0,
+        "timestamp": 1758312000000
+      }
+    },
+    {
+      "ticker": "MSFT",
+      "success": true,
+      "data": {
+        "open": 510.56,
+        "high": 519.3,
+        "low": 510.31,
+        "close": 517.93,
+        "volume": 52474093.0,
+        "timestamp": 1758312000000
+      }
+    },
+    {
+      "ticker": "GOOGL",
+      "success": true,
+      "data": {
+        "open": 253.25,
+        "high": 256,
+        "low": 251.81,
+        "close": 254.72,
+        "volume": 55571424.0,
+        "timestamp": 1758312000000
+      }
+    },
+    {
+      "ticker": "AMZN",
+      "success": true,
+      "data": {
+        "open": 232.37,
+        "high": 234.16,
+        "low": 229.7,
+        "close": 231.48,
+        "volume": 97943172.0,
+        "timestamp": 1758312000000
+      }
+    },
+    {
+      "ticker": "TSLA",
+      "success": true,
+      "data": {
+        "open": 421.82,
+        "high": 429.47,
+        "low": 421.72,
+        "close": 426.07,
+        "volume": 93131034.0,
+        "timestamp": 1758312000000
+      }
+    }
+  ]
+}

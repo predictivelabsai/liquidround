@@ -1,0 +1,10 @@
+{
+  "test": "config_loads",
+  "xai_api_key_present": true,
+  "exa_api_key_present": true,
+  "tavily_api_key_present": true,
+  "default_provider": "xai",
+  "default_model": "grok-3-mini-fast",
+  "default_temperature": 0.7,
+  "environment": "development"
+}

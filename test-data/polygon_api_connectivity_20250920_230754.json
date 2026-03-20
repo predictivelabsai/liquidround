@@ -1,0 +1,29 @@
+{
+  "test": "polygon_api_connectivity",
+  "success": true,
+  "api_key_present": true,
+  "status_code": 200,
+  "data": {
+    "ticker": "AAPL",
+    "queryCount": 1,
+    "resultsCount": 1,
+    "adjusted": true,
+    "results": [
+      {
+        "T": "AAPL",
+        "v": 163741314.0,
+        "vw": 244.4678,
+        "o": 241.225,
+        "c": 245.5,
+        "h": 246.3,
+        "l": 240.2106,
+        "t": 1758312000000,
+        "n": 908635
+      }
+    ],
+    "status": "OK",
+    "request_id": "80071bcbf8969778eea1b7daf1b230bc",
+    "count": 1
+  },
+  "results_count": 1
+}

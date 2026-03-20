@@ -1,0 +1,20 @@
+{
+  "test": "public_pages",
+  "pages": {
+    "/signin": {
+      "status": 200,
+      "has_tailwind": true,
+      "length": 3595
+    },
+    "/register": {
+      "status": 200,
+      "has_tailwind": true,
+      "length": 3716
+    },
+    "/forgot": {
+      "status": 200,
+      "has_tailwind": true,
+      "length": 2234
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "test": "seller_workflow_integration",
+  "query": "Preparing to sell our B2B software company",
+  "success": true,
+  "final_state": {
+    "seller_ma_workflow": {
+      "mode": "seller_ma",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Seller-led M&A workflow initiated. This would include seller preparation, market outreach, and buyer identification.",
+          "timestamp": "2025-09-20T23:09:22.721227"
+        }
+      ],
+      "deal": {
+        "deal_id": "buyer_ma_2025-09-20T23-09-21-810973",
+        "deal_type": "buyer_ma",
+        "company_name": null,
+        "industry": null,
+        "deal_size": null,
+        "status": "initialized",
+        "created_at": "2025-09-20T23:09:21.810973",
+        "updated_at": "2025-09-20T23:09:21.810973",
+        "metadata": {}
+      },
+      "current_agent": null,
+      "agent_results": {
+        "orchestrator": {
+          "agent_name": "orchestrator",
+          "status": "success",
+          "result": {
+            "workflow_type": "seller_ma",
+            "rationale": "Workflow: SELLER_MA  \nRationale: The user explicitly states they are \"preparing to sell,\" which clearly indicates they are looking to sell their B2B software company.",
+            "next_step": "seller_ma_workflow"
+          },
+          "execution_time": 0.9070584774017334,
+          "timestamp": "2025-09-20T23:09:22.719324",
+          "error_message": null
+        }
+      },
+      "workflow_status": "completed",
+      "user_query": "Preparing to sell our B2B software company",
+      "context": {},
+      "config": {
+        "model": "gpt-4",
+        "temperature": 0.7,
+        "max_tokens": 2000
+      }
+    }
+  },
+  "workflow_status": "unknown",
+  "mode": "unknown",
+  "messages": []
+}

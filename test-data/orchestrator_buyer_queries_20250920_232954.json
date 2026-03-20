@@ -1,0 +1,42 @@
+{
+  "test": "orchestrator_buyer_queries",
+  "total_queries": 5,
+  "successful": 5,
+  "results": [
+    {
+      "query": "Find fintech companies to acquire with $20-100M revenue",
+      "success": true,
+      "workflow_type": "buyer_ma",
+      "rationale": "Workflow: BUYER_MA\nRationale: The user is seeking to acquire fintech companies, indicating a buyer's intent to pursue M&A activity on the acquisition side.",
+      "execution_time": 0.4583563804626465
+    },
+    {
+      "query": "Looking for SaaS acquisition targets in healthcare",
+      "success": true,
+      "workflow_type": "buyer_ma",
+      "rationale": "Workflow: BUYER_MA\nRationale: The user is seeking acquisition targets, indicating a buyer's perspective focused on purchasing SaaS companies in healthcare, aligning with the 'acquire' intent.",
+      "execution_time": 0.9207355976104736
+    },
+    {
+      "query": "Want to buy a cybersecurity company",
+      "success": true,
+      "workflow_type": "buyer_ma",
+      "rationale": "Workflow: BUYER_MA  \nRationale: The user expresses an intent to purchase a cybersecurity company, indicating a buyer-side M&A activity. The phrase \"want to buy\" aligns with acquisition intentions.",
+      "execution_time": 0.9640567302703857
+    },
+    {
+      "query": "Identify AI/ML startups for strategic acquisition",
+      "success": true,
+      "workflow_type": "buyer_ma",
+      "rationale": "Workflow: BUYER_MA\nRationale: The query explicitly mentions \"for strategic acquisition,\" indicating a buyer's intent to acquire AI/ML startups. This aligns with the buyer-side M&A workflow.",
+      "execution_time": 0.8654825687408447
+    },
+    {
+      "query": "Find manufacturing companies for acquisition",
+      "success": true,
+      "workflow_type": "buyer_ma",
+      "rationale": "Workflow: BUYER_MA\nRationale: The query indicates an interest in acquiring manufacturing companies, which aligns with the buyer's perspective in M&A activities. The phrase \"for acquisition\" clearly points to a buying intent.",
+      "execution_time": 0.8849101066589355
+    }
+  ]
+}

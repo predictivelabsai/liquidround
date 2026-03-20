@@ -1,0 +1,7 @@
+{
+  "test": "register_login_flow",
+  "email": "routetest-b36942c9@example.com",
+  "register_ok": true,
+  "login_ok": true,
+  "reject_bad_pw": true
+}

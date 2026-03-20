@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  liquidround:
+    build: .
+    container_name: liquidround
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    env_file:
+      - .env
+    environment:
+      - ENVIRONMENT=production
+    volumes:
+      - ./uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/signin"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

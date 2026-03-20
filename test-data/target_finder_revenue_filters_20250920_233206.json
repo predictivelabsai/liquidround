@@ -1,0 +1,380 @@
+{
+  "test": "target_finder_revenue_filters",
+  "results": [
+    {
+      "query": "Find SaaS companies with $10-50M annual revenue",
+      "success": true,
+      "targets_found": 0,
+      "revenue_analysis": [],
+      "execution_time": 6.929354429244995
+    },
+    {
+      "query": "Looking for fintech companies with $50-200M revenue",
+      "success": true,
+      "targets_found": 12,
+      "revenue_analysis": [
+        {
+          "company": "Bill.com (now part of VersaPay)",
+          "estimated_revenue": "$150M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Plaid",
+          "estimated_revenue": "$100M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Solarisbank AG",
+          "estimated_revenue": "$80M",
+          "ticker": "SA",
+          "market_cap": 2057900544,
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Nium",
+          "estimated_revenue": "$60M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Marqeta",
+          "estimated_revenue": "$200M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "YapStone",
+          "estimated_revenue": "$75M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "TrueLayer",
+          "estimated_revenue": "$70M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "GoCardless",
+          "estimated_revenue": "$130M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Flywire",
+          "estimated_revenue": "$180M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Payoneer",
+          "estimated_revenue": "$200M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Modulr",
+          "estimated_revenue": "$55M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Fiserv's Merchant Solutions",
+          "estimated_revenue": "$200M",
+          "ticker": "FMS",
+          "market_cap": 14963650560,
+          "revenue_ttm": 19518115840
+        }
+      ],
+      "execution_time": 8.028994083404541
+    },
+    {
+      "query": "Identify cybersecurity companies with $100-500M revenue",
+      "success": true,
+      "targets_found": 12,
+      "revenue_analysis": [
+        {
+          "company": "CyberArk Software Ltd",
+          "estimated_revenue": "$400M",
+          "ticker": "CSL",
+          "market_cap": 14450177024,
+          "revenue_ttm": 5001800192
+        },
+        {
+          "company": "Rapid7, Inc.",
+          "estimated_revenue": "$250M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Tenable Holdings, Inc.",
+          "estimated_revenue": "$200M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Cyberreason Inc.",
+          "estimated_revenue": "$120M",
+          "ticker": "CI",
+          "market_cap": 77505232896,
+          "revenue_ttm": 262023004160
+        },
+        {
+          "company": "Varonis Systems, Inc.",
+          "estimated_revenue": "$150M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "KnowBe4, Inc.",
+          "estimated_revenue": "$180M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "SentinelOne, Inc.",
+          "estimated_revenue": "$450M",
+          "ticker": "SI",
+          "market_cap": 293590624,
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Cybereason Inc.",
+          "estimated_revenue": "$130M",
+          "ticker": "CI",
+          "market_cap": 77505232896,
+          "revenue_ttm": 262023004160
+        },
+        {
+          "company": "LogRhythm, Inc.",
+          "estimated_revenue": "$110M",
+          "ticker": "LI",
+          "market_cap": 26238332928,
+          "revenue_ttm": 143320317952
+        },
+        {
+          "company": "ExtraHop Networks, Inc.",
+          "estimated_revenue": "$140M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "CyberX (acquired by Microsoft)",
+          "estimated_revenue": "~$150M (pre-acquisition)",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Illusive Networks",
+          "estimated_revenue": "$100M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        }
+      ],
+      "execution_time": 7.36681866645813
+    },
+    {
+      "query": "Find healthcare companies with $20-100M revenue",
+      "success": true,
+      "targets_found": 12,
+      "revenue_analysis": [
+        {
+          "company": "Envision Healthcare Holdings",
+          "estimated_revenue": "$85M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "MedPro Healthcare Services",
+          "estimated_revenue": "$45M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Advanced Rehab Solutions",
+          "estimated_revenue": "$35M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "BrightPath Diagnostics",
+          "estimated_revenue": "$28M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "ClearCare Home Health",
+          "estimated_revenue": "$22M",
+          "ticker": "CHH",
+          "market_cap": 5131625984,
+          "revenue_ttm": 797865984
+        },
+        {
+          "company": "VitalLife Medical Staffing",
+          "estimated_revenue": "$40M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Optima Surgical Solutions",
+          "estimated_revenue": "$30M",
+          "ticker": "OSS",
+          "market_cap": 150404256,
+          "revenue_ttm": 55208916
+        },
+        {
+          "company": "Horizon Behavioral Health",
+          "estimated_revenue": "$60M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Nova Home Care Services",
+          "estimated_revenue": "$25M",
+          "ticker": "NHC",
+          "market_cap": 1817016832,
+          "revenue_ttm": 1458155008
+        },
+        {
+          "company": "Pinnacle Pediatric Care",
+          "estimated_revenue": "$20M",
+          "ticker": "PPC",
+          "market_cap": 9665805312,
+          "revenue_ttm": 18177417216
+        },
+        {
+          "company": "Aspire Cardiovascular Centers",
+          "estimated_revenue": "$55M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Serenity Senior Care",
+          "estimated_revenue": "$48M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        }
+      ],
+      "execution_time": 8.089972019195557
+    },
+    {
+      "query": "Looking for AI companies with $5-25M revenue",
+      "success": true,
+      "targets_found": 12,
+      "revenue_analysis": [
+        {
+          "company": "DataRobot",
+          "estimated_revenue": "$20M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Synthesis AI",
+          "estimated_revenue": "$12M",
+          "ticker": "SA",
+          "market_cap": 2057900544,
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Ada Support",
+          "estimated_revenue": "$8M",
+          "ticker": "AS",
+          "market_cap": 20768702464,
+          "revenue_ttm": 5698100224
+        },
+        {
+          "company": "Snorkel AI",
+          "estimated_revenue": "$10M",
+          "ticker": "SA",
+          "market_cap": 2057900544,
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Pymetrics",
+          "estimated_revenue": "$7M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Viso.ai",
+          "estimated_revenue": "$6M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Cognitivescale",
+          "estimated_revenue": "$15M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Luminance AI",
+          "estimated_revenue": "$9M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Mindtech AI",
+          "estimated_revenue": "$5M",
+          "ticker": "MA",
+          "market_cap": 528087547904,
+          "revenue_ttm": 30240999424
+        },
+        {
+          "company": "ObEN",
+          "estimated_revenue": "$10M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "AImotive",
+          "estimated_revenue": "$16M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "SentiLink",
+          "estimated_revenue": "$8M",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        }
+      ],
+      "execution_time": 6.484198331832886
+    }
+  ]
+}

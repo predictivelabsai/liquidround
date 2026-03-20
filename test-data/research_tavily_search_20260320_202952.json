@@ -1,0 +1,11 @@
+{
+  "test": "tavily_search",
+  "result_count": 8,
+  "elapsed": 2.97,
+  "error": null,
+  "sample_titles": [
+    "The SaaS Prescription: Healthcare Trends and M&A Insights",
+    "Precedent Transactions: Healthcare vs. SaaS Valuation",
+    "M&A trends in healthcare"
+  ]
+}

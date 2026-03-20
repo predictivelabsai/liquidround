@@ -1,0 +1,4 @@
+{
+    "query": "Find me add-on acquisition targets in EU med-tech with EV 50-150 m EUR and >15 % EBITDA margin.",
+    "expected_mode": "buyer_ma"
+}

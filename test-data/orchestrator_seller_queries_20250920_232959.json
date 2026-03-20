@@ -1,0 +1,35 @@
+{
+  "test": "orchestrator_seller_queries",
+  "results": [
+    {
+      "query": "Preparing to sell our B2B software company",
+      "success": true,
+      "workflow_type": "seller_ma",
+      "rationale": "Workflow: SELLER_MA  \nRationale: The user's statement indicates they are preparing to sell their company, which aligns with the seller-side focus of the SELLER_MA workflow."
+    },
+    {
+      "query": "Need help finding buyers for our logistics business",
+      "success": true,
+      "workflow_type": "seller_ma",
+      "rationale": "Workflow: SELLER_MA  \nRationale: The user is seeking help to find buyers for their logistics business, which indicates they are looking to sell or divest, aligning with the seller side of M&A activity."
+    },
+    {
+      "query": "Planning to divest our retail division",
+      "success": true,
+      "workflow_type": "seller_ma",
+      "rationale": "Workflow: SELLER_MA  \nRationale: The user mentions \"divest,\" which is a clear indicator of a seller looking to sell a division, aligning with the SELLER_MA workflow."
+    },
+    {
+      "query": "Looking for strategic buyers in the energy sector",
+      "success": true,
+      "workflow_type": "buyer_ma",
+      "rationale": "Workflow: buyer_ma  \nRationale: The query specifies \"looking for strategic buyers,\" which indicates an interest in sourcing potential buyers, aligning with the buyer side of M&A activity."
+    },
+    {
+      "query": "Want to sell our fintech startup",
+      "success": true,
+      "workflow_type": "seller_ma",
+      "rationale": "Workflow: SELLER_MA  \nRationale: The user explicitly states they want to sell their fintech startup, which aligns with the seller's perspective and matches the SELLER_MA keyword category."
+    }
+  ]
+}

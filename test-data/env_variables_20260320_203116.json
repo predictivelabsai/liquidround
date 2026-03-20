@@ -1,0 +1,40 @@
+{
+  "test": "env_variables",
+  "variables": {
+    "XAI_API_KEY": {
+      "present": true,
+      "length": 164,
+      "hint": "sk-proj-..."
+    },
+    "XAI_API": {
+      "present": false,
+      "length": 0,
+      "hint": ""
+    },
+    "EXA_API_KEY": {
+      "present": true,
+      "length": 36,
+      "hint": "ba4e615f..."
+    },
+    "TAVILY_API_KEY": {
+      "present": true,
+      "length": 37,
+      "hint": "tvly-7M8..."
+    },
+    "DB_URL": {
+      "present": true,
+      "length": 70,
+      "hint": "postgres..."
+    },
+    "GOOGLE_CLIENT_ID": {
+      "present": true,
+      "length": 71,
+      "hint": "76656799..."
+    },
+    "GOOGLE_CLIENT_SECRET": {
+      "present": true,
+      "length": 35,
+      "hint": "GOCSPX-u..."
+    }
+  }
+}

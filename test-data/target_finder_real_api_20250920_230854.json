@@ -1,0 +1,320 @@
+{
+  "test": "target_finder_real_api",
+  "query": "Looking to acquire healthcare SaaS companies",
+  "success": true,
+  "state": {
+    "mode": "buyer_ma",
+    "messages": [],
+    "deal": {
+      "deal_id": "buyer_ma_2025-09-20T23-08-46-534387",
+      "deal_type": "buyer_ma",
+      "company_name": null,
+      "industry": null,
+      "deal_size": null,
+      "status": "initialized",
+      "created_at": "2025-09-20T23:08:46.534387",
+      "updated_at": "2025-09-20T23:08:46.534387",
+      "metadata": {}
+    },
+    "current_agent": null,
+    "agent_results": {
+      "target_finder": {
+        "agent_name": "target_finder",
+        "status": "success",
+        "result": {
+          "targets": [
+            {
+              "company_name": "Veeva Systems",
+              "location": "Pleasanton, CA",
+              "estimated_revenue": "2,200",
+              "estimated_ebitda_margin": "25%",
+              "strategic_fit_score": "5",
+              "investment_highlights": "Leading cloud-based solutions for life sciences, strong customer base, high growth",
+              "source_rationale": "Public company with extensive healthcare SaaS offerings; strategic for market expansion",
+              "ticker": "VS",
+              "market_cap": 9607287,
+              "sector": "Technology",
+              "industry": "Software - Application",
+              "revenue_ttm": 2183196,
+              "employees": 5,
+              "website": "https://www.versussystems.com"
+            },
+            {
+              "company_name": "Medrium",
+              "location": "Toronto, Canada",
+              "estimated_revenue": "150",
+              "estimated_ebitda_margin": "20%",
+              "strategic_fit_score": "4",
+              "investment_highlights": "Specializes in SaaS for outpatient management, rapid growth potential",
+              "source_rationale": "Niche provider with innovative EHR tools; aligns with vertical integration goals"
+            },
+            {
+              "company_name": "Healthify",
+              "location": "New York, NY",
+              "estimated_revenue": "50",
+              "estimated_ebitda_margin": "15%",
+              "strategic_fit_score": "4",
+              "investment_highlights": "Focus on social determinants of health, care management SaaS",
+              "source_rationale": "Growing platform addressing social health factors, strategic for holistic care solutions"
+            },
+            {
+              "company_name": "SimplePractice",
+              "location": "Los Angeles, CA",
+              "estimated_revenue": "75",
+              "estimated_ebitda_margin": "30%",
+              "strategic_fit_score": "4",
+              "investment_highlights": "Practice management SaaS for mental health and therapy providers",
+              "source_rationale": "Rapidly growing, high-margin niche platform, complements broader healthcare SaaS portfolio"
+            },
+            {
+              "company_name": "Kareo",
+              "location": "Irvine, CA",
+              "estimated_revenue": "200",
+              "estimated_ebitda_margin": "18%",
+              "strategic_fit_score": "4",
+              "investment_highlights": "Cloud-based medical billing and practice management for small practices",
+              "source_rationale": "Well-established in billing SaaS, potential for cross-selling; strategic vertical fit"
+            },
+            {
+              "company_name": "AdvancedMD",
+              "location": "Lehi, UT",
+              "estimated_revenue": "400",
+              "estimated_ebitda_margin": "22%",
+              "strategic_fit_score": "4",
+              "investment_highlights": "Practice management, EHR, and revenue cycle management solutions",
+              "source_rationale": "Extensive client base, strong growth trajectory, aligns with strategic SaaS expansion"
+            },
+            {
+              "company_name": "Podium Healthcare",
+              "location": "Salt Lake City, UT",
+              "estimated_revenue": "80",
+              "estimated_ebitda_margin": "20%",
+              "strategic_fit_score": "3",
+              "investment_highlights": "Patient communication and engagement platform",
+              "source_rationale": "Focus on patient interactions, complements SaaS portfolio, scalable platform",
+              "ticker": "PH",
+              "market_cap": 95626821632,
+              "sector": "Industrials",
+              "industry": "Specialty Industrial Machinery",
+              "revenue_ttm": 19850000384,
+              "employees": 57950,
+              "website": "https://investors.parker.com"
+            },
+            {
+              "company_name": "Healthline Media",
+              "location": "New York, NY",
+              "estimated_revenue": "100",
+              "estimated_ebitda_margin": "10%",
+              "strategic_fit_score": "3",
+              "investment_highlights": "Digital health information platform, some SaaS components",
+              "source_rationale": "Strong digital health brand, potential for SaaS expansion to health education markets"
+            },
+            {
+              "company_name": "CareCloud",
+              "location": "Miami, FL",
+              "estimated_revenue": "150",
+              "estimated_ebitda_margin": "17%",
+              "strategic_fit_score": "4",
+              "investment_highlights": "Practice management and financial software for outpatient providers",
+              "source_rationale": "Established SaaS provider, cross-selling opportunities, strategic vertical focus"
+            },
+            {
+              "company_name": "eClinicalWorks",
+              "location": "Westborough, MA",
+              "estimated_revenue": "500",
+              "estimated_ebitda_margin": "20%",
+              "strategic_fit_score": "4",
+              "investment_highlights": "Large EHR and practice management SaaS provider",
+              "source_rationale": "Market leader with extensive integrations, strategic for acquiring broader market share"
+            },
+            {
+              "company_name": "NextGen Healthcare",
+              "location": "Chicago, IL",
+              "estimated_revenue": "600",
+              "estimated_ebitda_margin": "22%",
+              "strategic_fit_score": "4",
+              "investment_highlights": "EHR, practice management, and revenue cycle management solutions",
+              "source_rationale": "Well-established, broad product portfolio, strong growth potential"
+            },
+            {
+              "company_name": "Teladoc Health",
+              "location": "New York, NY",
+              "estimated_revenue": "1,000",
+              "estimated_ebitda_margin": "10%",
+              "strategic_fit_score": "3",
+              "investment_highlights": "Telehealth SaaS platform, virtual care solutions",
+              "source_rationale": "Complementary telehealth SaaS, strategic for expanding digital health offerings",
+              "ticker": "TH",
+              "market_cap": 864084416,
+              "sector": "Industrials",
+              "industry": "Specialty Business Services",
+              "revenue_ttm": 310382016,
+              "employees": 770,
+              "website": "https://www.targethospitality.com"
+            }
+          ],
+          "target_count": 12,
+          "analysis_summary": "| Company Name             | Location          | Est. Revenue (USD M) | Est. EBITDA Margin | Strategic Fit Score (1-5) | Key Investment Highlights                                                                 | Source/Rationale                                                                            |\n|---------------------------|-------------------|----------------------|--------------------|---------------------------|-----------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|\n| Veeva Systems             | Pleasanton, CA    | 2,200                | 25%                | 5                         | Leading cloud-based solutions for life sciences, strong customer base, high growth | Public company with extensive healthcare SaaS offerings; strategic for market expansion |\n| Medrium                   | Toronto, Canada   | 150                  | 20%                | 4                         | Specializes in SaaS for outpatient management, rapid growth potential               | Niche provider with innovative EHR tools; aligns with vertical integration goals        |\n| Healthify                  | New York, NY      | 50                   | 15%                | 4                         | Focus on social determinants of health, care management SaaS                        | Growing platform addressing social health factors, strategic for holistic care solutions |\n| SimplePractice            | Los Angeles, CA   | 75                   | 30%                | 4                         | Practice management SaaS for mental health and therapy providers                   | Rapidly growing, high-margin niche platform, complements broader healthcare SaaS portfolio |\n| Kareo                     | Irvine, CA        | 200                  | 18%                | 4                         | Cloud-based medical billing and practice management for small practices            | Well-established in billing SaaS, potential for cross-selling; strategic vertical fit   |\n| AdvancedMD                | Lehi, UT          | 400                  | 22%                | 4                         | Practice management, EHR, and revenue cycle management solutions                     | Extensive client base, strong growth trajectory, aligns with strategic SaaS expansion  |\n| Podium Healthcare         | Salt Lake City, UT| 80                   | 20%                | 3                         | Patient communication and engagement platform                                         | Focus on patient interactions, complements SaaS portfolio, scalable platform          |\n| Healthline Media          | New York, NY      | 100                  | 10%                | 3                         | Digital health information platform, some SaaS components                            | Strong digital health brand, potential for SaaS expansion to health education markets  |\n| CareCloud                 | Miami, FL         | 150                  | 17%                | 4                         | Practice management and financial software for outpatient providers                | Established SaaS provider, cross-selling opportunities, strategic vertical focus      |\n| eClinicalWorks            | Westborough, MA   | 500                  | 20%                | 4                         | Large EHR and practice management SaaS provider                                       | Market leader with extensive integrations, strategic for acquiring broader market share |\n| NextGen Healthcare        | Chicago, IL       | 600                  | 22%                | 4                         | EHR, practice management, and revenue cycle management solutions                    | Well-established, broad product portfolio, strong growth potential                        |\n| Teladoc Health            | New York, NY      | 1,000                | 10%                | 3                         | Telehealth SaaS platform, virtual care solutions                                       | Complementary telehealth SaaS, strategic for expanding digital health offerings        |\n\nNote: These targets are selected based on publicly available information, industry relevance, and potential strategic fit within healthcare SaaS. The scores reflect their alignment with buyer objectives, growth potential, and operational fit.",
+          "search_criteria": "Looking to acquire healthcare SaaS companies"
+        },
+        "execution_time": 7.469403505325317,
+        "timestamp": "2025-09-20T23:08:54.004715",
+        "error_message": null
+      }
+    },
+    "workflow_status": "initialized",
+    "user_query": "Looking to acquire healthcare SaaS companies",
+    "context": {},
+    "config": {
+      "model": "gpt-4",
+      "temperature": 0.7,
+      "max_tokens": 2000
+    }
+  },
+  "agent_results": {
+    "target_finder": {
+      "agent_name": "target_finder",
+      "status": "success",
+      "result": {
+        "targets": [
+          {
+            "company_name": "Veeva Systems",
+            "location": "Pleasanton, CA",
+            "estimated_revenue": "2,200",
+            "estimated_ebitda_margin": "25%",
+            "strategic_fit_score": "5",
+            "investment_highlights": "Leading cloud-based solutions for life sciences, strong customer base, high growth",
+            "source_rationale": "Public company with extensive healthcare SaaS offerings; strategic for market expansion",
+            "ticker": "VS",
+            "market_cap": 9607287,
+            "sector": "Technology",
+            "industry": "Software - Application",
+            "revenue_ttm": 2183196,
+            "employees": 5,
+            "website": "https://www.versussystems.com"
+          },
+          {
+            "company_name": "Medrium",
+            "location": "Toronto, Canada",
+            "estimated_revenue": "150",
+            "estimated_ebitda_margin": "20%",
+            "strategic_fit_score": "4",
+            "investment_highlights": "Specializes in SaaS for outpatient management, rapid growth potential",
+            "source_rationale": "Niche provider with innovative EHR tools; aligns with vertical integration goals"
+          },
+          {
+            "company_name": "Healthify",
+            "location": "New York, NY",
+            "estimated_revenue": "50",
+            "estimated_ebitda_margin": "15%",
+            "strategic_fit_score": "4",
+            "investment_highlights": "Focus on social determinants of health, care management SaaS",
+            "source_rationale": "Growing platform addressing social health factors, strategic for holistic care solutions"
+          },
+          {
+            "company_name": "SimplePractice",
+            "location": "Los Angeles, CA",
+            "estimated_revenue": "75",
+            "estimated_ebitda_margin": "30%",
+            "strategic_fit_score": "4",
+            "investment_highlights": "Practice management SaaS for mental health and therapy providers",
+            "source_rationale": "Rapidly growing, high-margin niche platform, complements broader healthcare SaaS portfolio"
+          },
+          {
+            "company_name": "Kareo",
+            "location": "Irvine, CA",
+            "estimated_revenue": "200",
+            "estimated_ebitda_margin": "18%",
+            "strategic_fit_score": "4",
+            "investment_highlights": "Cloud-based medical billing and practice management for small practices",
+            "source_rationale": "Well-established in billing SaaS, potential for cross-selling; strategic vertical fit"
+          },
+          {
+            "company_name": "AdvancedMD",
+            "location": "Lehi, UT",
+            "estimated_revenue": "400",
+            "estimated_ebitda_margin": "22%",
+            "strategic_fit_score": "4",
+            "investment_highlights": "Practice management, EHR, and revenue cycle management solutions",
+            "source_rationale": "Extensive client base, strong growth trajectory, aligns with strategic SaaS expansion"
+          },
+          {
+            "company_name": "Podium Healthcare",
+            "location": "Salt Lake City, UT",
+            "estimated_revenue": "80",
+            "estimated_ebitda_margin": "20%",
+            "strategic_fit_score": "3",
+            "investment_highlights": "Patient communication and engagement platform",
+            "source_rationale": "Focus on patient interactions, complements SaaS portfolio, scalable platform",
+            "ticker": "PH",
+            "market_cap": 95626821632,
+            "sector": "Industrials",
+            "industry": "Specialty Industrial Machinery",
+            "revenue_ttm": 19850000384,
+            "employees": 57950,
+            "website": "https://investors.parker.com"
+          },
+          {
+            "company_name": "Healthline Media",
+            "location": "New York, NY",
+            "estimated_revenue": "100",
+            "estimated_ebitda_margin": "10%",
+            "strategic_fit_score": "3",
+            "investment_highlights": "Digital health information platform, some SaaS components",
+            "source_rationale": "Strong digital health brand, potential for SaaS expansion to health education markets"
+          },
+          {
+            "company_name": "CareCloud",
+            "location": "Miami, FL",
+            "estimated_revenue": "150",
+            "estimated_ebitda_margin": "17%",
+            "strategic_fit_score": "4",
+            "investment_highlights": "Practice management and financial software for outpatient providers",
+            "source_rationale": "Established SaaS provider, cross-selling opportunities, strategic vertical focus"
+          },
+          {
+            "company_name": "eClinicalWorks",
+            "location": "Westborough, MA",
+            "estimated_revenue": "500",
+            "estimated_ebitda_margin": "20%",
+            "strategic_fit_score": "4",
+            "investment_highlights": "Large EHR and practice management SaaS provider",
+            "source_rationale": "Market leader with extensive integrations, strategic for acquiring broader market share"
+          },
+          {
+            "company_name": "NextGen Healthcare",
+            "location": "Chicago, IL",
+            "estimated_revenue": "600",
+            "estimated_ebitda_margin": "22%",
+            "strategic_fit_score": "4",
+            "investment_highlights": "EHR, practice management, and revenue cycle management solutions",
+            "source_rationale": "Well-established, broad product portfolio, strong growth potential"
+          },
+          {
+            "company_name": "Teladoc Health",
+            "location": "New York, NY",
+            "estimated_revenue": "1,000",
+            "estimated_ebitda_margin": "10%",
+            "strategic_fit_score": "3",
+            "investment_highlights": "Telehealth SaaS platform, virtual care solutions",
+            "source_rationale": "Complementary telehealth SaaS, strategic for expanding digital health offerings",
+            "ticker": "TH",
+            "market_cap": 864084416,
+            "sector": "Industrials",
+            "industry": "Specialty Business Services",
+            "revenue_ttm": 310382016,
+            "employees": 770,
+            "website": "https://www.targethospitality.com"
+          }
+        ],
+        "target_count": 12,
+        "analysis_summary": "| Company Name             | Location          | Est. Revenue (USD M) | Est. EBITDA Margin | Strategic Fit Score (1-5) | Key Investment Highlights                                                                 | Source/Rationale                                                                            |\n|---------------------------|-------------------|----------------------|--------------------|---------------------------|-----------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|\n| Veeva Systems             | Pleasanton, CA    | 2,200                | 25%                | 5                         | Leading cloud-based solutions for life sciences, strong customer base, high growth | Public company with extensive healthcare SaaS offerings; strategic for market expansion |\n| Medrium                   | Toronto, Canada   | 150                  | 20%                | 4                         | Specializes in SaaS for outpatient management, rapid growth potential               | Niche provider with innovative EHR tools; aligns with vertical integration goals        |\n| Healthify                  | New York, NY      | 50                   | 15%                | 4                         | Focus on social determinants of health, care management SaaS                        | Growing platform addressing social health factors, strategic for holistic care solutions |\n| SimplePractice            | Los Angeles, CA   | 75                   | 30%                | 4                         | Practice management SaaS for mental health and therapy providers                   | Rapidly growing, high-margin niche platform, complements broader healthcare SaaS portfolio |\n| Kareo                     | Irvine, CA        | 200                  | 18%                | 4                         | Cloud-based medical billing and practice management for small practices            | Well-established in billing SaaS, potential for cross-selling; strategic vertical fit   |\n| AdvancedMD                | Lehi, UT          | 400                  | 22%                | 4                         | Practice management, EHR, and revenue cycle management solutions                     | Extensive client base, strong growth trajectory, aligns with strategic SaaS expansion  |\n| Podium Healthcare         | Salt Lake City, UT| 80                   | 20%                | 3                         | Patient communication and engagement platform                                         | Focus on patient interactions, complements SaaS portfolio, scalable platform          |\n| Healthline Media          | New York, NY      | 100                  | 10%                | 3                         | Digital health information platform, some SaaS components                            | Strong digital health brand, potential for SaaS expansion to health education markets  |\n| CareCloud                 | Miami, FL         | 150                  | 17%                | 4                         | Practice management and financial software for outpatient providers                | Established SaaS provider, cross-selling opportunities, strategic vertical focus      |\n| eClinicalWorks            | Westborough, MA   | 500                  | 20%                | 4                         | Large EHR and practice management SaaS provider                                       | Market leader with extensive integrations, strategic for acquiring broader market share |\n| NextGen Healthcare        | Chicago, IL       | 600                  | 22%                | 4                         | EHR, practice management, and revenue cycle management solutions                    | Well-established, broad product portfolio, strong growth potential                        |\n| Teladoc Health            | New York, NY      | 1,000                | 10%                | 3                         | Telehealth SaaS platform, virtual care solutions                                       | Complementary telehealth SaaS, strategic for expanding digital health offerings        |\n\nNote: These targets are selected based on publicly available information, industry relevance, and potential strategic fit within healthcare SaaS. The scores reflect their alignment with buyer objectives, growth potential, and operational fit.",
+        "search_criteria": "Looking to acquire healthcare SaaS companies"
+      },
+      "execution_time": 7.469403505325317,
+      "timestamp": "2025-09-20T23:08:54.004715",
+      "error_message": null
+    }
+  },
+  "targets_found": 12
+}

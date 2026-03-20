@@ -1,0 +1,7 @@
+{
+  "test": "deep_research",
+  "exa_count": 0,
+  "tavily_count": 8,
+  "trace_steps": 3,
+  "elapsed": 0.21
+}

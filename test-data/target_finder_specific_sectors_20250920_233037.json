@@ -1,0 +1,241 @@
+{
+  "test": "target_finder_specific_sectors",
+  "results": [
+    {
+      "query": "Find fintech companies with $50-200M revenue for acquisition",
+      "expected_sector": "fintech",
+      "success": true,
+      "targets_found": 12,
+      "sample_targets": [
+        {
+          "company_name": "Marqeta Inc.",
+          "location": "Oakland, USA",
+          "estimated_revenue": "$150M",
+          "estimated_ebitda_margin": "20%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Leading modern card issuance platform with strong API integrations; expanding global footprint",
+          "source_rationale": "Public filings, industry reports on innovative card tech",
+          "ticker": "MI",
+          "market_cap": 18244164,
+          "sector": "Consumer Cyclical",
+          "industry": "Internet Retail",
+          "revenue_ttm": 740701,
+          "employees": 8,
+          "website": "https://www.nftoeo.com"
+        },
+        {
+          "company_name": "Bill.com Holdings Inc.",
+          "location": "San Jose, USA",
+          "estimated_revenue": "$180M",
+          "estimated_ebitda_margin": "25%",
+          "strategic_fit_score": "4",
+          "investment_highlights": "Cloud-based payments and invoicing platform; rapid growth in SMB segment",
+          "source_rationale": "SEC filings, recent earnings calls"
+        },
+        {
+          "company_name": "Solarisbank AG",
+          "location": "Berlin, Germany",
+          "estimated_revenue": "$70M",
+          "estimated_ebitda_margin": "15%",
+          "strategic_fit_score": "4",
+          "investment_highlights": "Digital banking platform with open banking APIs; strong European presence",
+          "source_rationale": "Industry databases, company website",
+          "ticker": "SA",
+          "market_cap": 2057900544,
+          "sector": "Basic Materials",
+          "industry": "Gold",
+          "revenue_ttm": "N/A",
+          "employees": "N/A",
+          "website": "https://www.seabridgegold.com"
+        }
+      ],
+      "execution_time": 7.557246685028076
+    },
+    {
+      "query": "Looking for healthcare SaaS companies to acquire",
+      "expected_sector": "healthcare",
+      "success": true,
+      "targets_found": 11,
+      "sample_targets": [
+        {
+          "company_name": "Vsee Healthcare, Inc.",
+          "location": "San Francisco, CA",
+          "estimated_revenue": "$45M",
+          "estimated_ebitda_margin": "20%",
+          "strategic_fit_score": "4",
+          "investment_highlights": "Telehealth SaaS platform with strong provider network, expanding into remote patient monitoring",
+          "source_rationale": "Growing telehealth demand aligns with strategic expansion into virtual care services",
+          "ticker": "VHI",
+          "market_cap": 466138720,
+          "sector": "Basic Materials",
+          "industry": "Chemicals",
+          "revenue_ttm": 2093500032,
+          "employees": 3050,
+          "website": "https://www.valhi.net"
+        },
+        {
+          "company_name": "Medisolv, Inc.",
+          "location": "Columbia, MD",
+          "estimated_revenue": "$25M",
+          "estimated_ebitda_margin": "25%",
+          "strategic_fit_score": "3",
+          "investment_highlights": "Healthcare quality reporting SaaS solutions, strong client base in hospitals",
+          "source_rationale": "Enhances data analytics and quality management offerings for integrated healthcare solutions",
+          "ticker": "MI",
+          "market_cap": 18244164,
+          "sector": "Consumer Cyclical",
+          "industry": "Internet Retail",
+          "revenue_ttm": 740701,
+          "employees": 8,
+          "website": "https://www.nftoeo.com"
+        },
+        {
+          "company_name": "Kareo (a WebPT company)",
+          "location": "Irvine, CA",
+          "estimated_revenue": "$60M",
+          "estimated_ebitda_margin": "22%",
+          "strategic_fit_score": "4",
+          "investment_highlights": "Practice management SaaS for small to mid-sized practices, cloud-native technology",
+          "source_rationale": "Complements existing portfolio with outpatient clinical SaaS offerings"
+        }
+      ],
+      "execution_time": 8.026122331619263
+    },
+    {
+      "query": "Find cybersecurity companies with strong cloud offerings",
+      "expected_sector": "cybersecurity",
+      "success": true,
+      "targets_found": 12,
+      "sample_targets": [
+        {
+          "company_name": "Zscaler, Inc.",
+          "location": "San Jose, CA, USA",
+          "estimated_revenue": "670",
+          "estimated_ebitda_margin": "15-20%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Leader in cloud security, SaaS-based platform, strong customer base, rapid growth",
+          "source_rationale": "Publicly traded; recognized as major cloud security provider aligning with buyer\u2019s focus"
+        },
+        {
+          "company_name": "Cloudflare, Inc.",
+          "location": "San Francisco, CA",
+          "estimated_revenue": "590",
+          "estimated_ebitda_margin": "10-15%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Cloud-native security and CDN solutions, extensive global network, high scalability",
+          "source_rationale": "Public company; robust cloud security offerings complement cyber defense strategy",
+          "ticker": "CI",
+          "market_cap": 77505232896,
+          "sector": "Healthcare",
+          "industry": "Healthcare Plans",
+          "revenue_ttm": 262023004160,
+          "employees": 71295,
+          "website": "https://www.cigna.com"
+        },
+        {
+          "company_name": "Palo Alto Networks, Inc.",
+          "location": "Santa Clara, CA",
+          "estimated_revenue": "5,300",
+          "estimated_ebitda_margin": "25-30%",
+          "strategic_fit_score": "4",
+          "investment_highlights": "Integrated cloud security platform, strong cloud access security broker (CASB) tools",
+          "source_rationale": "Leading cybersecurity vendor with expansive cloud security portfolio"
+        }
+      ],
+      "execution_time": 8.235265731811523
+    },
+    {
+      "query": "Identify AI/ML companies for strategic acquisition",
+      "expected_sector": "artificial intelligence",
+      "success": true,
+      "targets_found": 12,
+      "sample_targets": [
+        {
+          "company_name": "DataRobot",
+          "location": "Boston, USA",
+          "estimated_revenue": "$150",
+          "estimated_ebitda_margin": "20%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Leading enterprise AI platform with strong automation capabilities; strategic for expanding AI SaaS offerings",
+          "source_rationale": "Publicly recognized leader in enterprise AI solutions"
+        },
+        {
+          "company_name": "Suki AI",
+          "location": "San Francisco, USA",
+          "estimated_revenue": "$50",
+          "estimated_ebitda_margin": "25%",
+          "strategic_fit_score": "4",
+          "investment_highlights": "Focused on AI-driven clinical documentation; enhances healthcare AI portfolio",
+          "source_rationale": "Notable healthcare AI startup with proven growth",
+          "ticker": "SA",
+          "market_cap": 2057900544,
+          "sector": "Basic Materials",
+          "industry": "Gold",
+          "revenue_ttm": "N/A",
+          "employees": "N/A",
+          "website": "https://www.seabridgegold.com"
+        },
+        {
+          "company_name": "Abnormal Security",
+          "location": "San Francisco, USA",
+          "estimated_revenue": "$80",
+          "estimated_ebitda_margin": "15%",
+          "strategic_fit_score": "4",
+          "investment_highlights": "AI-powered email security platform; complements cybersecurity and AI verticals",
+          "source_rationale": "Recognized for innovative AI security solutions",
+          "ticker": "AS",
+          "market_cap": 20768702464,
+          "sector": "Consumer Cyclical",
+          "industry": "Leisure",
+          "revenue_ttm": 5698100224,
+          "employees": 13400,
+          "website": "https://www.amersports.com"
+        }
+      ],
+      "execution_time": 7.036141395568848
+    },
+    {
+      "query": "Find e-commerce platform companies to buy",
+      "expected_sector": "e-commerce",
+      "success": true,
+      "targets_found": 12,
+      "sample_targets": [
+        {
+          "company_name": "Shopify Inc.",
+          "location": "Ottawa, Canada",
+          "estimated_revenue": "$4,600",
+          "estimated_ebitda_margin": "~15%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Leading SaaS e-commerce platform with extensive global merchant base; strong SaaS revenue model; potential for vertical integration",
+          "source_rationale": "Public company with robust growth; strategic for expanding platform capabilities",
+          "ticker": "SI",
+          "market_cap": 293590624,
+          "sector": "N/A",
+          "industry": "N/A",
+          "revenue_ttm": "N/A",
+          "employees": "N/A",
+          "website": "N/A"
+        },
+        {
+          "company_name": "BigCommerce Holdings Inc.",
+          "location": "Austin, TX, USA",
+          "estimated_revenue": "$170",
+          "estimated_ebitda_margin": "~20%",
+          "strategic_fit_score": "4",
+          "investment_highlights": "Rapidly growing SaaS e-commerce platform targeting mid-market merchants; scalable technology",
+          "source_rationale": "Growing market share; complements Lohusalu's digital expansion strategies"
+        },
+        {
+          "company_name": "Wix.com Ltd.",
+          "location": "Tel Aviv, Israel",
+          "estimated_revenue": "$1,650",
+          "estimated_ebitda_margin": "~18%",
+          "strategic_fit_score": "4",
+          "investment_highlights": "Popular website and e-commerce builder with diverse customer base; integrated app marketplace",
+          "source_rationale": "Diversifies platform offerings; strong user base in small to medium businesses"
+        }
+      ],
+      "execution_time": 7.615072011947632
+    }
+  ]
+}

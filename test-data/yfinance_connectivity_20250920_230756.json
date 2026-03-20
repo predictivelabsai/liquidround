@@ -1,0 +1,22 @@
+{
+  "test": "yfinance_connectivity",
+  "success": true,
+  "ticker": "MSFT",
+  "company_name": "Microsoft Corporation",
+  "market_cap": 3849859891200,
+  "sector": "Technology",
+  "history_days": 5,
+  "latest_price": 517.9299926757812,
+  "sample_info": {
+    "address1": "One Microsoft Way",
+    "city": "Redmond",
+    "state": "WA",
+    "zip": "98052-6399",
+    "country": "United States",
+    "phone": "425 882 8080",
+    "website": "https://www.microsoft.com",
+    "industry": "Software - Infrastructure",
+    "industryKey": "software-infrastructure",
+    "industryDisp": "Software - Infrastructure"
+  }
+}

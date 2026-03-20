@@ -1,0 +1,59 @@
+{
+  "test": "orchestrator_real_api",
+  "query": "Find fintech acquisition targets with $10-50M revenue",
+  "success": true,
+  "state": {
+    "mode": "buyer_ma",
+    "messages": [],
+    "deal": {
+      "deal_id": "buyer_ma_2025-09-20T23-08-04-745568",
+      "deal_type": "buyer_ma",
+      "company_name": null,
+      "industry": null,
+      "deal_size": null,
+      "status": "initialized",
+      "created_at": "2025-09-20T23:08:04.745568",
+      "updated_at": "2025-09-20T23:08:04.745568",
+      "metadata": {}
+    },
+    "current_agent": null,
+    "agent_results": {
+      "orchestrator": {
+        "agent_name": "orchestrator",
+        "status": "success",
+        "result": {
+          "workflow_type": "buyer_ma",
+          "rationale": "Workflow: BUYER_MA\nRationale: The query focuses on finding acquisition targets, which indicates a buyer's interest in M&A activity. The mention of \"acquisition targets\" aligns with a strategic buyer seeking to acquire companies.",
+          "next_step": "buyer_ma_workflow"
+        },
+        "execution_time": 0.5397870540618896,
+        "timestamp": "2025-09-20T23:08:05.286199",
+        "error_message": null
+      }
+    },
+    "workflow_status": "initialized",
+    "user_query": "Find fintech acquisition targets with $10-50M revenue",
+    "context": {},
+    "config": {
+      "model": "gpt-4",
+      "temperature": 0.7,
+      "max_tokens": 2000
+    }
+  },
+  "agent_results": {
+    "orchestrator": {
+      "agent_name": "orchestrator",
+      "status": "success",
+      "result": {
+        "workflow_type": "buyer_ma",
+        "rationale": "Workflow: BUYER_MA\nRationale: The query focuses on finding acquisition targets, which indicates a buyer's interest in M&A activity. The mention of \"acquisition targets\" aligns with a strategic buyer seeking to acquire companies.",
+        "next_step": "buyer_ma_workflow"
+      },
+      "execution_time": 0.5397870540618896,
+      "timestamp": "2025-09-20T23:08:05.286199",
+      "error_message": null
+    }
+  },
+  "mode": "buyer_ma",
+  "workflow_status": "initialized"
+}

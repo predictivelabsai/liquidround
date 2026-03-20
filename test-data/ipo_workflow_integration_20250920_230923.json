@@ -1,0 +1,54 @@
+{
+  "test": "ipo_workflow_integration",
+  "query": "Assessing IPO readiness for our tech company",
+  "success": true,
+  "final_state": {
+    "ipo_workflow": {
+      "mode": "ipo",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "IPO workflow initiated. This would include readiness assessment, underwriter selection, and S-1 preparation.",
+          "timestamp": "2025-09-20T23:09:23.697542"
+        }
+      ],
+      "deal": {
+        "deal_id": "buyer_ma_2025-09-20T23-09-22-728261",
+        "deal_type": "buyer_ma",
+        "company_name": null,
+        "industry": null,
+        "deal_size": null,
+        "status": "initialized",
+        "created_at": "2025-09-20T23:09:22.728261",
+        "updated_at": "2025-09-20T23:09:22.728261",
+        "metadata": {}
+      },
+      "current_agent": null,
+      "agent_results": {
+        "orchestrator": {
+          "agent_name": "orchestrator",
+          "status": "success",
+          "result": {
+            "workflow_type": "ipo",
+            "rationale": "Workflow: IPO  \nRationale: The user is specifically assessing IPO readiness for their company, indicating planning to go public, which aligns with IPO activities.",
+            "next_step": "ipo_workflow"
+          },
+          "execution_time": 0.9669172763824463,
+          "timestamp": "2025-09-20T23:09:23.696183",
+          "error_message": null
+        }
+      },
+      "workflow_status": "completed",
+      "user_query": "Assessing IPO readiness for our tech company",
+      "context": {},
+      "config": {
+        "model": "gpt-4",
+        "temperature": 0.7,
+        "max_tokens": 2000
+      }
+    }
+  },
+  "workflow_status": "unknown",
+  "mode": "unknown",
+  "messages": []
+}

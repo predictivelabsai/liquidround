@@ -1,0 +1,18 @@
+{
+  "test": "yfinance_financials",
+  "ticker": "AAPL",
+  "financials": {
+    "ticker": "AAPL",
+    "revenue": 435617005568,
+    "ebitda": 152901992448,
+    "net_income": 117776998400,
+    "gross_margins": 0.47325,
+    "ebitda_margins": 0.35099998,
+    "profit_margins": 0.27037,
+    "revenue_growth": 0.157,
+    "debt_to_equity": 102.63,
+    "free_cashflow": 106312753152,
+    "pe_ratio": 31.42839,
+    "ev_to_ebitda": 24.059
+  }
+}

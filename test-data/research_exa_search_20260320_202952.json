@@ -1,0 +1,7 @@
+{
+  "test": "exa_search",
+  "result_count": 0,
+  "elapsed": 0.19,
+  "error": "Invalid option: 'use_autoprompt'",
+  "sample_titles": []
+}

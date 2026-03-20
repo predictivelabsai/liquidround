@@ -1,0 +1,17 @@
+{
+  "test": "yfinance_profile",
+  "ticker": "MSFT",
+  "profile": {
+    "ticker": "MSFT",
+    "name": "Microsoft Corporation",
+    "sector": "Technology",
+    "industry": "Software - Infrastructure",
+    "description": "Microsoft Corporation develops and supports software, services, devices, and solutions worldwide. The Productivity and Business Processes segment offers Microsoft 365 commercial, enterprise mobility + security, windows commercial, power BI, exchange, sharepoint, Microsoft teams, security and compliance, and copilot; Microsoft 365 commercial products, such as Windows commercial on-premises and office licensed services; Microsoft 365 consumer products and cloud services, including Microsoft 365 consumer subscriptions, office licensed on-premises, and other consumer services; LinkedIn; dynamics p",
+    "market_cap": 2841397952512,
+    "enterprise_value": 2922534141952,
+    "employees": 228000,
+    "website": "https://www.microsoft.com",
+    "country": "United States",
+    "city": "Redmond"
+  }
+}

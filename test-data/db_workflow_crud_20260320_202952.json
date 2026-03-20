@@ -1,0 +1,7 @@
+{
+  "test": "workflow_crud",
+  "workflow_id": "707f524e-9925-40a0-a5f1-5af06275b0e7",
+  "status": "executing",
+  "agent_count": 1,
+  "message_count": 1
+}

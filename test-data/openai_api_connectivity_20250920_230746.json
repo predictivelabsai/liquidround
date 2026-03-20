@@ -1,0 +1,9 @@
+{
+  "test": "openai_api_connectivity",
+  "success": true,
+  "api_key_present": true,
+  "model": "gpt-4.1-mini",
+  "test_prompt": "What is M&A? Provide a brief 2-sentence answer.",
+  "response": "M&A stands for Mergers and Acquisitions, which refers to the process where companies combine (merge) or one company purchases another (acquisition) to achieve strategic growth or competitive advantages. These transactions can involve consolidation of resources, expansion into new markets, or enhancement of operational efficiencies.",
+  "response_length": 333
+}

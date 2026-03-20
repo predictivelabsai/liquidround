@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.git/
+.env
+db/
+test-data/
+tests/
+*.db
+*.log
+.claude/
+node_modules/

@@ -1,0 +1,10 @@
+{
+  "test": "scoring_agent",
+  "status": "error",
+  "execution_time": 0.92,
+  "composite_score": null,
+  "recommendation": null,
+  "dimensions": {},
+  "key_risks": [],
+  "next_steps": []
+}

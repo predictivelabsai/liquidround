@@ -1,0 +1,9 @@
+{
+  "test": "user_create_authenticate",
+  "email": "testsuite-dd89b331@example.com",
+  "user_created": true,
+  "user_id": "b51db78e-10ad-4b46-9807-ae327bec2f95",
+  "auth_success": true,
+  "auth_reject_bad_pw": true,
+  "fetch_by_email": true
+}

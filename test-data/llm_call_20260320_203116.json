@@ -1,0 +1,6 @@
+{
+  "test": "llm_call",
+  "success": false,
+  "error": "Error code: 400 - {'code': 'Client specified an invalid argument', 'error': 'Incorrect API key provided: sk***gA. You can obtain an API key from https://console.x.ai.'}",
+  "elapsed_seconds": 0.31
+}

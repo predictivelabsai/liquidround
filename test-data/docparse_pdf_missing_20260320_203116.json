@@ -1,0 +1,6 @@
+{
+  "test": "pdf_parse_missing",
+  "parsed": {
+    "error": "File not found: /nonexistent/file.pdf"
+  }
+}

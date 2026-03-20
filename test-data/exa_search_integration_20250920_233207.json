@@ -1,0 +1,30 @@
+{
+  "test": "exa_search_integration",
+  "results": [
+    {
+      "query": "fintech companies funding acquisition 2024",
+      "success": false,
+      "error": "API returned 400: {\"requestId\":\"35bf60e47eb3b69ae246a75231a8f15a\",\"error\":\"Invalid request body | Validation error: Expected array, received boolean at \\\"includeText\\\"\",\"tag\":\"INVALID_REQUEST_BODY\"}"
+    },
+    {
+      "query": "healthcare SaaS companies revenue growth",
+      "success": false,
+      "error": "API returned 400: {\"requestId\":\"77efade6278ce21ffc6eb1583501b7dd\",\"error\":\"Invalid request body | Validation error: Expected array, received boolean at \\\"includeText\\\"\",\"tag\":\"INVALID_REQUEST_BODY\"}"
+    },
+    {
+      "query": "cybersecurity startups Series B funding",
+      "success": false,
+      "error": "API returned 400: {\"requestId\":\"8994140e016523177ed52dec89c78fec\",\"error\":\"Invalid request body | Validation error: Expected array, received boolean at \\\"includeText\\\"\",\"tag\":\"INVALID_REQUEST_BODY\"}"
+    },
+    {
+      "query": "AI machine learning companies acquisition",
+      "success": false,
+      "error": "API returned 400: {\"requestId\":\"3b94c575783df9fe81b8a58448e75d62\",\"error\":\"Invalid request body | Validation error: Expected array, received boolean at \\\"includeText\\\"\",\"tag\":\"INVALID_REQUEST_BODY\"}"
+    },
+    {
+      "query": "B2B software companies IPO ready",
+      "success": false,
+      "error": "API returned 400: {\"requestId\":\"f6ac8da393e689809f5d11f4b0b6e178\",\"error\":\"Invalid request body | Validation error: Expected array, received boolean at \\\"includeText\\\"\",\"tag\":\"INVALID_REQUEST_BODY\"}"
+    }
+  ]
+}

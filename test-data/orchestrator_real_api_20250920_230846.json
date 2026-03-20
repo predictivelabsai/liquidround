@@ -1,0 +1,59 @@
+{
+  "test": "orchestrator_real_api",
+  "query": "Find fintech acquisition targets with $10-50M revenue",
+  "success": true,
+  "state": {
+    "mode": "buyer_ma",
+    "messages": [],
+    "deal": {
+      "deal_id": "buyer_ma_2025-09-20T23-08-45-958521",
+      "deal_type": "buyer_ma",
+      "company_name": null,
+      "industry": null,
+      "deal_size": null,
+      "status": "initialized",
+      "created_at": "2025-09-20T23:08:45.958521",
+      "updated_at": "2025-09-20T23:08:45.958521",
+      "metadata": {}
+    },
+    "current_agent": null,
+    "agent_results": {
+      "orchestrator": {
+        "agent_name": "orchestrator",
+        "status": "success",
+        "result": {
+          "workflow_type": "buyer_ma",
+          "rationale": "Workflow: BUYER_MA  \nRationale: The query is focused on identifying acquisition targets in the fintech sector, which indicates a buyer looking to acquire companies. The mention of \"acquisition targets\" aligns with the buyer's perspective in M&A activity.",
+          "next_step": "buyer_ma_workflow"
+        },
+        "execution_time": 0.5735688209533691,
+        "timestamp": "2025-09-20T23:08:46.532860",
+        "error_message": null
+      }
+    },
+    "workflow_status": "initialized",
+    "user_query": "Find fintech acquisition targets with $10-50M revenue",
+    "context": {},
+    "config": {
+      "model": "gpt-4",
+      "temperature": 0.7,
+      "max_tokens": 2000
+    }
+  },
+  "agent_results": {
+    "orchestrator": {
+      "agent_name": "orchestrator",
+      "status": "success",
+      "result": {
+        "workflow_type": "buyer_ma",
+        "rationale": "Workflow: BUYER_MA  \nRationale: The query is focused on identifying acquisition targets in the fintech sector, which indicates a buyer looking to acquire companies. The mention of \"acquisition targets\" aligns with the buyer's perspective in M&A activity.",
+        "next_step": "buyer_ma_workflow"
+      },
+      "execution_time": 0.5735688209533691,
+      "timestamp": "2025-09-20T23:08:46.532860",
+      "error_message": null
+    }
+  },
+  "mode": "buyer_ma",
+  "workflow_status": "initialized"
+}

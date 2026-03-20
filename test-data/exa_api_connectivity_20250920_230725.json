@@ -1,0 +1,31 @@
+{
+  "test": "exa_api_connectivity",
+  "success": true,
+  "api_key_present": true,
+  "status_code": 200,
+  "query": "fintech companies acquisition",
+  "results_count": 3,
+  "results": [
+    {
+      "id": "https://www.bloomberg.com/news/articles/2025-09-05/fintech-klar-catches-up-on-race-to-bank-license-with-purchase-of-banorte-s-bineo",
+      "title": "Fintech Klar Catches Up On Race to Bank License With ...",
+      "url": "https://www.bloomberg.com/news/articles/2025-09-05/fintech-klar-catches-up-on-race-to-bank-license-with-purchase-of-banorte-s-bineo",
+      "publishedDate": "2025-09-05T00:00:00.000Z",
+      "author": null
+    },
+    {
+      "id": "https://www.reuters.com/practical-law-the-journal/transactional/fintech-bank-formation-acquisition-2025-07-01/",
+      "title": "Fintech Bank Formation and Acquisition | Practical Law ...",
+      "url": "https://www.reuters.com/practical-law-the-journal/transactional/fintech-bank-formation-acquisition-2025-07-01/",
+      "publishedDate": "2025-07-01T00:00:00.000Z",
+      "author": null
+    },
+    {
+      "id": "https://www.reuters.com/legal/transactional/australia-listed-xero-acquire-fintech-melio-over-25-billion-deal-2025-06-24/",
+      "title": "New Zealand's Xero to buy US fintech Melio for up to $3 ...",
+      "url": "https://www.reuters.com/legal/transactional/australia-listed-xero-acquire-fintech-melio-over-25-billion-deal-2025-06-24/",
+      "publishedDate": "2025-06-25T00:00:00.000Z",
+      "author": null
+    }
+  ]
+}
