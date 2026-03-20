@@ -191,18 +191,18 @@ def _thinking_indicator():
 
 
 def _nav_section(session):
-    """Collapsible navigation — hidden by default, expander button."""
+    """Left navigation — visible by default, toggleable."""
     user = session.get("user")
     nav_items = [
-        ("targets industry:fintech", "Find Targets"),
-        ("buyers company:SaaS", "Find Buyers"),
-        ("ipo company:TechCo", "IPO Assessment"),
-        ("profile:AAPL", "Company Profile"),
-        ("news:TSLA", "Company News"),
-        ("financials:MSFT", "Financials"),
-        ("valuation:AAPL,MSFT", "Valuation Comp"),
-        ("score buyer:PE target:Acme", "Score Match"),
-        ("research:cybersecurity M&A", "Deep Research"),
+        ("targets industry:renewable energy", "Find Targets"),
+        ("buyers company:Enefit Green", "Find Buyers"),
+        ("ipo company:Ignitis", "IPO Assessment"),
+        ("profile:SAP.DE", "Company Profile"),
+        ("news:NOVO-B.CO", "Company News"),
+        ("financials:SIE.DE", "Financials"),
+        ("valuation:TAL1T.TL,EQNR.OL,NESTE.HE", "Valuation Comp"),
+        ("score buyer:Siemens target:Harju Elekter", "Score Match"),
+        ("research:Baltic M&A renewable energy", "Deep Research"),
         ("docs", "Documents"),
         ("deals", "Deal History"),
         ("market", "Market Intel"),
@@ -265,7 +265,7 @@ def _nav_section(session):
             auth_section,
             Div(P("Predictive Labs Ltd", cls="text-xs text-gray-300 text-center py-1")),
             id="nav-panel",
-            cls="hidden fixed left-0 top-0 h-screen w-56 bg-white border-r border-gray-200 z-20 flex flex-col shadow-lg",
+            cls="fixed left-0 top-0 h-screen w-56 bg-white border-r border-gray-200 z-20 flex flex-col shadow-lg",
         ),
     )
 
@@ -273,11 +273,11 @@ def _nav_section(session):
 def _sample_pills():
     """Quick-start pills above chat input."""
     pills = [
-        ("profile:AAPL", "AAPL Profile"),
-        ("news:TSLA", "TSLA News"),
-        ("targets industry:fintech", "Fintech Targets"),
-        ("score buyer:PE target:SaaS", "Score Match"),
-        ("research:cybersecurity M&A", "Research"),
+        ("profile:SAP.DE", "SAP Profile"),
+        ("news:NOVO-B.CO", "Novo Nordisk News"),
+        ("valuation:TAL1T.TL,TSM1T.TL,IGN1L.VS", "Baltic Valuation"),
+        ("targets industry:renewable energy", "Energy Targets"),
+        ("score buyer:Siemens target:Harju Elekter", "Score Match"),
         ("help", "Commands"),
     ]
     return Div(
@@ -347,9 +347,9 @@ def index(session):
                     _assistant_bubble(
                         P("Welcome! I'm your M&A research assistant. Try a command like ", cls="text-sm text-gray-600"),
                         Div(
-                            Code("profile:AAPL", cls="bg-gray-100 px-1.5 py-0.5 rounded text-xs"),
-                            Code("news:TSLA", cls="bg-gray-100 px-1.5 py-0.5 rounded text-xs ml-1"),
-                            Code("score doc:filename.pdf", cls="bg-gray-100 px-1.5 py-0.5 rounded text-xs ml-1"),
+                            Code("profile:SAP.DE", cls="bg-gray-100 px-1.5 py-0.5 rounded text-xs"),
+                            Code("news:NOVO-B.CO", cls="bg-gray-100 px-1.5 py-0.5 rounded text-xs ml-1"),
+                            Code("valuation:TAL1T.TL,IGN1L.VS", cls="bg-gray-100 px-1.5 py-0.5 rounded text-xs ml-1"),
                             cls="mt-1",
                         ),
                         P("or just ask a question in plain English.", cls="text-sm text-gray-600 mt-1"),
@@ -400,7 +400,7 @@ def index(session):
                 ),
                 cls="max-w-3xl mx-auto",
             ),
-            cls="min-h-screen bg-gray-50 px-4 pb-6",
+            cls="min-h-screen bg-gray-50 px-4 pb-6 ml-56",
         ),
         _right_pane(),
     )
