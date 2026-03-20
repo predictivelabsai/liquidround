@@ -12,7 +12,7 @@ COMMANDS = {
     # M&A specific
     "targets", "buyers", "ipo", "score", "research",
     # Tools
-    "upload", "deals", "market", "tools", "settings",
+    "upload", "deals", "market", "tools", "settings", "docs",
     # Utility
     "help", "clear",
 }
@@ -116,13 +116,18 @@ def get_help_text() -> str:
 - `buyers company:LogisticsCo revenue:15M` — find strategic buyers
 - `ipo company:TechCo industry:SaaS` — IPO readiness assessment
 - `score buyer:Salesforce target:HubSpot` — synergy scoring (7 dimensions)
+- `score doc:filename.pdf` — analyze document and find best buyer matches
 - `research:cybersecurity M&A` — deep research via EXA + Tavily
+
+**Documents**
+- `docs` — list all uploaded documents with view/score actions
+- Upload via paperclip button — auto-opens PDF viewer in right pane
+- `score doc:filename.pdf` — parse document, extract company profile, score buyer matches
 
 **Tools**
 - `deals` — deal history
 - `market` — sector performance heatmap
 - `tools` — M&A platform tools (Deal Room, CIM, LOI, DD, etc.)
-- `upload` — upload documents (XLS, PPT, PDF)
 - `settings` — view LLM and API configuration
 
 **General**

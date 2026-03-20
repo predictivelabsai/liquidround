@@ -17,6 +17,7 @@ COPY . .
 # Create uploads dir
 RUN mkdir -p /app/uploads
 
-EXPOSE 5001
+ENV PORT=5007
+EXPOSE 5007
 
 CMD ["python", "main.py"]

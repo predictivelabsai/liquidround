@@ -42,6 +42,8 @@ class RenderAgent:
             return await self._valuation(subject)
         if cmd == "movers":
             return [self._markdown_bubble("Market movers coming soon. Try `profile:AAPL` or ask a question.")]
+        if cmd == "docs":
+            return [self._docs_widget()]
         if cmd == "targets":
             return await self._llm_query(f"Find acquisition targets: {subject} {self._params_str(params)}", "target_finder")
         if cmd == "buyers":
@@ -168,11 +170,18 @@ class RenderAgent:
         )]
 
     async def _score(self, subject: str, params: dict) -> list:
+        # Document-based scoring: score doc:filename.pdf
+        doc_file = params.get("doc", "")
+        if not doc_file and subject.lower().startswith("doc:"):
+            doc_file = subject[4:]
+        if doc_file:
+            return await self._score_document(doc_file)
+
         buyer = params.get("buyer", subject)
         target = params.get("target", "")
         context = params.get("context", "")
         if not buyer and not target:
-            return [self._error("Usage: `score buyer:Salesforce target:HubSpot`")]
+            return [self._error("Usage: `score buyer:Salesforce target:HubSpot` or `score doc:filename.pdf`")]
         query = f"Score acquisition: Buyer={buyer}, Target={target}. {context}"
         try:
             from agents.scoring_agent import ScoringAgent
@@ -192,6 +201,99 @@ class RenderAgent:
         except Exception as e:
             pass
         return await self._llm_query(query, "scoring")
+
+    async def _score_document(self, filename: str) -> list:
+        """Score a document — find best buyer matches using document content."""
+        from pathlib import Path
+        # Find the file
+        file_path = None
+        for folder in [Path("docs"), Path("uploads")]:
+            p = folder / filename
+            if p.exists():
+                file_path = str(p)
+                break
+        if not file_path:
+            return [self._error(f"Document not found: `{filename}`. Try `docs` to list available files.")]
+
+        # Parse document
+        from utils.document_parser import document_parser
+        parsed = document_parser.parse(file_path)
+        if "error" in parsed:
+            return [self._error(f"Parse error: {parsed['error']}")]
+        doc_text = document_parser.extract_all_text(parsed)
+        if not doc_text.strip():
+            return [self._error("Document appears to be empty or could not be parsed.")]
+
+        # Run scoring agent's document buyer matching skill
+        try:
+            from agents.scoring_agent import ScoringAgent
+            scorer = ScoringAgent()
+            result = await scorer.score_document_buyers(doc_text, filename)
+        except Exception as e:
+            return [self._error(f"Scoring error: {str(e)[:200]}")]
+
+        # Render results
+        parts = []
+        profile = result.get("company_profile", {})
+        if profile:
+            parts.append(Div(
+                H3(f"Company: {profile.get('name', filename)}", cls="font-semibold text-gray-800"),
+                Div(
+                    *[Span(t, cls="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded") for t in [profile.get("sector",""), profile.get("revenue","")] if t],
+                    cls="flex gap-2 mt-1 mb-2",
+                ),
+                P(profile.get("business_model", ""), cls="text-sm text-gray-600"),
+                Div(
+                    P("Key Strengths:", cls="text-xs font-semibold text-gray-500 mt-2"),
+                    *[P(f"- {s}", cls="text-xs text-gray-600") for s in profile.get("key_strengths", [])],
+                ),
+                cls="bg-white rounded-lg p-4 border border-gray-200 mb-3",
+            ))
+
+        # Buyer match cards
+        matches = result.get("buyer_matches", [])
+        if matches:
+            parts.append(H3(f"Top {len(matches)} Buyer Matches", cls="font-semibold text-gray-800 mb-2"))
+            for i, match in enumerate(matches, 1):
+                rec = match.get("recommendation", "N/A")
+                rec_cls = {"STRONG BUY": "bg-green-100 text-green-800", "PROCEED": "bg-blue-100 text-blue-800", "CAUTIOUS": "bg-yellow-100 text-yellow-800", "PASS": "bg-red-100 text-red-800"}.get(rec, "bg-gray-100")
+                dims = match.get("dimensions", {})
+                dim_bars = []
+                for dk in ["revenue_synergies","cost_synergies","strategic_fit","cultural_fit","financial_health","integration_risk","market_timing"]:
+                    dv = dims.get(dk, {})
+                    s = dv.get("score", 5) if isinstance(dv, dict) else 5
+                    bar_w = s * 10
+                    bar_c = "bg-green-500" if s >= 7 else "bg-yellow-500" if s >= 5 else "bg-red-500"
+                    dim_bars.append(Div(
+                        Div(Span(dk.replace("_"," ").title(), cls="text-xs text-gray-500"), Span(f"{s}/10", cls="text-xs font-medium"), cls="flex justify-between"),
+                        Div(Div(cls=f"{bar_c} h-1.5 rounded-full", style=f"width:{bar_w}%"), cls="w-full bg-gray-200 rounded-full h-1.5"),
+                        cls="mb-1",
+                    ))
+                parts.append(Div(
+                    Div(
+                        Div(
+                            Span(f"#{i}", cls="text-xs font-bold text-gray-400 mr-2"),
+                            Span(match.get("buyer","Unknown"), cls="font-semibold text-gray-800"),
+                            Span(f" ({match.get('buyer_type','')})", cls="text-xs text-gray-500"),
+                        ),
+                        Div(
+                            Span(str(match.get("composite_score",0)), cls="text-lg font-bold text-blue-700"),
+                            Span(rec, cls=f"text-xs px-2 py-0.5 rounded-full font-medium {rec_cls} ml-2"),
+                        ),
+                        cls="flex items-center justify-between mb-2",
+                    ),
+                    P(match.get("rationale",""), cls="text-sm text-gray-600 mb-2"),
+                    *dim_bars,
+                    cls="bg-white rounded-lg p-4 border border-gray-200 mb-2",
+                ))
+        else:
+            parts.append(self._info("No buyer matches could be generated. Try with a more detailed document."))
+
+        # Open doc in right pane
+        parts.append(
+            Script(f"document.getElementById('right-pane').classList.remove('translate-x-full'); htmx.ajax('GET', '/doc/panel?fn={filename}', '#doc-pane-content');")
+        )
+        return parts
 
     async def _research(self, query: str) -> list:
         from utils.research_tools import research_tools
@@ -323,6 +425,41 @@ class RenderAgent:
                  ("Stakeholder Mapping","Beta"),("Integration Playbook","Beta"),("Pipeline CRM","Coming Soon")]
         items = [Div(Span(n, cls="text-sm font-medium text-gray-800"), Span(s, cls=f"text-xs ml-2 px-1.5 py-0.5 rounded {'bg-green-100 text-green-700' if s=='Available' else 'bg-yellow-100 text-yellow-700' if s=='Beta' else 'bg-gray-100 text-gray-500'}"), cls="py-1") for n,s in tools]
         return Div(H3("M&A Tools", cls="font-semibold text-gray-800 mb-2"), *items, cls="bg-white rounded-lg p-4 border border-gray-200")
+
+    def _docs_widget(self) -> "FT":
+        """List available documents from docs/ and uploads/ with view + score actions."""
+        from pathlib import Path
+        files = []
+        for folder in [Path("docs"), Path("uploads")]:
+            if folder.exists():
+                for f in sorted(folder.iterdir()):
+                    if f.is_file() and f.suffix.lower() in (".pdf", ".xlsx", ".xls", ".pptx", ".ppt"):
+                        files.append((f.name, f.suffix.lower(), f"{f.stat().st_size / 1024 / 1024:.1f} MB"))
+        if not files:
+            return self._info("No documents found. Upload a PDF, XLS, or PPT via the paperclip button.")
+        rows = []
+        for fname, ext, size in files:
+            badge_cls = {"pdf": "bg-red-100 text-red-700", ".xlsx": "bg-green-100 text-green-700", ".pptx": "bg-orange-100 text-orange-700"}.get(ext, "bg-gray-100 text-gray-600")
+            rows.append(Div(
+                Div(
+                    Span(ext[1:].upper(), cls=f"text-xs font-bold px-1.5 py-0.5 rounded {badge_cls}"),
+                    Span(fname, cls="text-sm text-gray-800 ml-2 truncate"),
+                    Span(size, cls="text-xs text-gray-400 ml-auto"),
+                    cls="flex items-center",
+                ),
+                Div(
+                    A("View", href="#", onclick=f"document.getElementById('right-pane').classList.remove('translate-x-full'); htmx.ajax('GET', '/doc/panel?fn={fname}', '#doc-pane-content'); return false;", cls="text-xs text-blue-600 hover:underline"),
+                    Span(" | ", cls="text-xs text-gray-300"),
+                    A("Score Buyers", href="#", hx_post="/chat", hx_vals=json.dumps({"msg": f"score doc:{fname}"}), hx_target="#chat-area", hx_swap="beforeend", cls="text-xs text-green-600 hover:underline"),
+                    cls="mt-1",
+                ),
+                cls="py-2 border-b border-gray-100",
+            ))
+        return Div(
+            H3(f"Documents ({len(files)})", cls="font-semibold text-gray-800 mb-2"),
+            *rows,
+            cls="bg-white rounded-lg p-4 border border-gray-200",
+        )
 
     def _upload_widget(self) -> "FT":
         from components.upload_form import UploadZone

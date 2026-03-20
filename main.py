@@ -42,6 +42,97 @@ api_router.to_app(app)
 
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
+DOCS_DIR = Path("docs")
+DOCS_DIR.mkdir(exist_ok=True)
+
+
+# ---------------------------------------------------------------------------
+# Document serving routes
+# ---------------------------------------------------------------------------
+@rt("/doc/view")
+async def doc_view(fn: str = ""):
+    """Serve a document file (PDF, etc.) from docs/ or uploads/."""
+    if not fn:
+        return Response("Missing filename", status_code=400)
+    filename = Path(fn).name
+    for folder in [DOCS_DIR, UPLOAD_DIR]:
+        path = folder / filename
+        if path.exists():
+            from starlette.responses import FileResponse
+            return FileResponse(str(path), media_type="application/pdf" if filename.endswith(".pdf") else "application/octet-stream")
+    return Response("File not found", status_code=404)
+
+
+@rt("/doc/panel")
+def doc_panel(fn: str = ""):
+    """Return the right-pane document viewer HTML partial."""
+    if not fn:
+        return _doc_list_for_pane()
+    filename = Path(fn).name
+    return _doc_viewer_content(filename)
+
+
+def _doc_viewer_content(filename: str):
+    """Build the document viewer pane content."""
+    ext = Path(filename).suffix.lower()
+    if ext == ".pdf":
+        viewer = Iframe(src=f"/doc/view?fn={filename}", cls="w-full h-full border-0", style="min-height: 70vh;")
+    else:
+        viewer = Div(P(f"Preview not available for {ext} files.", cls="text-sm text-gray-500"), P("Use the download link below.", cls="text-xs text-gray-400 mt-1"))
+    return Div(
+        Div(
+            Span(filename, cls="text-sm font-medium text-gray-800 truncate"),
+            A("Download", href=f"/doc/view?fn={filename}", target="_blank", cls="text-xs text-blue-600 hover:underline"),
+            cls="flex items-center justify-between mb-2",
+        ),
+        viewer,
+        Button(
+            "Score: Find Buyers",
+            hx_post="/chat",
+            hx_vals=json.dumps({"msg": f"score doc:{filename}"}),
+            hx_target="#chat-area",
+            hx_swap="beforeend",
+            cls="w-full mt-3 bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700",
+        ),
+        cls="p-3 h-full flex flex-col",
+    )
+
+
+def _doc_list_for_pane():
+    """List all available documents in docs/ and uploads/."""
+    files = []
+    for folder in [DOCS_DIR, UPLOAD_DIR]:
+        if folder.exists():
+            for f in sorted(folder.iterdir()):
+                if f.is_file() and f.suffix.lower() in (".pdf", ".xlsx", ".xls", ".pptx", ".ppt"):
+                    files.append(f.name)
+    if not files:
+        return Div(P("No documents yet.", cls="text-sm text-gray-400 italic"), P("Upload a file via the chat or use the paperclip button.", cls="text-xs text-gray-300 mt-1"), cls="p-4")
+    items = []
+    for fname in files:
+        ext = Path(fname).suffix.lower()
+        badge_cls = {"pdf": "bg-red-100 text-red-700", ".xlsx": "bg-green-100 text-green-700", ".xls": "bg-green-100 text-green-700", ".pptx": "bg-orange-100 text-orange-700", ".ppt": "bg-orange-100 text-orange-700"}
+        b_cls = badge_cls.get(ext, "bg-gray-100 text-gray-600")
+        items.append(
+            Div(
+                Div(
+                    Span(ext[1:].upper(), cls=f"text-xs font-bold px-1.5 py-0.5 rounded {b_cls}"),
+                    Span(fname, cls="text-sm text-gray-800 truncate ml-2"),
+                    cls="flex items-center",
+                ),
+                Div(
+                    Button("View", hx_get=f"/doc/panel?fn={fname}", hx_target="#doc-pane-content", cls="text-xs text-blue-600 hover:underline"),
+                    Button("Score", hx_post="/chat", hx_vals=json.dumps({"msg": f"score doc:{fname}"}), hx_target="#chat-area", hx_swap="beforeend", cls="text-xs text-green-600 hover:underline ml-2"),
+                    cls="flex mt-1",
+                ),
+                cls="py-2 border-b border-gray-100",
+            )
+        )
+    return Div(
+        P("Documents", cls="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2"),
+        *items,
+        cls="p-3",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -112,10 +203,10 @@ def _nav_section(session):
         ("valuation:AAPL,MSFT", "Valuation Comp"),
         ("score buyer:PE target:Acme", "Score Match"),
         ("research:cybersecurity M&A", "Deep Research"),
+        ("docs", "Documents"),
         ("deals", "Deal History"),
         ("market", "Market Intel"),
         ("tools", "M&A Tools"),
-        ("upload", "Upload Docs"),
         ("settings", "Settings"),
         ("help", "Help"),
     ]
@@ -153,10 +244,11 @@ def _nav_section(session):
     return Div(
         # Toggle button
         Button(
-            Span("LR", cls="text-xs font-bold text-blue-700"),
+            Span("LiquidRound", cls="text-xs font-bold text-blue-700"),
+            Span("beta", cls="text-xs text-gray-400 ml-1"),
             id="nav-toggle",
             onclick="document.getElementById('nav-panel').classList.toggle('hidden')",
-            cls="fixed top-3 left-3 z-30 w-8 h-8 bg-white border border-gray-200 rounded-lg flex items-center justify-center shadow-sm hover:bg-blue-50 cursor-pointer",
+            cls="fixed top-3 left-3 z-30 bg-white border border-gray-200 rounded-lg px-3 py-1.5 flex items-center shadow-sm hover:bg-blue-50 cursor-pointer",
         ),
         # Collapsible nav panel
         Div(
@@ -201,6 +293,30 @@ def _sample_pills():
     )
 
 
+def _right_pane():
+    """Right pane — document viewer and file browser."""
+    return Div(
+        Div(
+            Div(
+                H2("Documents", cls="text-sm font-semibold text-gray-800"),
+                Button(
+                    "X", cls="text-gray-400 hover:text-gray-600 text-xs font-bold",
+                    onclick="document.getElementById('right-pane').classList.add('translate-x-full')",
+                ),
+                cls="flex items-center justify-between",
+            ),
+            cls="px-3 py-2 border-b border-gray-200",
+        ),
+        Div(
+            _doc_list_for_pane(),
+            id="doc-pane-content",
+            cls="flex-1 overflow-y-auto",
+        ),
+        id="right-pane",
+        cls="fixed right-0 top-0 h-screen w-96 bg-white border-l border-gray-200 flex flex-col transition-transform duration-300 translate-x-full z-20 shadow-lg",
+    )
+
+
 @rt
 def index(session):
     ss = _get_ss(session)
@@ -210,9 +326,18 @@ def index(session):
         Main(
             # Header
             Div(
-                H1("LiquidRound", cls="text-2xl font-bold text-blue-800"),
-                P("AI-Powered M&A Research Platform", cls="text-sm text-gray-500"),
-                cls="text-center pt-6 mb-4",
+                Div(
+                    H1("LiquidRound", cls="text-2xl font-bold text-blue-800"),
+                    P("AI-Powered M&A Research Platform", cls="text-sm text-gray-500"),
+                    cls="text-center",
+                ),
+                # Doc pane toggle (top-right)
+                Button(
+                    "Docs", id="doc-toggle",
+                    onclick="document.getElementById('right-pane').classList.toggle('translate-x-full')",
+                    cls="fixed top-3 right-3 z-30 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm hover:bg-blue-50 hover:text-blue-700 cursor-pointer",
+                ),
+                cls="pt-6 mb-4",
             ),
             # Sample pills
             _sample_pills(),
@@ -224,17 +349,30 @@ def index(session):
                         Div(
                             Code("profile:AAPL", cls="bg-gray-100 px-1.5 py-0.5 rounded text-xs"),
                             Code("news:TSLA", cls="bg-gray-100 px-1.5 py-0.5 rounded text-xs ml-1"),
-                            Code("targets industry:fintech", cls="bg-gray-100 px-1.5 py-0.5 rounded text-xs ml-1"),
+                            Code("score doc:filename.pdf", cls="bg-gray-100 px-1.5 py-0.5 rounded text-xs ml-1"),
                             cls="mt-1",
                         ),
                         P("or just ask a question in plain English.", cls="text-sm text-gray-600 mt-1"),
                     ),
                     id="chat-area",
-                    cls="space-y-2 mb-4 max-h-[calc(100vh-220px)] overflow-y-auto px-2",
+                    cls="space-y-2 mb-4 max-h-[calc(100vh-260px)] overflow-y-auto px-2",
                 ),
-                # Input
+                # Input row: paperclip + text + send
                 Form(
                     Div(
+                        # Paperclip upload
+                        Label(
+                            NotStr('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>'),
+                            htmlFor="file-upload",
+                            cls="flex items-center justify-center w-10 h-10 border border-gray-300 rounded-xl text-gray-400 hover:text-blue-600 hover:border-blue-400 cursor-pointer transition-colors",
+                            title="Upload document (PDF, XLS, PPT)",
+                        ),
+                        Input(
+                            type="file", name="file", id="file-upload",
+                            accept=".pdf,.xlsx,.xls,.pptx,.ppt",
+                            cls="hidden",
+                            onchange="document.getElementById('upload-form').requestSubmit()",
+                        ),
                         Input(
                             name="msg", placeholder="Type a command or question... (try help)",
                             autofocus=True, autocomplete="off",
@@ -242,17 +380,29 @@ def index(session):
                         ),
                         Button("Send", type="submit",
                                cls="bg-blue-600 text-white px-5 py-3 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"),
-                        cls="flex gap-2",
+                        cls="flex gap-2 items-center",
                     ),
                     hx_post="/chat",
                     hx_target="#chat-area",
                     hx_swap="beforeend",
                     hx_on__after_request="this.reset(); document.getElementById('chat-area').scrollTo({top: document.getElementById('chat-area').scrollHeight, behavior: 'smooth'});",
                 ),
+                # Hidden upload form
+                Form(
+                    Input(type="file", name="file", id="file-upload-hidden", cls="hidden",
+                          accept=".pdf,.xlsx,.xls,.pptx,.ppt"),
+                    id="upload-form",
+                    hx_post="/chat-upload",
+                    hx_target="#chat-area",
+                    hx_swap="beforeend",
+                    hx_encoding="multipart/form-data",
+                    cls="hidden",
+                ),
                 cls="max-w-3xl mx-auto",
             ),
             cls="min-h-screen bg-gray-50 px-4 pb-6",
         ),
+        _right_pane(),
     )
 
 
@@ -309,10 +459,27 @@ async def chat_upload(file: UploadFile):
     from utils.document_parser import document_parser
     parsed = document_parser.parse(str(save_path))
     from components.upload_form import UploadResult
-    return Div(_user_bubble(f"Uploaded: {file.filename}"), _assistant_bubble(UploadResult(parsed)))
+    return Div(
+        _user_bubble(f"Uploaded: {file.filename}"),
+        _assistant_bubble(
+            UploadResult(parsed),
+            Div(
+                Button(
+                    "Score: Find Buyers",
+                    hx_post="/chat",
+                    hx_vals=json.dumps({"msg": f"score doc:{file.filename}"}),
+                    hx_target="#chat-area",
+                    hx_swap="beforeend",
+                    cls="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 mt-3",
+                ),
+            ),
+        ),
+        # Open document in right pane
+        Script(f"document.getElementById('right-pane').classList.remove('translate-x-full'); htmx.ajax('GET', '/doc/panel/{file.filename}', '#doc-pane-content');"),
+    )
 
 
 # ---------------------------------------------------------------------------
 # Serve
 # ---------------------------------------------------------------------------
-serve(port=5001)
+serve(port=int(os.getenv("PORT", "5007")))
