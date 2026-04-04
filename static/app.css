@@ -78,3 +78,63 @@ details > summary::before {
 details[open] > summary::before {
     transform: rotate(90deg);
 }
+
+/* ==========================================================================
+   RESPONSIVE / PWA
+   ========================================================================== */
+
+/* Mobile: hide left nav by default, show hamburger */
+@media (max-width: 768px) {
+    /* Nav: slide off-screen on mobile by default */
+    #nav-panel:not(.mobile-open) {
+        transform: translateX(-100%) !important;
+    }
+    /* Show hamburger on mobile */
+    #nav-restore {
+        display: flex !important;
+    }
+    /* Main content: no left margin on mobile */
+    #main-content {
+        margin-left: 0 !important;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    /* Right pane (canvas): full width overlay on mobile */
+    #right-pane {
+        width: 100vw !important;
+    }
+    /* Context cards: single column */
+    .grid-cols-3 { grid-template-columns: 1fr !important; }
+    .grid-cols-4 { grid-template-columns: repeat(2, 1fr) !important; }
+    /* Pipeline columns: stack vertically */
+    #pipeline-board {
+        flex-direction: column !important;
+    }
+    #pipeline-board > div {
+        width: 100% !important;
+    }
+}
+
+/* Tablet: narrower nav, adjust canvas */
+@media (min-width: 769px) and (max-width: 1024px) {
+    #nav-panel { width: 200px !important; }
+    #main-content { margin-left: 200px !important; }
+    #right-pane { width: 360px !important; }
+    .grid-cols-3 { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* Touch-friendly: larger tap targets on mobile */
+@media (max-width: 768px) {
+    button, a, input[type="submit"] {
+        min-height: 44px;
+    }
+    #nav-panel button, #nav-panel a {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+}
+
+/* Standalone PWA mode: remove address bar padding */
+@media (display-mode: standalone) {
+    body { padding-top: env(safe-area-inset-top); }
+}

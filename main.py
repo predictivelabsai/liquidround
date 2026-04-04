@@ -20,7 +20,11 @@ app, rt = fast_app(
         Script(src="https://cdn.tailwindcss.com"),
         Script(src="https://cdn.plot.ly/plotly-2.32.0.min.js"),
         Link(rel="stylesheet", href="/app.css"),
-        Meta(name="viewport", content="width=device-width, initial-scale=1"),
+        Meta(name="viewport", content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"),
+        Meta(name="mobile-web-app-capable", content="yes"),
+        Meta(name="apple-mobile-web-app-capable", content="yes"),
+        Meta(name="apple-mobile-web-app-status-bar-style", content="default"),
+        Meta(name="theme-color", content="#2563eb"),
     ),
     static_path="static",
     secret_key=os.getenv("SESSION_SECRET", "liquidround-dev-secret-change-me"),
@@ -421,7 +425,7 @@ def _nav_section(session):
         Button(
             NotStr('<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>'),
             id="nav-restore",
-            onclick="document.getElementById('nav-panel').classList.remove('-translate-x-full'); this.classList.add('hidden');",
+            onclick="var np=document.getElementById('nav-panel'); np.classList.remove('-translate-x-full'); np.classList.add('mobile-open'); this.classList.add('hidden');",
             cls="fixed top-3 left-3 z-30 bg-white border border-gray-200 rounded-lg p-2 shadow-sm hover:bg-blue-50 cursor-pointer hidden text-gray-500 hover:text-blue-600",
         ),
         # Collapsible nav panel
@@ -436,7 +440,7 @@ def _nav_section(session):
                 P("M&A Research Platform", cls="text-xs text-gray-400 mt-0.5"),
                 Button(
                     NotStr('<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'),
-                    onclick="document.getElementById('nav-panel').classList.add('-translate-x-full'); document.getElementById('nav-restore').classList.remove('hidden');",
+                    onclick="var np=document.getElementById('nav-panel'); np.classList.add('-translate-x-full'); np.classList.remove('mobile-open'); document.getElementById('nav-restore').classList.remove('hidden');",
                     cls="absolute top-3 right-3 text-gray-400 hover:text-gray-600 cursor-pointer",
                 ),
                 cls="px-3 py-3 border-b border-gray-200 relative",
