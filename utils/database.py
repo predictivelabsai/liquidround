@@ -272,6 +272,41 @@ class DatabaseService:
             cur.execute("DELETE FROM liquidround.pipeline_items WHERE id = %s AND user_id = %s", (item_id, user_id))
 
     # ------------------------------------------------------------------
+    # Deal statistics (for dashboard)
+    # ------------------------------------------------------------------
+    def get_deal_stats(self, user_id: str = None) -> Dict[str, Any]:
+        """Get deal counts by type and status."""
+        with get_conn() as conn:
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            where = "WHERE user_id = %s" if user_id else ""
+            params = (user_id,) if user_id else ()
+            # Total count
+            cur.execute(f"SELECT COUNT(*) as total FROM liquidround.workflows {where}", params)
+            total = cur.fetchone()["total"]
+            # By type
+            cur.execute(f"""
+                SELECT workflow_type, COUNT(*) as cnt
+                FROM liquidround.workflows {where}
+                GROUP BY workflow_type
+            """, params)
+            by_type = {r["workflow_type"]: r["cnt"] for r in cur.fetchall()}
+            # By status
+            cur.execute(f"""
+                SELECT status, COUNT(*) as cnt
+                FROM liquidround.workflows {where}
+                GROUP BY status
+            """, params)
+            by_status = {r["status"]: r["cnt"] for r in cur.fetchall()}
+            # Timeline (last 6 months)
+            cur.execute(f"""
+                SELECT DATE_TRUNC('month', created_at) as month, COUNT(*) as cnt
+                FROM liquidround.workflows {where}
+                GROUP BY month ORDER BY month DESC LIMIT 6
+            """, params)
+            timeline = [(str(r["month"])[:10], r["cnt"]) for r in cur.fetchall()]
+            return {"total": total, "by_type": by_type, "by_status": by_status, "timeline": list(reversed(timeline))}
+
+    # ------------------------------------------------------------------
     # Summary
     # ------------------------------------------------------------------
     def get_workflow_status(self, workflow_id: str) -> Dict[str, Any]:

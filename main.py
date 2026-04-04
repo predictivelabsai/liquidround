@@ -360,6 +360,26 @@ _THINKING_JS = """
     }
 """
 
+def _nav_page_link(label, href):
+    """Nav link that loads a static page into main-content."""
+    return A(
+        label,
+        hx_get=href,
+        hx_target="#main-content",
+        hx_push_url="true",
+        cls="text-left text-xs text-gray-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-1.5 rounded transition-colors w-full block",
+    )
+
+def _nav_context_button(label, context_key):
+    """Nav button that loads context-specific cards into welcome section."""
+    return Button(
+        label,
+        hx_get=f"/cards/{context_key}",
+        hx_target="#welcome-section",
+        hx_swap="innerHTML",
+        cls="text-left text-xs text-gray-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-1.5 rounded transition-colors w-full",
+    )
+
 def _nav_button(label, cmd, accent="gray"):
     """Single nav button that posts to chat."""
     return Button(
@@ -450,10 +470,10 @@ def _nav_section(session):
                         cls="px-3 py-2 cursor-pointer hover:bg-blue-50 rounded list-none flex items-center nav-section-header",
                     ),
                     Div(
-                        _nav_button("Find Targets", "targets industry:renewable energy"),
-                        _nav_button("Company Profile", "profile:SAP.DE"),
-                        _nav_button("Valuation Comp", "valuation:TAL1T.TL,EQNR.OL,NESTE.HE"),
-                        _nav_button("Score Match", "score buyer:Siemens target:Harju Elekter"),
+                        _nav_context_button("Find Targets", "find-targets"),
+                        _nav_context_button("Company Profile", "company-profile"),
+                        _nav_context_button("Valuation Comp", "valuation-comp"),
+                        _nav_context_button("Score Match", "score-match"),
                         *([ A("Target Pipeline", hx_get="/pipeline/target", hx_target="#main-content", hx_push_url="true",
                               cls="text-left text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-1.5 rounded transition-colors w-full block font-medium") ] if user else []),
                         cls="pl-2 border-l-2 border-blue-200 ml-3 mb-2",
@@ -468,9 +488,9 @@ def _nav_section(session):
                         cls="px-3 py-2 cursor-pointer hover:bg-green-50 rounded list-none flex items-center nav-section-header",
                     ),
                     Div(
-                        _nav_button("Find Buyers", "buyers company:Enefit Green"),
-                        _nav_button("Score Pitch Deck", "docs"),
-                        _nav_button("IPO Assessment", "ipo company:Ignitis"),
+                        _nav_context_button("Find Buyers", "find-buyers"),
+                        _nav_context_button("Score Pitch Deck", "score-pitch-deck"),
+                        _nav_context_button("IPO Assessment", "ipo-assessment"),
                         *([ A("Buyer Pipeline", hx_get="/pipeline/buyer", hx_target="#main-content", hx_push_url="true",
                               cls="text-left text-xs text-green-600 hover:text-green-800 hover:bg-green-50 px-3 py-1.5 rounded transition-colors w-full block font-medium") ] if user else []),
                         cls="pl-2 border-l-2 border-green-200 ml-3 mb-2",
@@ -500,9 +520,9 @@ def _nav_section(session):
                         cls="px-3 py-2 cursor-pointer hover:bg-gray-50 rounded list-none flex items-center nav-section-header",
                     ),
                     Div(
-                        _nav_button("Documents", "docs"),
-                        _nav_button("Deal History", "deals"),
-                        _nav_button("M&A Tools", "tools"),
+                        _nav_page_link("Documents", "/page/documents"),
+                        _nav_page_link("Deal History", "/page/deals"),
+                        _nav_page_link("M&A Tools", "/page/tools"),
                         cls="pl-2 border-l-2 border-gray-200 ml-3 mb-2",
                     ),
                     cls="mb-1",
@@ -523,44 +543,110 @@ def _nav_section(session):
     )
 
 
-def _welcome_section():
-    """Buyer/Seller welcome cards — replaces on first interaction."""
+def _action_card(label, subtitle, cmd, color="blue"):
+    """Single action card that posts to chat."""
+    border = f"border-{color}-100 hover:border-{color}-400"
+    label_cls = f"text-{color}-700"
+    return Div(
+        H3(label, cls=f"font-medium text-gray-800 text-sm"),
+        P(subtitle, cls="text-xs text-gray-500 mt-1"),
+        hx_post="/chat",
+        hx_vals=json.dumps({"msg": cmd}),
+        hx_target="#chat-area",
+        hx_swap="beforeend",
+        hx_on__before_request=_THINKING_JS,
+        hx_on__after_request="var t=document.getElementById('thinking-live'); if(t) t.remove();",
+        cls=f"bg-white border-2 {border} rounded-xl p-4 cursor-pointer transition-colors",
+    )
+
+# Context card definitions: 3 cards per nav context
+_CONTEXT_CARDS = {
+    "default": {
+        "title": "Quick Start",
+        "subtitle": "Choose an action to begin",
+        "cards": [
+            ("Find Acquisition Targets", "Search by industry, size, geography", "targets industry:renewable energy", "blue"),
+            ("Score a Deal", "Evaluate buyer-target synergy", "score buyer:Siemens target:Harju Elekter", "purple"),
+            ("Analyze a Pitch Deck", "Extract key terms from documents", "docs", "green"),
+        ],
+    },
+    "find-targets": {
+        "title": "Find Acquisition Targets",
+        "subtitle": "Search for companies to acquire",
+        "cards": [
+            ("Renewable Energy - Nordics", "Wind, solar, hydrogen in Baltic/Nordic region", "targets industry:renewable energy geography:Nordics", "blue"),
+            ("Fintech - Europe", "Payments, lending, insurance tech", "targets industry:fintech geography:Europe", "indigo"),
+            ("Healthcare SaaS - US", "Digital health, clinical software", "targets industry:healthcare SaaS geography:US", "green"),
+        ],
+    },
+    "company-profile": {
+        "title": "Company Profile",
+        "subtitle": "Look up a company by ticker",
+        "cards": [
+            ("SAP SE", "Enterprise software, Germany", "profile:SAP.DE", "blue"),
+            ("Novo Nordisk", "Pharma, Denmark", "profile:NOVO-B.CO", "green"),
+            ("Siemens", "Industrial tech, Germany", "profile:SIE.DE", "indigo"),
+        ],
+    },
+    "valuation-comp": {
+        "title": "Valuation Comparison",
+        "subtitle": "Compare multiples across companies",
+        "cards": [
+            ("Baltic Energy", "TAL1T, EQNR, NESTE", "valuation:TAL1T.TL,EQNR.OL,NESTE.HE", "blue"),
+            ("Nordic Tech", "NOVO-B, SIE, SAP", "valuation:NOVO-B.CO,SIE.DE,SAP.DE", "indigo"),
+            ("EU Financials", "ING, SAN, BNP", "valuation:INGA.AS,SAN.PA,BNP.PA", "green"),
+        ],
+    },
+    "score-match": {
+        "title": "Score M&A Match",
+        "subtitle": "Evaluate buyer-target compatibility",
+        "cards": [
+            ("Siemens + Harju Elekter", "Industrial automation synergy", "score buyer:Siemens target:Harju Elekter", "blue"),
+            ("SAP + NovaTech", "Supply chain SaaS acquisition", "score buyer:SAP target:NovaTech Solutions", "indigo"),
+            ("Upload & Score", "Score a document against buyers", "docs", "green"),
+        ],
+    },
+    "find-buyers": {
+        "title": "Find Buyers",
+        "subtitle": "Identify strategic and financial buyers",
+        "cards": [
+            ("SaaS Company (EUR 15M)", "B2B software with recurring revenue", "buyers company:B2B SaaS revenue:15M", "green"),
+            ("Manufacturing (EUR 50M)", "Industrial manufacturer seeking exit", "buyers company:Manufacturing revenue:50M", "blue"),
+            ("Tech Platform", "Digital marketplace platform", "buyers company:Tech Platform revenue:10M", "indigo"),
+        ],
+    },
+    "score-pitch-deck": {
+        "title": "Score Pitch Deck",
+        "subtitle": "Extract key terms and find buyers",
+        "cards": [
+            ("NovaTech Pitch Deck", "10-page investment presentation", "keyterms NovaTech-Pitch-Deck.pdf", "blue"),
+            ("NovaTech Term Sheet", "Draft acquisition terms", "keyterms NovaTech-TermSheet-Draft.pdf", "green"),
+            ("Upload New Document", "Analyze your own pitch deck", "docs", "indigo"),
+        ],
+    },
+    "ipo-assessment": {
+        "title": "IPO Readiness",
+        "subtitle": "Assess public offering readiness",
+        "cards": [
+            ("Ignitis Group", "Baltic energy utility", "ipo company:Ignitis industry:Energy", "blue"),
+            ("Baltic Tech Co", "SaaS platform IPO candidate", "ipo company:Baltic Tech industry:SaaS", "green"),
+            ("Nordic Fintech", "Payments company IPO", "ipo company:Nordic Payments industry:Fintech", "indigo"),
+        ],
+    },
+}
+
+
+def _render_context_cards(context_key: str):
+    """Render 3 context-sensitive action cards."""
+    ctx = _CONTEXT_CARDS.get(context_key, _CONTEXT_CARDS["default"])
+    cards = [_action_card(label, sub, cmd, color) for label, sub, cmd, color in ctx["cards"]]
     return Div(
         Div(
-            H2("Welcome to LiquidRound", cls="text-xl font-bold text-gray-800"),
-            P("What brings you here today?", cls="text-sm text-gray-500 mt-1"),
-            cls="text-center mb-6",
+            H2(ctx["title"], cls="text-lg font-bold text-gray-800"),
+            P(ctx["subtitle"], cls="text-sm text-gray-500 mt-0.5"),
+            cls="text-center mb-4",
         ),
-        Div(
-            # Buyer card
-            Div(
-                Div("BUYER", cls="text-xs font-bold text-blue-600 mb-2"),
-                H3("I want to acquire a company", cls="font-medium text-gray-800"),
-                P("Find targets, compare valuations, score matches", cls="text-xs text-gray-500 mt-1"),
-                hx_post="/chat",
-                hx_vals=json.dumps({"msg": "I am looking to acquire a company. Help me find targets."}),
-                hx_target="#chat-area",
-                hx_swap="beforeend",
-                hx_on__before_request=_THINKING_JS,
-                hx_on__after_request="var t=document.getElementById('thinking-live'); if(t) t.remove();",
-                cls="bg-white border-2 border-blue-100 hover:border-blue-400 rounded-xl p-4 cursor-pointer transition-colors",
-            ),
-            # Seller card
-            Div(
-                Div("SELLER", cls="text-xs font-bold text-green-600 mb-2"),
-                H3("I want to sell or raise capital", cls="font-medium text-gray-800"),
-                P("Find buyers, score pitch deck, assess IPO readiness", cls="text-xs text-gray-500 mt-1"),
-                hx_post="/chat",
-                hx_vals=json.dumps({"msg": "I am looking to sell my company or raise capital. Help me find buyers."}),
-                hx_target="#chat-area",
-                hx_swap="beforeend",
-                hx_on__before_request=_THINKING_JS,
-                hx_on__after_request="var t=document.getElementById('thinking-live'); if(t) t.remove();",
-                cls="bg-white border-2 border-green-100 hover:border-green-400 rounded-xl p-4 cursor-pointer transition-colors",
-            ),
-            cls="grid grid-cols-2 gap-4 max-w-lg mx-auto",
-        ),
-        id="welcome-section",
+        Div(*cards, cls="grid grid-cols-3 gap-3 max-w-2xl mx-auto"),
     )
 
 
@@ -698,7 +784,7 @@ def index(session):
                 cls="pt-6 mb-4",
             ),
             # Welcome section (buyer/seller cards)
-            _welcome_section(),
+            Div(_render_context_cards("default"), id="welcome-section"),
             # Suggestion chips (updated dynamically via OOB)
             Div(id="suggestion-chips", cls="flex flex-wrap gap-2 justify-center mb-4"),
             # Chat area
@@ -754,6 +840,7 @@ def index(session):
                 ),
                 cls="max-w-3xl mx-auto flex gap-2 items-center",
             ),
+            id="main-content",
             cls="min-h-screen bg-gray-50 px-4 pb-6 ml-56",
         ),
         _right_pane(),
@@ -787,6 +874,151 @@ def _determine_context(msg: str, result_components: list) -> tuple:
     if cmd == "docs":
         return "seller_welcome", {}
     return "default", {}
+
+
+# ---------------------------------------------------------------------------
+# Context cards route
+# ---------------------------------------------------------------------------
+@rt("/cards/{context_key}")
+def context_cards(context_key: str = "default"):
+    """Return 3 context-sensitive action cards."""
+    return _render_context_cards(context_key)
+
+
+# ---------------------------------------------------------------------------
+# Static workspace pages (not chat)
+# ---------------------------------------------------------------------------
+@rt("/page/documents")
+def page_documents():
+    """Static document manager page."""
+    files = []
+    for folder in DOC_FOLDERS:
+        if folder.exists():
+            for f in sorted(folder.iterdir()):
+                if f.is_file() and f.suffix.lower() in (".pdf", ".xlsx", ".xls", ".pptx", ".ppt"):
+                    files.append((f.name, f.suffix.lower(), f"{f.stat().st_size / 1024 / 1024:.1f} MB", str(folder)))
+    rows = []
+    for fname, ext, size, folder_name in files:
+        badge_cls = {".pdf": "bg-red-100 text-red-700", ".xlsx": "bg-green-100 text-green-700", ".pptx": "bg-orange-100 text-orange-700"}.get(ext, "bg-gray-100 text-gray-600")
+        rows.append(Tr(
+            Td(Span(ext[1:].upper(), cls=f"text-xs font-bold px-1.5 py-0.5 rounded {badge_cls}")),
+            Td(Span(fname, cls="text-sm text-gray-800")),
+            Td(Span(size, cls="text-xs text-gray-400")),
+            Td(
+                Button("View", hx_get=f"/doc/panel?fn={fname}", hx_target="#canvas-content",
+                       onclick="document.getElementById('right-pane').classList.remove('translate-x-full');",
+                       cls="text-xs text-blue-600 hover:underline mr-3"),
+                Button("Key Terms", hx_post="/chat", hx_vals=json.dumps({"msg": f"keyterms {fname}"}),
+                       hx_target="#chat-area", hx_swap="beforeend",
+                       hx_on__before_request=_THINKING_JS,
+                       hx_on__after_request="var t=document.getElementById('thinking-live'); if(t) t.remove();",
+                       cls="text-xs text-purple-600 hover:underline mr-3"),
+                Button("Score", hx_post="/chat", hx_vals=json.dumps({"msg": f"score doc:{fname}"}),
+                       hx_target="#chat-area", hx_swap="beforeend",
+                       hx_on__before_request=_THINKING_JS,
+                       hx_on__after_request="var t=document.getElementById('thinking-live'); if(t) t.remove();",
+                       cls="text-xs text-green-600 hover:underline"),
+            ),
+        ))
+    return Div(
+        H1("Documents", cls="text-xl font-bold text-gray-800 mb-1"),
+        P(f"{len(files)} files available", cls="text-sm text-gray-500 mb-4"),
+        Table(
+            Thead(Tr(*[Th(h, cls="text-xs text-gray-500 text-left py-2 px-2") for h in ["Type", "Name", "Size", "Actions"]])),
+            Tbody(*rows),
+            cls="w-full",
+        ) if rows else P("No documents yet. Upload via the paperclip button.", cls="text-sm text-gray-400 italic"),
+        cls="p-6 max-w-4xl",
+    )
+
+
+@rt("/page/deals")
+def page_deals():
+    """Deal history with Plotly dashboard."""
+    from utils.database import db_service
+    from components.charts import DealsByTypeChart, DealTimelineChart, DealStatusPie
+    from components.cards import MetricCard
+
+    stats = db_service.get_deal_stats()
+    recent = db_service.get_recent_workflows(15)
+
+    # Metrics row
+    metrics = Div(
+        MetricCard("Total Workflows", stats["total"], color="blue"),
+        MetricCard("Conversations", stats["by_type"].get("conversation", 0), color="green"),
+        MetricCard("Completed", stats["by_status"].get("completed", 0), color="green"),
+        MetricCard("Active", stats["by_status"].get("active", 0), color="yellow"),
+        cls="grid grid-cols-4 gap-3 mb-6",
+    )
+
+    # Charts row
+    charts = Div(
+        Div(DealsByTypeChart("deals-by-type", stats["by_type"]), cls="bg-white rounded-lg p-4 border border-gray-200"),
+        Div(DealTimelineChart("deals-timeline", stats["timeline"]), cls="bg-white rounded-lg p-4 border border-gray-200"),
+        Div(DealStatusPie("deals-status", stats["by_status"]), cls="bg-white rounded-lg p-4 border border-gray-200"),
+        cls="grid grid-cols-3 gap-3 mb-6",
+    )
+
+    # Recent table
+    table_rows = []
+    for w in recent:
+        status_cls = {"completed": "bg-green-100 text-green-700", "active": "bg-blue-100 text-blue-700", "failed": "bg-red-100 text-red-700", "pending": "bg-yellow-100 text-yellow-700"}.get(w.get("status",""), "bg-gray-100 text-gray-600")
+        table_rows.append(Tr(
+            Td(Span(w.get("workflow_type","").replace("_"," ").title(), cls="text-xs font-medium")),
+            Td(Span(w.get("user_query","")[:60], cls="text-xs text-gray-600")),
+            Td(Span(w.get("status",""), cls=f"text-xs px-2 py-0.5 rounded-full {status_cls}")),
+            Td(Span(w.get("created_at","")[:16], cls="text-xs text-gray-400")),
+        ))
+
+    table = Table(
+        Thead(Tr(*[Th(h, cls="text-xs text-gray-500 text-left py-2") for h in ["Type", "Query", "Status", "Created"]])),
+        Tbody(*table_rows),
+        cls="w-full",
+    ) if table_rows else P("No workflows yet.", cls="text-sm text-gray-400 italic")
+
+    return Div(
+        H1("Deal History", cls="text-xl font-bold text-gray-800 mb-1"),
+        P("Workflow activity and analytics", cls="text-sm text-gray-500 mb-4"),
+        metrics,
+        charts,
+        H2("Recent Workflows", cls="text-sm font-bold text-gray-700 mb-2"),
+        Div(table, cls="bg-white rounded-lg p-4 border border-gray-200"),
+        cls="p-6",
+    )
+
+
+@rt("/page/tools")
+def page_tools():
+    """Static M&A tools page."""
+    tools = [
+        ("Deal Room", "Secure virtual data room for due diligence", "Available", "green"),
+        ("CIM Generator", "Confidential Information Memorandum builder", "Available", "green"),
+        ("Comparable Transactions", "Transaction comp analysis", "Available", "green"),
+        ("LOI Drafter", "Letter of Intent template generator", "Available", "green"),
+        ("DD Checklist", "Due diligence checklist management", "Available", "green"),
+        ("Regulatory Screening", "Cross-border regulatory analysis", "Beta", "yellow"),
+        ("Stakeholder Mapping", "Key stakeholder identification", "Beta", "yellow"),
+        ("Integration Playbook", "Post-merger integration planning", "Beta", "yellow"),
+        ("Pipeline CRM", "Deal pipeline management", "Available", "green"),
+    ]
+    cards = []
+    for name, desc, status, color in tools:
+        status_cls = f"bg-{color}-100 text-{color}-700"
+        cards.append(Div(
+            Div(
+                Span(name, cls="text-sm font-medium text-gray-800"),
+                Span(status, cls=f"text-xs px-2 py-0.5 rounded-full {status_cls}"),
+                cls="flex items-center justify-between mb-1",
+            ),
+            P(desc, cls="text-xs text-gray-500"),
+            cls="bg-white rounded-lg p-4 border border-gray-200 hover:shadow-sm transition-shadow",
+        ))
+    return Div(
+        H1("M&A Tools", cls="text-xl font-bold text-gray-800 mb-1"),
+        P("Platform tools for deal execution", cls="text-sm text-gray-500 mb-4"),
+        Div(*cards, cls="grid grid-cols-3 gap-3"),
+        cls="p-6",
+    )
 
 
 # ---------------------------------------------------------------------------

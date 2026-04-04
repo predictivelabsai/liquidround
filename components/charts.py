@@ -48,6 +48,45 @@ def RadarChart(chart_id: str, dimensions: dict, title: str = "Synergy Score Brea
     return PlotlyDiv(chart_id, data, layout)
 
 
+def DealsByTypeChart(chart_id: str, by_type: dict):
+    """Horizontal bar chart of deals by workflow type."""
+    types = list(by_type.keys()) or ["No data"]
+    counts = list(by_type.values()) or [0]
+    colors = {"conversation": "#3b82f6", "buyer_ma": "#2563eb", "seller_ma": "#16a34a", "ipo": "#f59e0b", "unknown": "#9ca3af"}
+    bar_colors = [colors.get(t, "#6b7280") for t in types]
+    labels = [t.replace("_", " ").title() for t in types]
+    data = [{"type": "bar", "x": counts, "y": labels, "orientation": "h",
+             "marker": {"color": bar_colors}, "text": counts, "textposition": "auto"}]
+    layout = {"title": "Workflows by Type", "margin": {"l": 120, "r": 20, "t": 40, "b": 30},
+              "height": 250, "xaxis": {"title": "Count"}, "yaxis": {"automargin": True}}
+    return PlotlyDiv(chart_id, data, layout)
+
+
+def DealTimelineChart(chart_id: str, timeline: list):
+    """Line chart of deal creation over time."""
+    months = [t[0] for t in timeline] or ["No data"]
+    counts = [t[1] for t in timeline] or [0]
+    data = [{"type": "scatter", "x": months, "y": counts, "mode": "lines+markers",
+             "line": {"color": "#3b82f6", "width": 2}, "marker": {"size": 8},
+             "fill": "tozeroy", "fillcolor": "rgba(59,130,246,0.1)"}]
+    layout = {"title": "Activity Timeline", "margin": {"l": 40, "r": 20, "t": 40, "b": 40},
+              "height": 250, "xaxis": {"title": ""}, "yaxis": {"title": "Workflows"}}
+    return PlotlyDiv(chart_id, data, layout)
+
+
+def DealStatusPie(chart_id: str, by_status: dict):
+    """Pie chart of deal statuses."""
+    labels = [s.replace("_", " ").title() for s in by_status.keys()] or ["No data"]
+    values = list(by_status.values()) or [0]
+    colors = {"Pending": "#f59e0b", "Active": "#3b82f6", "Completed": "#16a34a", "Failed": "#ef4444", "Routing": "#8b5cf6", "Executing": "#6366f1"}
+    marker_colors = [colors.get(l, "#9ca3af") for l in labels]
+    data = [{"type": "pie", "labels": labels, "values": values, "hole": 0.4,
+             "marker": {"colors": marker_colors}, "textinfo": "label+value"}]
+    layout = {"title": "Status Breakdown", "margin": {"l": 20, "r": 20, "t": 40, "b": 20},
+              "height": 250, "showlegend": False}
+    return PlotlyDiv(chart_id, data, layout)
+
+
 def SectorHeatmap(chart_id: str, sectors: list, years: list, values: list):
     """Sector performance heatmap."""
     data = [{
