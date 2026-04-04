@@ -202,9 +202,11 @@ class RenderAgent:
                 from components.cards import ScoreCard
                 from components.charts import RadarChart
                 self._store_canvas("scores", result)
+                from components.pipeline import AddToPipelineButton
                 return [
                     ScoreCard(result),
                     RadarChart("score-radar-inline", result.get("dimensions", {})),
+                    AddToPipelineButton(target or buyer, "target", score=result.get("composite_score"), metadata={"buyer": buyer, "target": target}),
                     Script("document.getElementById('right-pane').classList.remove('translate-x-full'); htmx.ajax('GET', '/canvas/scores', '#canvas-content');"),
                 ]
         except Exception as e:
@@ -267,8 +269,14 @@ class RenderAgent:
         if matches:
             parts.append(H3(f"Top {len(matches)} Buyer Matches", cls="font-semibold text-gray-800 mb-2"))
             import main
+            from components.pipeline import AddToPipelineButton
             for i, match in enumerate(matches, 1):
                 parts.append(main._buyer_match_card(match, i))
+                parts.append(AddToPipelineButton(
+                    match.get("buyer", "Unknown"), "buyer",
+                    score=match.get("composite_score"),
+                    metadata={"buyer_type": match.get("buyer_type", ""), "target": profile.get("name", filename)},
+                ))
         else:
             parts.append(self._info("No buyer matches could be generated. Try with a more detailed document."))
 

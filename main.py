@@ -40,6 +40,10 @@ research_router.to_app(app)
 from routes.api import ar as api_router
 api_router.to_app(app)
 
+# Register pipeline routes
+from routes.pipeline import ar as pipeline_router
+pipeline_router.to_app(app)
+
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 DOCS_DIR = Path("docs")
@@ -418,6 +422,27 @@ def _nav_section(session):
                 cls="px-3 py-3 border-b border-gray-200 relative",
             ),
             Div(
+                # New Chat button + Chat History (logged-in only)
+                *([
+                    A("+ New Chat", href="/conversation/new",
+                      cls="block text-center text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg px-3 py-2 mx-3 mb-2 transition-colors"),
+                    Details(
+                        Summary(
+                            Span("CHAT HISTORY", cls="text-xs font-bold text-gray-500 uppercase tracking-wide"),
+                            cls="px-3 py-2 cursor-pointer hover:bg-gray-50 rounded list-none flex items-center nav-section-header",
+                        ),
+                        Div(
+                            Input(name="q", placeholder="Search chats...",
+                                  hx_get="/conversations/search", hx_trigger="keyup changed delay:300ms",
+                                  hx_target="#chat-history",
+                                  cls="w-full text-xs border border-gray-200 rounded px-2 py-1 mb-2 focus:outline-none focus:ring-1 focus:ring-blue-400"),
+                            Div(id="chat-history", hx_get="/conversations", hx_trigger="load", hx_swap="innerHTML"),
+                            cls="px-1",
+                        ),
+                        open=True,
+                        cls="mb-2",
+                    ),
+                ] if user else []),
                 # I'M BUYING section (open by default)
                 Details(
                     Summary(
@@ -429,6 +454,8 @@ def _nav_section(session):
                         _nav_button("Company Profile", "profile:SAP.DE"),
                         _nav_button("Valuation Comp", "valuation:TAL1T.TL,EQNR.OL,NESTE.HE"),
                         _nav_button("Score Match", "score buyer:Siemens target:Harju Elekter"),
+                        *([ A("Target Pipeline", hx_get="/pipeline/target", hx_target="#main-content", hx_push_url="true",
+                              cls="text-left text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-1.5 rounded transition-colors w-full block font-medium") ] if user else []),
                         cls="pl-2 border-l-2 border-blue-200 ml-3 mb-2",
                     ),
                     open=True,
@@ -444,6 +471,8 @@ def _nav_section(session):
                         _nav_button("Find Buyers", "buyers company:Enefit Green"),
                         _nav_button("Score Pitch Deck", "docs"),
                         _nav_button("IPO Assessment", "ipo company:Ignitis"),
+                        *([ A("Buyer Pipeline", hx_get="/pipeline/buyer", hx_target="#main-content", hx_push_url="true",
+                              cls="text-left text-xs text-green-600 hover:text-green-800 hover:bg-green-50 px-3 py-1.5 rounded transition-colors w-full block font-medium") ] if user else []),
                         cls="pl-2 border-l-2 border-green-200 ml-3 mb-2",
                     ),
                     open=True,
@@ -760,8 +789,82 @@ def _determine_context(msg: str, result_components: list) -> tuple:
     return "default", {}
 
 
+# ---------------------------------------------------------------------------
+# Conversation management (logged-in users)
+# ---------------------------------------------------------------------------
+@rt("/conversation/new")
+def conversation_new(session):
+    """Start a new conversation."""
+    session.pop("conversation_id", None)
+    return RedirectResponse("/", status_code=303)
+
+@rt("/conversation/{conv_id}")
+def conversation_load(session, conv_id: str):
+    """Load a previous conversation's messages into the chat area."""
+    user = session.get("user")
+    if not user:
+        return ""
+    from utils.database import db_service
+    messages = db_service.get_messages(conv_id)
+    session["conversation_id"] = conv_id
+    parts = []
+    for m in messages:
+        if m["role"] == "user":
+            parts.append(_user_bubble(m["content"]))
+        else:
+            parts.append(_assistant_bubble(Div(NotStr(m["content"]), cls="text-sm text-gray-800 leading-relaxed")))
+    if not parts:
+        parts.append(_assistant_bubble(P("Empty conversation.", cls="text-sm text-gray-400")))
+    return Div(*parts)
+
+@rt("/conversations")
+def conversations_list(session):
+    """Return conversation list HTML partial for nav sidebar."""
+    user = session.get("user")
+    if not user:
+        return ""
+    from utils.database import db_service
+    convs = db_service.get_user_conversations(user["user_id"], limit=20)
+    return _conversation_list_html(convs, session.get("conversation_id"))
+
+@rt("/conversations/search")
+def conversations_search(session, q: str = ""):
+    """Search conversations by title."""
+    user = session.get("user")
+    if not user:
+        return ""
+    from utils.database import db_service
+    if q.strip():
+        convs = db_service.search_conversations(user["user_id"], q.strip())
+    else:
+        convs = db_service.get_user_conversations(user["user_id"], limit=20)
+    return _conversation_list_html(convs, session.get("conversation_id"))
+
+def _conversation_list_html(convs, active_id=None):
+    """Render conversation list items."""
+    if not convs:
+        return P("No conversations yet.", cls="text-xs text-gray-400 italic px-3 py-2")
+    items = []
+    for c in convs:
+        title = c.get("conversation_title") or c.get("user_query", "Untitled")
+        title = title[:50] + "..." if len(title) > 50 else title
+        is_active = c["id"] == active_id if active_id else False
+        active_cls = "bg-blue-50 text-blue-700" if is_active else "text-gray-600 hover:bg-gray-50"
+        items.append(
+            A(
+                Span(title, cls="text-xs truncate block"),
+                hx_get=f"/conversation/{c['id']}",
+                hx_target="#chat-area",
+                hx_swap="innerHTML",
+                onclick=f"document.getElementById('welcome-section')?.remove();",
+                cls=f"block px-3 py-1.5 rounded cursor-pointer transition-colors {active_cls}",
+            )
+        )
+    return Div(*items)
+
+
 @rt("/chat")
-async def chat(msg: str = ""):
+async def chat(session, msg: str = ""):
     if not msg.strip():
         return ""
 
@@ -772,20 +875,51 @@ async def chat(msg: str = ""):
 
     # Special: clear
     if msg.strip().lower() in ("clear", "cls"):
+        session.pop("conversation_id", None)
         return Div(
             _assistant_bubble(P("Chat cleared.", cls="text-sm text-gray-500")),
             Script("document.getElementById('chat-area').innerHTML = '';"),
         )
 
+    # Persist user message (logged-in users only)
+    user = session.get("user")
+    conv_id = session.get("conversation_id") if user else None
+    if user and not conv_id:
+        try:
+            from utils.database import db_service
+            conv_id = db_service.create_conversation(user["user_id"], msg[:200])
+            session["conversation_id"] = conv_id
+        except Exception:
+            conv_id = None
+    if conv_id:
+        try:
+            from utils.database import db_service
+            db_service.add_message(conv_id, "user", msg)
+            db_service.update_conversation_timestamp(conv_id)
+        except Exception:
+            pass
+
     # Process with render agent
+    response_text = ""
     try:
         result_components = await render_agent.process(msg)
         if result_components:
             parts.append(_assistant_bubble(*result_components))
+            response_text = msg  # Fallback: store the query as context
         else:
             parts.append(_assistant_bubble(P("Done.", cls="text-sm text-gray-500")))
+            response_text = "Done."
     except Exception as e:
         parts.append(_assistant_bubble(P(f"Error: {str(e)[:300]}", cls="text-sm text-red-600")))
+        response_text = f"Error: {str(e)[:300]}"
+
+    # Persist assistant response
+    if conv_id:
+        try:
+            from utils.database import db_service
+            db_service.add_message(conv_id, "assistant", response_text)
+        except Exception:
+            pass
 
     # Contextual suggestion chips (OOB swap)
     context_type, context_data = _determine_context(msg, parts)
@@ -805,6 +939,18 @@ async def chat(msg: str = ""):
                 f"document.getElementById('right-pane').classList.remove('translate-x-full');"
                 f"htmx.ajax('GET', '/doc/panel?fn={fn}', '#canvas-content');"
             ))
+
+    # Refresh conversation list in nav (OOB)
+    if conv_id:
+        parts.append(Div(
+            hx_get="/conversations",
+            hx_trigger="load",
+            hx_target="#chat-history",
+            hx_swap="innerHTML",
+            id="chat-history-refresh",
+            hx_swap_oob="true",
+            cls="hidden",
+        ))
 
     return Div(*parts)
 

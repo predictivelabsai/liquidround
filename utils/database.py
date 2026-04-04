@@ -172,6 +172,106 @@ class DatabaseService:
             return [{"role": r["role"], "content": r["content"], "timestamp": str(r["timestamp"])} for r in cur.fetchall()]
 
     # ------------------------------------------------------------------
+    # Conversations (chat history)
+    # ------------------------------------------------------------------
+    def create_conversation(self, user_id: str, title: str) -> str:
+        """Create a new conversation (workflow_type='conversation')."""
+        conv_id = str(uuid.uuid4())
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO liquidround.workflows (id, user_id, user_query, workflow_type, status, conversation_title)
+                VALUES (%s, %s, %s, 'conversation', 'active', %s)
+            """, (conv_id, user_id, title[:200], title[:200]))
+        return conv_id
+
+    def get_user_conversations(self, user_id: str, limit: int = 20) -> List[Dict[str, Any]]:
+        """Get recent conversations for a user."""
+        with get_conn() as conn:
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            cur.execute("""
+                SELECT id, conversation_title, user_query, created_at, updated_at
+                FROM liquidround.workflows
+                WHERE user_id = %s AND workflow_type = 'conversation'
+                ORDER BY updated_at DESC
+                LIMIT %s
+            """, (user_id, limit))
+            return [{k: str(v) if isinstance(v, (datetime, uuid.UUID)) else v for k, v in dict(r).items()} for r in cur.fetchall()]
+
+    def search_conversations(self, user_id: str, query: str, limit: int = 20) -> List[Dict[str, Any]]:
+        """Search conversations by title."""
+        with get_conn() as conn:
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            cur.execute("""
+                SELECT id, conversation_title, user_query, created_at, updated_at
+                FROM liquidround.workflows
+                WHERE user_id = %s AND workflow_type = 'conversation'
+                  AND conversation_title ILIKE %s
+                ORDER BY updated_at DESC
+                LIMIT %s
+            """, (user_id, f"%{query}%", limit))
+            return [{k: str(v) if isinstance(v, (datetime, uuid.UUID)) else v for k, v in dict(r).items()} for r in cur.fetchall()]
+
+    def update_conversation_timestamp(self, conv_id: str):
+        """Touch the updated_at timestamp on a conversation."""
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute("UPDATE liquidround.workflows SET updated_at = NOW() WHERE id = %s", (conv_id,))
+
+    # ------------------------------------------------------------------
+    # Pipeline items
+    # ------------------------------------------------------------------
+    def add_pipeline_item(self, user_id: str, pipeline_type: str, company_name: str,
+                          stage: str, score: int = None, workflow_id: str = None,
+                          metadata: dict = None) -> str:
+        item_id = str(uuid.uuid4())
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO liquidround.pipeline_items
+                    (id, user_id, pipeline_type, company_name, stage, score, workflow_id, metadata)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (item_id, user_id, pipeline_type, company_name, stage, score,
+                  workflow_id, json.dumps(metadata or {})))
+        return item_id
+
+    def get_pipeline_items(self, user_id: str, pipeline_type: str) -> List[Dict[str, Any]]:
+        with get_conn() as conn:
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            cur.execute("""
+                SELECT id, pipeline_type, company_name, stage, score, workflow_id, metadata, created_at, updated_at
+                FROM liquidround.pipeline_items
+                WHERE user_id = %s AND pipeline_type = %s
+                ORDER BY updated_at DESC
+            """, (user_id, pipeline_type))
+            results = []
+            for r in cur.fetchall():
+                d = dict(r)
+                d["id"] = str(d["id"])
+                if d.get("workflow_id"): d["workflow_id"] = str(d["workflow_id"])
+                if isinstance(d.get("metadata"), str):
+                    try: d["metadata"] = json.loads(d["metadata"])
+                    except: pass
+                d["created_at"] = str(d["created_at"])
+                d["updated_at"] = str(d["updated_at"])
+                results.append(d)
+            return results
+
+    def move_pipeline_item(self, item_id: str, user_id: str, new_stage: str):
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                UPDATE liquidround.pipeline_items
+                SET stage = %s, updated_at = NOW()
+                WHERE id = %s AND user_id = %s
+            """, (new_stage, item_id, user_id))
+
+    def delete_pipeline_item(self, item_id: str, user_id: str):
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute("DELETE FROM liquidround.pipeline_items WHERE id = %s AND user_id = %s", (item_id, user_id))
+
+    # ------------------------------------------------------------------
     # Summary
     # ------------------------------------------------------------------
     def get_workflow_status(self, workflow_id: str) -> Dict[str, Any]:
