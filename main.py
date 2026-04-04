@@ -19,7 +19,7 @@ app, rt = fast_app(
     hdrs=(
         Script(src="https://cdn.tailwindcss.com"),
         Script(src="https://cdn.plot.ly/plotly-2.32.0.min.js"),
-        Link(rel="stylesheet", href="/static/app.css"),
+        Link(rel="stylesheet", href="/app.css"),
         Meta(name="viewport", content="width=device-width, initial-scale=1"),
     ),
     static_path="static",
@@ -362,20 +362,23 @@ def _nav_section(session):
         )
 
     return Div(
-        # Toggle button
-        Button(
-            Span("LiquidRound", cls="text-xs font-bold text-blue-700"),
-            Span("beta", cls="text-xs text-gray-400 ml-1"),
-            id="nav-toggle",
-            onclick="document.getElementById('nav-panel').classList.toggle('hidden')",
-            cls="fixed top-3 left-3 z-30 bg-white border border-gray-200 rounded-lg px-3 py-1.5 flex items-center shadow-sm hover:bg-blue-50 cursor-pointer",
-        ),
         # Collapsible nav panel
         Div(
+            # Header with brand + toggle
             Div(
-                H2("LiquidRound", cls="text-sm font-bold text-blue-800"),
-                P("M&A Research Platform", cls="text-xs text-gray-400"),
-                cls="px-3 py-3 border-b border-gray-200",
+                Div(
+                    H2("LiquidRound", cls="text-sm font-bold text-blue-800"),
+                    Span("beta", cls="text-xs text-gray-400 ml-1"),
+                    cls="flex items-center",
+                ),
+                P("M&A Research Platform", cls="text-xs text-gray-400 mt-0.5"),
+                Button(
+                    NotStr('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>'),
+                    id="nav-toggle",
+                    onclick="document.getElementById('nav-panel').classList.toggle('-translate-x-full')",
+                    cls="absolute top-3 right-3 text-gray-400 hover:text-blue-600 cursor-pointer",
+                ),
+                cls="px-3 py-3 border-b border-gray-200 relative",
             ),
             Div(
                 # I'M BUYING section (open by default)
@@ -449,7 +452,7 @@ def _nav_section(session):
             auth_section,
             Div(P("Predictive Labs Ltd", cls="text-xs text-gray-300 text-center py-1")),
             id="nav-panel",
-            cls="fixed left-0 top-0 h-screen w-56 bg-white border-r border-gray-200 z-20 flex flex-col shadow-lg",
+            cls="fixed left-0 top-0 h-screen w-56 bg-white border-r border-gray-200 z-20 flex flex-col shadow-lg transition-transform duration-300",
         ),
     )
 
