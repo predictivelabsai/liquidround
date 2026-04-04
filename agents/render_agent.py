@@ -52,6 +52,8 @@ class RenderAgent:
             return await self._llm_query(f"Assess IPO readiness: {subject} {self._params_str(params)}", "ipo_assessor")
         if cmd == "score":
             return await self._score(subject, params)
+        if cmd == "keyterms":
+            return await self._key_terms(subject, params)
         if cmd == "research":
             return await self._research(subject or user_input)
         if cmd == "deals":
@@ -275,6 +277,151 @@ class RenderAgent:
             Script("document.getElementById('right-pane').classList.remove('translate-x-full'); htmx.ajax('GET', '/canvas/scores', '#canvas-content');")
         )
         return parts
+
+    async def _key_terms(self, subject: str, params: dict) -> list:
+        """Extract key terms from a document using LLM."""
+        # Determine filename
+        doc_file = params.get("doc", "")
+        if not doc_file and subject:
+            doc_file = subject.strip()
+        if not doc_file:
+            return [self._error("Usage: `keyterms doc:NovaTech-Pitch-Deck.pdf` or `keyterms NovaTech-Pitch-Deck.pdf`")]
+
+        from pathlib import Path
+        file_path = None
+        for folder in [Path("docs-data"), Path("docs"), Path("uploads")]:
+            p = folder / doc_file
+            if p.exists():
+                file_path = str(p)
+                break
+        if not file_path:
+            return [self._error(f"Document not found: `{doc_file}`")]
+
+        # Parse document
+        from utils.document_parser import document_parser
+        parsed = document_parser.parse(file_path)
+        if "error" in parsed:
+            return [self._error(f"Parse error: {parsed['error']}")]
+        doc_text = document_parser.extract_all_text(parsed)
+        if not doc_text.strip():
+            return [self._error("Document appears empty.")]
+
+        # Load the key_terms prompt
+        prompt_path = Path("prompts/key_terms.md")
+        if prompt_path.exists():
+            system_prompt = prompt_path.read_text()
+        else:
+            system_prompt = "Extract key terms from this M&A document. Return JSON with: document_type, company_name, summary, company_profile, financials, transaction_terms, key_metrics, investment_highlights, key_risks."
+
+        # Call LLM
+        try:
+            from utils.llm_factory import create_llm
+            from langchain_core.messages import HumanMessage, SystemMessage
+            llm = create_llm()
+            messages = [
+                SystemMessage(content=system_prompt),
+                HumanMessage(content=f"Document: {doc_file}\n\n{doc_text[:8000]}"),
+            ]
+            response = await llm.ainvoke(messages)
+            result = self._parse_json(response.content)
+        except Exception as e:
+            return [self._error(f"Key terms extraction error: {str(e)[:200]}")]
+
+        # Render results
+        parts = []
+
+        # Header
+        company = result.get("company_name", doc_file)
+        doc_type = result.get("document_type", "document").replace("_", " ").title()
+        parts.append(Div(
+            H3(f"Key Terms: {company}", cls="font-semibold text-gray-800"),
+            Div(
+                Span(doc_type, cls="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded"),
+                Span(doc_file, cls="text-xs text-gray-500 ml-2"),
+                cls="flex items-center gap-1 mt-1",
+            ),
+            P(result.get("summary", ""), cls="text-sm text-gray-600 mt-2"),
+            cls="bg-white rounded-lg p-4 border border-gray-200 mb-3",
+        ))
+
+        # Company profile
+        profile = result.get("company_profile", {})
+        if profile:
+            rows = [(k.replace("_", " ").title(), v) for k, v in profile.items() if v]
+            if rows:
+                parts.append(Div(
+                    H4("Company Profile", cls="font-semibold text-gray-700 text-sm mb-2"),
+                    *[Div(Span(k, cls="text-xs text-gray-500 w-32 inline-block"), Span(str(v), cls="text-sm font-medium"), cls="py-1 border-b border-gray-50") for k, v in rows],
+                    cls="bg-white rounded-lg p-4 border border-gray-200 mb-3",
+                ))
+
+        # Financials
+        fins = result.get("financials", {})
+        if fins:
+            rows = [(k.replace("_", " ").title(), v) for k, v in fins.items() if v]
+            if rows:
+                parts.append(Div(
+                    H4("Financials", cls="font-semibold text-gray-700 text-sm mb-2"),
+                    Div(
+                        *[Div(P(k, cls="text-xs text-gray-500"), P(str(v), cls="text-sm font-bold text-gray-800"), cls="bg-gray-50 rounded p-2") for k, v in rows],
+                        cls="grid grid-cols-3 gap-2",
+                    ),
+                    cls="bg-white rounded-lg p-4 border border-gray-200 mb-3",
+                ))
+
+        # Transaction terms
+        terms = result.get("transaction_terms", {})
+        if terms:
+            rows = [(k.replace("_", " ").title(), v) for k, v in terms.items() if v]
+            if rows:
+                parts.append(Div(
+                    H4("Transaction Terms", cls="font-semibold text-gray-700 text-sm mb-2"),
+                    *[Div(Span(k, cls="text-xs text-gray-500 w-40 inline-block"), Span(str(v), cls="text-sm"), cls="py-1 border-b border-gray-50") for k, v in rows],
+                    cls="bg-white rounded-lg p-4 border border-gray-200 mb-3",
+                ))
+
+        # Investment highlights
+        highlights = result.get("investment_highlights", [])
+        if highlights:
+            parts.append(Div(
+                H4("Investment Highlights", cls="font-semibold text-gray-700 text-sm mb-2"),
+                *[P(f"- {h}", cls="text-sm text-gray-700") for h in highlights],
+                cls="bg-green-50 rounded-lg p-4 border border-green-200 mb-3",
+            ))
+
+        # Key risks
+        risks = result.get("key_risks", [])
+        if risks:
+            parts.append(Div(
+                H4("Key Risks", cls="font-semibold text-gray-700 text-sm mb-2"),
+                *[P(f"- {r}", cls="text-sm text-gray-700") for r in risks],
+                cls="bg-red-50 rounded-lg p-4 border border-red-200 mb-3",
+            ))
+
+        # Key people
+        people = result.get("key_people", [])
+        if people:
+            parts.append(Div(
+                H4("Key People", cls="font-semibold text-gray-700 text-sm mb-2"),
+                *[Div(Span(p.get("name",""), cls="text-sm font-medium"), Span(f" - {p.get('role','')}", cls="text-xs text-gray-500"), cls="py-1") for p in people],
+                cls="bg-white rounded-lg p-4 border border-gray-200 mb-3",
+            ))
+
+        # Auto-open canvas with the document
+        parts.append(Script(f"document.getElementById('right-pane').classList.remove('translate-x-full'); htmx.ajax('GET', '/doc/panel?fn={doc_file}', '#canvas-content');"))
+
+        return parts
+
+    def _parse_json(self, text: str) -> dict:
+        """Parse JSON from LLM response, handling markdown fences."""
+        import re
+        # Strip markdown code fences
+        text = re.sub(r'^```(?:json)?\s*', '', text.strip())
+        text = re.sub(r'\s*```$', '', text.strip())
+        try:
+            return json.loads(text)
+        except Exception:
+            return {}
 
     async def _research(self, query: str) -> list:
         from utils.research_tools import research_tools

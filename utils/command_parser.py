@@ -10,7 +10,7 @@ COMMANDS = {
     # Research
     "news", "profile", "financials", "analysts", "valuation", "movers",
     # M&A specific
-    "targets", "buyers", "ipo", "score", "research",
+    "targets", "buyers", "ipo", "score", "research", "keyterms",
     # Tools
     "upload", "deals", "market", "tools", "settings", "docs",
     # Utility
@@ -117,6 +117,7 @@ def get_help_text() -> str:
 - `ipo company:TechCo industry:SaaS` — IPO readiness assessment
 - `score buyer:Salesforce target:HubSpot` — synergy scoring (7 dimensions)
 - `score doc:filename.pdf` — analyze document and find best buyer matches
+- `keyterms filename.pdf` — extract key terms from pitch deck / term sheet
 - `research:cybersecurity M&A` — deep research via EXA + Tavily
 
 **Documents**

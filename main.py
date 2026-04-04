@@ -91,13 +91,28 @@ def _doc_viewer_content(filename: str):
             cls="flex items-center justify-between mb-2",
         ),
         viewer,
-        Button(
-            "Score: Find Buyers",
-            hx_post="/chat",
-            hx_vals=json.dumps({"msg": f"score doc:{filename}"}),
-            hx_target="#chat-area",
-            hx_swap="beforeend",
-            cls="w-full mt-3 bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700",
+        Div(
+            Button(
+                "Key Terms",
+                hx_post="/chat",
+                hx_vals=json.dumps({"msg": f"keyterms {filename}"}),
+                hx_target="#chat-area",
+                hx_swap="beforeend",
+                hx_on__before_request=_THINKING_JS,
+                hx_on__after_request="var t=document.getElementById('thinking-live'); if(t) t.remove();",
+                cls="flex-1 mt-3 bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700",
+            ),
+            Button(
+                "Score: Find Buyers",
+                hx_post="/chat",
+                hx_vals=json.dumps({"msg": f"score doc:{filename}"}),
+                hx_target="#chat-area",
+                hx_swap="beforeend",
+                hx_on__before_request=_THINKING_JS,
+                hx_on__after_request="var t=document.getElementById('thinking-live'); if(t) t.remove();",
+                cls="flex-1 mt-3 bg-green-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-green-700",
+            ),
+            cls="flex gap-2",
         ),
         cls="p-3 h-full flex flex-col",
     )
@@ -127,7 +142,8 @@ def _doc_list_for_pane():
                 ),
                 Div(
                     Button("View", hx_get=f"/doc/panel?fn={fname}", hx_target="#canvas-content", cls="text-xs text-blue-600 hover:underline"),
-                    Button("Score", hx_post="/chat", hx_vals=json.dumps({"msg": f"score doc:{fname}"}), hx_target="#chat-area", hx_swap="beforeend", cls="text-xs text-green-600 hover:underline ml-2"),
+                    Button("Key Terms", hx_post="/chat", hx_vals=json.dumps({"msg": f"keyterms {fname}"}), hx_target="#chat-area", hx_swap="beforeend", hx_on__before_request=_THINKING_JS, hx_on__after_request="var t=document.getElementById('thinking-live'); if(t) t.remove();", cls="text-xs text-purple-600 hover:underline ml-2"),
+                    Button("Score", hx_post="/chat", hx_vals=json.dumps({"msg": f"score doc:{fname}"}), hx_target="#chat-area", hx_swap="beforeend", hx_on__before_request=_THINKING_JS, hx_on__after_request="var t=document.getElementById('thinking-live'); if(t) t.remove();", cls="text-xs text-green-600 hover:underline ml-2"),
                     cls="flex mt-1",
                 ),
                 cls="py-2 border-b border-gray-100",
@@ -663,20 +679,18 @@ def index(session):
                     cls="space-y-2 mb-4 max-h-[calc(100vh-280px)] overflow-y-auto px-2",
                 ),
                 # Input row: paperclip + text + send
+                Div(
+                    # Paperclip triggers the hidden upload form's file input
+                    Label(
+                        NotStr('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>'),
+                        htmlFor="file-upload",
+                        cls="flex items-center justify-center w-10 h-10 border border-gray-300 rounded-xl text-gray-400 hover:text-blue-600 hover:border-blue-400 cursor-pointer transition-colors",
+                        title="Upload document (PDF, XLS, PPT)",
+                    ),
+                    cls="flex items-center",
+                ),
                 Form(
                     Div(
-                        Label(
-                            NotStr('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>'),
-                            htmlFor="file-upload",
-                            cls="flex items-center justify-center w-10 h-10 border border-gray-300 rounded-xl text-gray-400 hover:text-blue-600 hover:border-blue-400 cursor-pointer transition-colors",
-                            title="Upload document (PDF, XLS, PPT)",
-                        ),
-                        Input(
-                            type="file", name="file", id="file-upload",
-                            accept=".pdf,.xlsx,.xls,.pptx,.ppt",
-                            cls="hidden",
-                            onchange="document.getElementById('upload-form').requestSubmit()",
-                        ),
                         Input(
                             name="msg", placeholder="Ask a question or describe what you're looking for...",
                             autofocus=True, autocomplete="off",
@@ -684,26 +698,32 @@ def index(session):
                         ),
                         Button("Send", type="submit",
                                cls="bg-blue-600 text-white px-5 py-3 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"),
-                        cls="flex gap-2 items-center",
+                        cls="flex gap-2 items-center flex-1",
                     ),
                     hx_post="/chat",
                     hx_target="#chat-area",
                     hx_swap="beforeend",
                     hx_on__before_request=_THINKING_JS,
                     hx_on__after_request="this.reset(); var t=document.getElementById('thinking-live'); if(t) t.remove(); var ca=document.getElementById('chat-area'); if(ca) ca.scrollTo({top:ca.scrollHeight, behavior:'smooth'}); var ws=document.getElementById('welcome-section'); if(ws) ws.remove();",
+                    cls="flex-1",
                 ),
-                # Hidden upload form
+                # Upload form — file input triggered by paperclip label
                 Form(
-                    Input(type="file", name="file", id="file-upload-hidden", cls="hidden",
-                          accept=".pdf,.xlsx,.xls,.pptx,.ppt"),
+                    Input(
+                        type="file", name="file", id="file-upload",
+                        accept=".pdf,.xlsx,.xls,.pptx,.ppt",
+                        cls="hidden",
+                        onchange=_THINKING_JS + " document.getElementById('upload-form').requestSubmit();",
+                    ),
                     id="upload-form",
                     hx_post="/chat-upload",
                     hx_target="#chat-area",
                     hx_swap="beforeend",
                     hx_encoding="multipart/form-data",
+                    hx_on__after_request="var t=document.getElementById('thinking-live'); if(t) t.remove();",
                     cls="hidden",
                 ),
-                cls="max-w-3xl mx-auto",
+                cls="max-w-3xl mx-auto flex gap-2 items-center",
             ),
             cls="min-h-screen bg-gray-50 px-4 pb-6 ml-56",
         ),
