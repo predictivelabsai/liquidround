@@ -32,3 +32,48 @@
     0%, 80%, 100% { transform: scale(0); }
     40% { transform: scale(1); }
 }
+
+/* Multi-step thinking indicator */
+.thinking-step {
+    opacity: 0;
+    animation: stepFadeIn 0.5s ease-out forwards;
+}
+.thinking-step:nth-child(1) { animation-delay: 0s; }
+.thinking-step:nth-child(2) { animation-delay: 1.5s; }
+.thinking-step:nth-child(3) { animation-delay: 3s; }
+
+@keyframes stepFadeIn {
+    from { opacity: 0; transform: translateX(-4px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Canvas tab styles */
+.canvas-tab {
+    transition: all 0.15s ease;
+    border-bottom: 2px solid transparent;
+}
+.canvas-tab:hover {
+    background-color: #f8fafc;
+}
+
+/* Nav section headers — hide default details marker */
+.nav-section-header::-webkit-details-marker { display: none; }
+details > summary { list-style: none; }
+details > summary::marker { display: none; }
+
+/* Welcome section fade-out */
+#welcome-section {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Details section chevron indicator */
+details > summary::before {
+    content: "\25B8";
+    display: inline-block;
+    margin-right: 6px;
+    font-size: 10px;
+    transition: transform 0.15s ease;
+}
+details[open] > summary::before {
+    transform: rotate(90deg);
+}

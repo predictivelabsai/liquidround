@@ -100,6 +100,42 @@ def ScoreCard(score_data: dict):
     )
 
 
+def BuyerMatchCard(match: dict, index: int = 1):
+    """Buyer match card with 7-dimension score bars — reusable in chat and canvas."""
+    rec = match.get("recommendation", "N/A")
+    rec_cls = {"STRONG BUY": "bg-green-100 text-green-800", "PROCEED": "bg-blue-100 text-blue-800",
+               "CAUTIOUS": "bg-yellow-100 text-yellow-800", "PASS": "bg-red-100 text-red-800"}.get(rec, "bg-gray-100")
+    dims = match.get("dimensions", {})
+    dim_bars = []
+    for dk in ["revenue_synergies","cost_synergies","strategic_fit","cultural_fit","financial_health","integration_risk","market_timing"]:
+        dv = dims.get(dk, {})
+        s = dv.get("score", 5) if isinstance(dv, dict) else 5
+        bar_w = s * 10
+        bar_c = "bg-green-500" if s >= 7 else "bg-yellow-500" if s >= 5 else "bg-red-500"
+        dim_bars.append(Div(
+            Div(Span(dk.replace("_"," ").title(), cls="text-xs text-gray-500"), Span(f"{s}/10", cls="text-xs font-medium"), cls="flex justify-between"),
+            Div(Div(cls=f"{bar_c} h-1.5 rounded-full", style=f"width:{bar_w}%"), cls="w-full bg-gray-200 rounded-full h-1.5"),
+            cls="mb-1",
+        ))
+    return Div(
+        Div(
+            Div(
+                Span(f"#{index}", cls="text-xs font-bold text-gray-400 mr-2"),
+                Span(match.get("buyer","Unknown"), cls="font-semibold text-gray-800"),
+                Span(f" ({match.get('buyer_type','')})", cls="text-xs text-gray-500"),
+            ),
+            Div(
+                Span(str(match.get("composite_score",0)), cls="text-lg font-bold text-blue-700"),
+                Span(rec, cls=f"text-xs px-2 py-0.5 rounded-full font-medium {rec_cls} ml-2"),
+            ),
+            cls="flex items-center justify-between mb-2",
+        ),
+        P(match.get("rationale",""), cls="text-sm text-gray-600 mb-2"),
+        *dim_bars,
+        cls="bg-white rounded-lg p-4 border border-gray-200 mb-2",
+    )
+
+
 def DealCard(deal: dict):
     status = deal.get("status", "unknown")
     status_colors = {

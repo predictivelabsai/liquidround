@@ -44,6 +44,11 @@ UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 DOCS_DIR = Path("docs")
 DOCS_DIR.mkdir(exist_ok=True)
+DOCS_DATA_DIR = Path("docs-data")
+DOCS_DATA_DIR.mkdir(exist_ok=True)
+
+# All folders to search for documents
+DOC_FOLDERS = [DOCS_DATA_DIR, DOCS_DIR, UPLOAD_DIR]
 
 
 # ---------------------------------------------------------------------------
@@ -55,7 +60,7 @@ async def doc_view(fn: str = ""):
     if not fn:
         return Response("Missing filename", status_code=400)
     filename = Path(fn).name
-    for folder in [DOCS_DIR, UPLOAD_DIR]:
+    for folder in DOC_FOLDERS:
         path = folder / filename
         if path.exists():
             from starlette.responses import FileResponse
@@ -101,7 +106,7 @@ def _doc_viewer_content(filename: str):
 def _doc_list_for_pane():
     """List all available documents in docs/ and uploads/."""
     files = []
-    for folder in [DOCS_DIR, UPLOAD_DIR]:
+    for folder in DOC_FOLDERS:
         if folder.exists():
             for f in sorted(folder.iterdir()):
                 if f.is_file() and f.suffix.lower() in (".pdf", ".xlsx", ".xls", ".pptx", ".ppt"):
@@ -121,7 +126,7 @@ def _doc_list_for_pane():
                     cls="flex items-center",
                 ),
                 Div(
-                    Button("View", hx_get=f"/doc/panel?fn={fname}", hx_target="#doc-pane-content", cls="text-xs text-blue-600 hover:underline"),
+                    Button("View", hx_get=f"/doc/panel?fn={fname}", hx_target="#canvas-content", cls="text-xs text-blue-600 hover:underline"),
                     Button("Score", hx_post="/chat", hx_vals=json.dumps({"msg": f"score doc:{fname}"}), hx_target="#chat-area", hx_swap="beforeend", cls="text-xs text-green-600 hover:underline ml-2"),
                     cls="flex mt-1",
                 ),
@@ -132,6 +137,138 @@ def _doc_list_for_pane():
         P("Documents", cls="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2"),
         *items,
         cls="p-3",
+    )
+
+
+# ---------------------------------------------------------------------------
+# Canvas routes — dynamic right pane content
+# ---------------------------------------------------------------------------
+# In-memory store for last research/score/compare results per session
+_canvas_state = {}
+
+@rt("/canvas/docs")
+def canvas_docs():
+    """Canvas tab: document list."""
+    return _doc_list_for_pane()
+
+@rt("/canvas/research")
+def canvas_research():
+    """Canvas tab: last research results."""
+    data = _canvas_state.get("research")
+    if not data:
+        return Div(
+            P("No research results yet.", cls="text-sm text-gray-400 italic"),
+            P("Run a research query or ask a question to see results here.", cls="text-xs text-gray-300 mt-1"),
+            cls="p-4",
+        )
+    parts = []
+    for r in data.get("exa", {}).get("results", [])[:8]:
+        parts.append(Div(
+            Span("EXA", cls="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded mr-2"),
+            A(r.get("title",""), href=r.get("url",""), target="_blank", cls="text-sm text-blue-700 hover:underline"),
+            P(r.get("snippet","")[:150], cls="text-xs text-gray-500 mt-0.5"),
+            cls="py-2 border-b border-gray-50",
+        ))
+    for r in data.get("tavily", {}).get("results", [])[:8]:
+        parts.append(Div(
+            Span("TAV", cls="text-xs bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded mr-2"),
+            A(r.get("title",""), href=r.get("url",""), target="_blank", cls="text-sm text-blue-700 hover:underline"),
+            P(r.get("content","")[:150], cls="text-xs text-gray-500 mt-0.5"),
+            cls="py-2 border-b border-gray-50",
+        ))
+    if not parts:
+        parts.append(P("No results found.", cls="text-sm text-gray-400"))
+    return Div(
+        P("Research Results", cls="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2"),
+        *parts,
+        cls="p-3",
+    )
+
+@rt("/canvas/scores")
+def canvas_scores():
+    """Canvas tab: last scoring results."""
+    data = _canvas_state.get("scores")
+    if not data:
+        return Div(
+            P("No scoring results yet.", cls="text-sm text-gray-400 italic"),
+            P("Score a buyer-target match or a pitch deck to see results here.", cls="text-xs text-gray-300 mt-1"),
+            cls="p-4",
+        )
+    # Render stored score data
+    parts = []
+    profile = data.get("company_profile", {})
+    if profile:
+        parts.append(Div(
+            H3(f"Company: {profile.get('name', 'Unknown')}", cls="font-semibold text-gray-800 text-sm"),
+            P(profile.get("business_model", ""), cls="text-xs text-gray-600 mt-1"),
+            cls="bg-gray-50 rounded-lg p-3 mb-3",
+        ))
+    matches = data.get("buyer_matches", [])
+    if not matches and "dimensions" in data:
+        # Single score result
+        from components.cards import ScoreCard
+        from components.charts import RadarChart
+        parts.append(ScoreCard(data))
+        parts.append(RadarChart("canvas-radar", data.get("dimensions", {})))
+    else:
+        for i, match in enumerate(matches, 1):
+            parts.append(_buyer_match_card(match, i))
+    return Div(
+        P("Scoring Results", cls="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2"),
+        *parts,
+        cls="p-3",
+    )
+
+@rt("/canvas/compare")
+def canvas_compare():
+    """Canvas tab: last valuation comparison."""
+    data = _canvas_state.get("compare")
+    if not data:
+        return Div(
+            P("No comparison data yet.", cls="text-sm text-gray-400 italic"),
+            P("Run a valuation comparison to see results here.", cls="text-xs text-gray-300 mt-1"),
+            cls="p-4",
+        )
+    return Div(
+        P("Valuation Comparison", cls="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2"),
+        data,  # Pre-rendered FT component
+        cls="p-3",
+    )
+
+
+def _buyer_match_card(match, index):
+    """Reusable buyer match card for chat and canvas."""
+    rec = match.get("recommendation", "N/A")
+    rec_cls = {"STRONG BUY": "bg-green-100 text-green-800", "PROCEED": "bg-blue-100 text-blue-800",
+               "CAUTIOUS": "bg-yellow-100 text-yellow-800", "PASS": "bg-red-100 text-red-800"}.get(rec, "bg-gray-100")
+    dims = match.get("dimensions", {})
+    dim_bars = []
+    for dk in ["revenue_synergies","cost_synergies","strategic_fit","cultural_fit","financial_health","integration_risk","market_timing"]:
+        dv = dims.get(dk, {})
+        s = dv.get("score", 5) if isinstance(dv, dict) else 5
+        bar_w = s * 10
+        bar_c = "bg-green-500" if s >= 7 else "bg-yellow-500" if s >= 5 else "bg-red-500"
+        dim_bars.append(Div(
+            Div(Span(dk.replace("_"," ").title(), cls="text-xs text-gray-500"), Span(f"{s}/10", cls="text-xs font-medium"), cls="flex justify-between"),
+            Div(Div(cls=f"{bar_c} h-1.5 rounded-full", style=f"width:{bar_w}%"), cls="w-full bg-gray-200 rounded-full h-1.5"),
+            cls="mb-1",
+        ))
+    return Div(
+        Div(
+            Div(
+                Span(f"#{index}", cls="text-xs font-bold text-gray-400 mr-2"),
+                Span(match.get("buyer","Unknown"), cls="font-semibold text-gray-800"),
+                Span(f" ({match.get('buyer_type','')})", cls="text-xs text-gray-500"),
+            ),
+            Div(
+                Span(str(match.get("composite_score",0)), cls="text-lg font-bold text-blue-700"),
+                Span(rec, cls=f"text-xs px-2 py-0.5 rounded-full font-medium {rec_cls} ml-2"),
+            ),
+            cls="flex items-center justify-between mb-2",
+        ),
+        P(match.get("rationale",""), cls="text-sm text-gray-600 mb-2"),
+        *dim_bars,
+        cls="bg-white rounded-lg p-4 border border-gray-200 mb-2",
     )
 
 
@@ -190,39 +327,22 @@ def _thinking_indicator():
     )
 
 
-def _nav_section(session):
-    """Left navigation — visible by default, toggleable."""
-    user = session.get("user")
-    nav_items = [
-        ("targets industry:renewable energy", "Find Targets"),
-        ("buyers company:Enefit Green", "Find Buyers"),
-        ("ipo company:Ignitis", "IPO Assessment"),
-        ("profile:SAP.DE", "Company Profile"),
-        ("news:NOVO-B.CO", "Company News"),
-        ("financials:SIE.DE", "Financials"),
-        ("valuation:TAL1T.TL,EQNR.OL,NESTE.HE", "Valuation Comp"),
-        ("score buyer:Siemens target:Harju Elekter", "Score Match"),
-        ("research:Baltic M&A renewable energy", "Deep Research"),
-        ("docs", "Documents"),
-        ("deals", "Deal History"),
-        ("market", "Market Intel"),
-        ("tools", "M&A Tools"),
-        ("settings", "Settings"),
-        ("help", "Help"),
-    ]
-    shortcut_buttons = [
-        Button(
-            label,
-            hx_post="/chat",
-            hx_vals=json.dumps({"msg": cmd}),
-            hx_target="#chat-area",
-            hx_swap="beforeend",
-            cls="text-left text-xs text-gray-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-1.5 rounded transition-colors w-full",
-        )
-        for cmd, label in nav_items
-    ]
+def _nav_button(label, cmd, accent="gray"):
+    """Single nav button that posts to chat."""
+    return Button(
+        label,
+        hx_post="/chat",
+        hx_vals=json.dumps({"msg": cmd}),
+        hx_target="#chat-area",
+        hx_swap="beforeend",
+        cls="text-left text-xs text-gray-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-1.5 rounded transition-colors w-full",
+    )
 
-    # Auth section (bottom-left, optional)
+def _nav_section(session):
+    """Left navigation — grouped by buyer/seller workflow."""
+    user = session.get("user")
+
+    # Auth section
     if user:
         auth_section = Div(
             Div(
@@ -254,12 +374,76 @@ def _nav_section(session):
         Div(
             Div(
                 H2("LiquidRound", cls="text-sm font-bold text-blue-800"),
-                P("M&A Research", cls="text-xs text-gray-400"),
+                P("M&A Research Platform", cls="text-xs text-gray-400"),
                 cls="px-3 py-3 border-b border-gray-200",
             ),
             Div(
-                P("Shortcuts", cls="text-xs font-semibold text-gray-400 uppercase tracking-wide px-3 mb-1"),
-                *shortcut_buttons,
+                # I'M BUYING section (open by default)
+                Details(
+                    Summary(
+                        Span("I'M BUYING", cls="text-xs font-bold text-blue-700 uppercase tracking-wide"),
+                        cls="px-3 py-2 cursor-pointer hover:bg-blue-50 rounded list-none flex items-center nav-section-header",
+                    ),
+                    Div(
+                        _nav_button("Find Targets", "targets industry:renewable energy"),
+                        _nav_button("Company Profile", "profile:SAP.DE"),
+                        _nav_button("Valuation Comp", "valuation:TAL1T.TL,EQNR.OL,NESTE.HE"),
+                        _nav_button("Score Match", "score buyer:Siemens target:Harju Elekter"),
+                        cls="pl-2 border-l-2 border-blue-200 ml-3 mb-2",
+                    ),
+                    open=True,
+                    cls="mb-1",
+                ),
+                # I'M SELLING section (open by default)
+                Details(
+                    Summary(
+                        Span("I'M SELLING", cls="text-xs font-bold text-green-700 uppercase tracking-wide"),
+                        cls="px-3 py-2 cursor-pointer hover:bg-green-50 rounded list-none flex items-center nav-section-header",
+                    ),
+                    Div(
+                        _nav_button("Find Buyers", "buyers company:Enefit Green"),
+                        _nav_button("Score Pitch Deck", "docs"),
+                        _nav_button("IPO Assessment", "ipo company:Ignitis"),
+                        cls="pl-2 border-l-2 border-green-200 ml-3 mb-2",
+                    ),
+                    open=True,
+                    cls="mb-1",
+                ),
+                # RESEARCH section (collapsed)
+                Details(
+                    Summary(
+                        Span("RESEARCH", cls="text-xs font-bold text-gray-500 uppercase tracking-wide"),
+                        cls="px-3 py-2 cursor-pointer hover:bg-gray-50 rounded list-none flex items-center nav-section-header",
+                    ),
+                    Div(
+                        _nav_button("Deep Research", "research:Baltic M&A renewable energy"),
+                        _nav_button("Company News", "news:NOVO-B.CO"),
+                        _nav_button("Financials", "financials:SIE.DE"),
+                        _nav_button("Market Intel", "market"),
+                        cls="pl-2 border-l-2 border-gray-200 ml-3 mb-2",
+                    ),
+                    cls="mb-1",
+                ),
+                # WORKSPACE section (collapsed)
+                Details(
+                    Summary(
+                        Span("WORKSPACE", cls="text-xs font-bold text-gray-500 uppercase tracking-wide"),
+                        cls="px-3 py-2 cursor-pointer hover:bg-gray-50 rounded list-none flex items-center nav-section-header",
+                    ),
+                    Div(
+                        _nav_button("Documents", "docs"),
+                        _nav_button("Deal History", "deals"),
+                        _nav_button("M&A Tools", "tools"),
+                        cls="pl-2 border-l-2 border-gray-200 ml-3 mb-2",
+                    ),
+                    cls="mb-1",
+                ),
+                # Bottom utility links
+                Div(
+                    _nav_button("Settings", "settings"),
+                    _nav_button("Help", "help"),
+                    cls="mt-2 pt-2 border-t border-gray-100",
+                ),
                 cls="flex-1 overflow-y-auto py-2",
             ),
             auth_section,
@@ -270,16 +454,90 @@ def _nav_section(session):
     )
 
 
-def _sample_pills():
-    """Quick-start pills above chat input."""
-    pills = [
-        ("profile:SAP.DE", "SAP Profile"),
-        ("news:NOVO-B.CO", "Novo Nordisk News"),
-        ("valuation:TAL1T.TL,TSM1T.TL,IGN1L.VS", "Baltic Valuation"),
-        ("targets industry:renewable energy", "Energy Targets"),
-        ("score buyer:Siemens target:Harju Elekter", "Score Match"),
-        ("help", "Commands"),
-    ]
+def _welcome_section():
+    """Buyer/Seller welcome cards — replaces on first interaction."""
+    return Div(
+        Div(
+            H2("Welcome to LiquidRound", cls="text-xl font-bold text-gray-800"),
+            P("What brings you here today?", cls="text-sm text-gray-500 mt-1"),
+            cls="text-center mb-6",
+        ),
+        Div(
+            # Buyer card
+            Div(
+                Div("BUYER", cls="text-xs font-bold text-blue-600 mb-2"),
+                H3("I want to acquire a company", cls="font-medium text-gray-800"),
+                P("Find targets, compare valuations, score matches", cls="text-xs text-gray-500 mt-1"),
+                hx_post="/chat",
+                hx_vals=json.dumps({"msg": "I am looking to acquire a company. Help me find targets."}),
+                hx_target="#chat-area",
+                hx_swap="beforeend",
+                cls="bg-white border-2 border-blue-100 hover:border-blue-400 rounded-xl p-4 cursor-pointer transition-colors",
+            ),
+            # Seller card
+            Div(
+                Div("SELLER", cls="text-xs font-bold text-green-600 mb-2"),
+                H3("I want to sell or raise capital", cls="font-medium text-gray-800"),
+                P("Find buyers, score pitch deck, assess IPO readiness", cls="text-xs text-gray-500 mt-1"),
+                hx_post="/chat",
+                hx_vals=json.dumps({"msg": "I am looking to sell my company or raise capital. Help me find buyers."}),
+                hx_target="#chat-area",
+                hx_swap="beforeend",
+                cls="bg-white border-2 border-green-100 hover:border-green-400 rounded-xl p-4 cursor-pointer transition-colors",
+            ),
+            cls="grid grid-cols-2 gap-4 max-w-lg mx-auto",
+        ),
+        id="welcome-section",
+    )
+
+
+def _contextual_chips(context_type: str, data: dict = {}):
+    """Context-aware suggestion chips, returned via OOB swap."""
+    chip_sets = {
+        "buyer_welcome": [
+            ("Find energy targets in Nordics", "targets industry:renewable energy geography:Nordics"),
+            ("Profile SAP.DE", "profile:SAP.DE"),
+            ("Baltic valuation comp", "valuation:TAL1T.TL,EQNR.OL,NESTE.HE"),
+            ("Score: Siemens + Harju Elekter", "score buyer:Siemens target:Harju Elekter"),
+        ],
+        "seller_welcome": [
+            ("Find buyers for SaaS company", "buyers company:SaaS revenue:15M"),
+            ("View NovaTech pitch deck", "docs"),
+            ("IPO readiness: Ignitis", "ipo company:Ignitis"),
+            ("Score NovaTech pitch deck", "score doc:NovaTech-Pitch-Deck.pdf"),
+        ],
+        "post_profile": [
+            (f"Financials for {data.get('ticker','')}", f"financials:{data.get('ticker','')}"),
+            (f"News about {data.get('ticker','')}", f"news:{data.get('ticker','')}"),
+            (f"Find targets in {data.get('industry','this sector')}", f"targets industry:{data.get('industry','')}"),
+            (f"Score as buyer", f"score buyer:{data.get('name','')} target:"),
+        ],
+        "post_score": [
+            ("Deep research", f"research:{data.get('target','')} M&A"),
+            ("View documents", "docs"),
+            ("Deal history", "deals"),
+            ("Help", "help"),
+        ],
+        "post_targets": [
+            ("Score top match", f"score buyer: target:{data.get('first_target','')}"),
+            ("Deep research", f"research:{data.get('industry','')} M&A targets"),
+            ("Market intel", "market"),
+            ("Valuation comp", f"valuation:{data.get('tickers','')}"),
+        ],
+        "post_research": [
+            ("Find targets", "targets industry:"),
+            ("Find buyers", "buyers company:"),
+            ("Score match", "score buyer: target:"),
+            ("Market intel", "market"),
+        ],
+        "default": [
+            ("Find targets", "targets industry:renewable energy"),
+            ("Find buyers", "buyers company:Enefit Green"),
+            ("Company profile", "profile:SAP.DE"),
+            ("Help", "help"),
+        ],
+    }
+    pills = chip_sets.get(context_type, chip_sets["default"])
     return Div(
         *[Button(
             label,
@@ -288,17 +546,32 @@ def _sample_pills():
             hx_target="#chat-area",
             hx_swap="beforeend",
             cls="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:border-blue-400 hover:text-blue-700 transition-colors",
-        ) for cmd, label in pills],
+        ) for label, cmd in pills],
+        id="suggestion-chips",
+        hx_swap_oob="true",
         cls="flex flex-wrap gap-2 justify-center mb-4",
     )
 
 
+def _canvas_tab(label, tab_id, endpoint, active=False):
+    """Single canvas tab button."""
+    active_cls = "border-b-2 border-blue-600 text-blue-700 font-medium" if active else "text-gray-500 hover:text-gray-700"
+    return Button(
+        label,
+        hx_get=endpoint,
+        hx_target="#canvas-content",
+        onclick=f"document.querySelectorAll('.canvas-tab').forEach(t=>t.className=t.className.replace(/border-b-2 border-blue-600 text-blue-700 font-medium/g,'text-gray-500 hover:text-gray-700')); this.className=this.className.replace('text-gray-500 hover:text-gray-700','border-b-2 border-blue-600 text-blue-700 font-medium');",
+        cls=f"canvas-tab text-xs px-3 py-2 {active_cls}",
+        id=f"tab-{tab_id}",
+    )
+
 def _right_pane():
-    """Right pane — document viewer and file browser."""
+    """Right pane — dynamic canvas with tabs: Documents, Research, Scores, Compare."""
     return Div(
+        # Header
         Div(
             Div(
-                H2("Documents", cls="text-sm font-semibold text-gray-800"),
+                H2("Canvas", cls="text-sm font-semibold text-gray-800", id="canvas-title"),
                 Button(
                     "X", cls="text-gray-400 hover:text-gray-600 text-xs font-bold",
                     onclick="document.getElementById('right-pane').classList.add('translate-x-full')",
@@ -307,13 +580,23 @@ def _right_pane():
             ),
             cls="px-3 py-2 border-b border-gray-200",
         ),
+        # Tab bar
+        Div(
+            _canvas_tab("Documents", "docs", "/canvas/docs", active=True),
+            _canvas_tab("Research", "research", "/canvas/research"),
+            _canvas_tab("Scores", "scores", "/canvas/scores"),
+            _canvas_tab("Compare", "compare", "/canvas/compare"),
+            cls="flex border-b border-gray-200",
+            id="canvas-tabs",
+        ),
+        # Content area
         Div(
             _doc_list_for_pane(),
-            id="doc-pane-content",
+            id="canvas-content",
             cls="flex-1 overflow-y-auto",
         ),
         id="right-pane",
-        cls="fixed right-0 top-0 h-screen w-96 bg-white border-l border-gray-200 flex flex-col transition-transform duration-300 translate-x-full z-20 shadow-lg",
+        cls="fixed right-0 top-0 h-screen w-[440px] bg-white border-l border-gray-200 flex flex-col transition-transform duration-300 translate-x-full z-20 shadow-lg",
     )
 
 
@@ -331,36 +614,47 @@ def index(session):
                     P("AI-Powered M&A Research Platform", cls="text-sm text-gray-500"),
                     cls="text-center",
                 ),
-                # Doc pane toggle (top-right)
+                # Canvas toggle (top-right)
                 Button(
-                    "Docs", id="doc-toggle",
+                    "Canvas", id="canvas-toggle",
                     onclick="document.getElementById('right-pane').classList.toggle('translate-x-full')",
                     cls="fixed top-3 right-3 z-30 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm hover:bg-blue-50 hover:text-blue-700 cursor-pointer",
                 ),
                 cls="pt-6 mb-4",
             ),
-            # Sample pills
-            _sample_pills(),
+            # Welcome section (buyer/seller cards)
+            _welcome_section(),
+            # Suggestion chips (updated dynamically via OOB)
+            Div(id="suggestion-chips", cls="flex flex-wrap gap-2 justify-center mb-4"),
             # Chat area
             Div(
                 Div(
-                    _assistant_bubble(
-                        P("Welcome! I'm your M&A research assistant. Try a command like ", cls="text-sm text-gray-600"),
-                        Div(
-                            Code("profile:SAP.DE", cls="bg-gray-100 px-1.5 py-0.5 rounded text-xs"),
-                            Code("news:NOVO-B.CO", cls="bg-gray-100 px-1.5 py-0.5 rounded text-xs ml-1"),
-                            Code("valuation:TAL1T.TL,IGN1L.VS", cls="bg-gray-100 px-1.5 py-0.5 rounded text-xs ml-1"),
-                            cls="mt-1",
-                        ),
-                        P("or just ask a question in plain English.", cls="text-sm text-gray-600 mt-1"),
-                    ),
                     id="chat-area",
-                    cls="space-y-2 mb-4 max-h-[calc(100vh-260px)] overflow-y-auto px-2",
+                    cls="space-y-2 mb-4 max-h-[calc(100vh-280px)] overflow-y-auto px-2",
+                ),
+                # Thinking indicator (shown during htmx request)
+                Div(
+                    Div(
+                        Div(
+                            Span("Understanding query...", cls="text-xs text-blue-600 thinking-step"),
+                            Span("Searching...", cls="text-xs text-blue-600 thinking-step"),
+                            Span("Analyzing...", cls="text-xs text-blue-600 thinking-step"),
+                            cls="flex flex-col gap-1",
+                        ),
+                        Div(
+                            Div(cls="w-2 h-2 bg-blue-400 rounded-full animate-bounce"),
+                            Div(cls="w-2 h-2 bg-blue-400 rounded-full animate-bounce [animation-delay:0.1s]"),
+                            Div(cls="w-2 h-2 bg-blue-400 rounded-full animate-bounce [animation-delay:0.2s]"),
+                            cls="flex gap-1 mt-1",
+                        ),
+                        cls="bg-white rounded-2xl rounded-bl-sm px-4 py-3 border border-gray-200 shadow-sm",
+                    ),
+                    cls="flex justify-start mb-3 htmx-indicator",
+                    id="thinking",
                 ),
                 # Input row: paperclip + text + send
                 Form(
                     Div(
-                        # Paperclip upload
                         Label(
                             NotStr('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>'),
                             htmlFor="file-upload",
@@ -374,7 +668,7 @@ def index(session):
                             onchange="document.getElementById('upload-form').requestSubmit()",
                         ),
                         Input(
-                            name="msg", placeholder="Type a command or question... (try help)",
+                            name="msg", placeholder="Ask a question or describe what you're looking for...",
                             autofocus=True, autocomplete="off",
                             cls="flex-1 border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
                         ),
@@ -385,7 +679,8 @@ def index(session):
                     hx_post="/chat",
                     hx_target="#chat-area",
                     hx_swap="beforeend",
-                    hx_on__after_request="this.reset(); document.getElementById('chat-area').scrollTo({top: document.getElementById('chat-area').scrollHeight, behavior: 'smooth'});",
+                    hx_indicator="#thinking",
+                    hx_on__after_request="this.reset(); document.getElementById('chat-area').scrollTo({top: document.getElementById('chat-area').scrollHeight, behavior: 'smooth'}); var ws=document.getElementById('welcome-section'); if(ws) ws.remove();",
                 ),
                 # Hidden upload form
                 Form(
@@ -409,6 +704,32 @@ def index(session):
 # ---------------------------------------------------------------------------
 # Chat endpoint — processes commands and free-form chat
 # ---------------------------------------------------------------------------
+def _determine_context(msg: str, result_components: list) -> tuple:
+    """Determine chip context type and data from the command and results."""
+    from utils.command_parser import parse_command
+    cmd, subject, params = parse_command(msg)
+
+    # Detect buyer/seller intent from natural language
+    msg_lower = msg.lower()
+    if cmd is None:
+        if any(w in msg_lower for w in ["acquire", "buy", "acquisition", "target"]):
+            return "buyer_welcome", {}
+        if any(w in msg_lower for w in ["sell", "exit", "raise capital", "buyer"]):
+            return "seller_welcome", {}
+
+    if cmd == "profile":
+        return "post_profile", {"ticker": subject, "name": subject, "industry": ""}
+    if cmd == "score":
+        return "post_score", {"target": params.get("target", subject)}
+    if cmd in ("targets", "buyers"):
+        return "post_targets", {"industry": params.get("industry", subject), "first_target": "", "tickers": ""}
+    if cmd == "research":
+        return "post_research", {}
+    if cmd == "docs":
+        return "seller_welcome", {}
+    return "default", {}
+
+
 @rt("/chat")
 async def chat(msg: str = ""):
     if not msg.strip():
@@ -435,6 +756,25 @@ async def chat(msg: str = ""):
             parts.append(_assistant_bubble(P("Done.", cls="text-sm text-gray-500")))
     except Exception as e:
         parts.append(_assistant_bubble(P(f"Error: {str(e)[:300]}", cls="text-sm text-red-600")))
+
+    # Contextual suggestion chips (OOB swap)
+    context_type, context_data = _determine_context(msg, parts)
+    parts.append(_contextual_chips(context_type, context_data))
+
+    # Auto-open canvas for document/score/research commands
+    from utils.command_parser import parse_command
+    cmd, subject, params = parse_command(msg)
+
+    # Detect pitch deck / term sheet references in free-form text
+    msg_lower = msg.lower()
+    if cmd is None and ("pitch deck" in msg_lower or "term sheet" in msg_lower):
+        pitch_path = DOCS_DATA_DIR / "NovaTech-Pitch-Deck.pdf"
+        if pitch_path.exists():
+            fn = "NovaTech-TermSheet-Draft.pdf" if "term sheet" in msg_lower else "NovaTech-Pitch-Deck.pdf"
+            parts.append(Script(
+                f"document.getElementById('right-pane').classList.remove('translate-x-full');"
+                f"htmx.ajax('GET', '/doc/panel?fn={fn}', '#canvas-content');"
+            ))
 
     return Div(*parts)
 
@@ -475,7 +815,7 @@ async def chat_upload(file: UploadFile):
             ),
         ),
         # Open document in right pane
-        Script(f"document.getElementById('right-pane').classList.remove('translate-x-full'); htmx.ajax('GET', '/doc/panel/{file.filename}', '#doc-pane-content');"),
+        Script(f"document.getElementById('right-pane').classList.remove('translate-x-full'); htmx.ajax('GET', '/doc/panel?fn={file.filename}', '#canvas-content');"),
     )
 
 

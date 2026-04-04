@@ -25,3 +25,4 @@ openpyxl
 pdfplumber
 exa-py
 tavily-python
+fpdf2

@@ -169,6 +169,11 @@ class RenderAgent:
             cls="bg-white rounded-lg p-4 border border-gray-200",
         )]
 
+    def _store_canvas(self, key, data):
+        """Store data for canvas pane display."""
+        import main
+        main._canvas_state[key] = data
+
     async def _score(self, subject: str, params: dict) -> list:
         # Document-based scoring: score doc:filename.pdf
         doc_file = params.get("doc", "")
@@ -194,9 +199,11 @@ class RenderAgent:
             if result and "dimensions" in result:
                 from components.cards import ScoreCard
                 from components.charts import RadarChart
+                self._store_canvas("scores", result)
                 return [
                     ScoreCard(result),
                     RadarChart("score-radar-inline", result.get("dimensions", {})),
+                    Script("document.getElementById('right-pane').classList.remove('translate-x-full'); htmx.ajax('GET', '/canvas/scores', '#canvas-content');"),
                 ]
         except Exception as e:
             pass
@@ -205,9 +212,9 @@ class RenderAgent:
     async def _score_document(self, filename: str) -> list:
         """Score a document — find best buyer matches using document content."""
         from pathlib import Path
-        # Find the file
+        # Find the file (including docs-data/)
         file_path = None
-        for folder in [Path("docs"), Path("uploads")]:
+        for folder in [Path("docs-data"), Path("docs"), Path("uploads")]:
             p = folder / filename
             if p.exists():
                 file_path = str(p)
@@ -232,6 +239,9 @@ class RenderAgent:
         except Exception as e:
             return [self._error(f"Scoring error: {str(e)[:200]}")]
 
+        # Store for canvas
+        self._store_canvas("scores", result)
+
         # Render results
         parts = []
         profile = result.get("company_profile", {})
@@ -250,54 +260,29 @@ class RenderAgent:
                 cls="bg-white rounded-lg p-4 border border-gray-200 mb-3",
             ))
 
-        # Buyer match cards
+        # Buyer match cards (using shared helper from main.py)
         matches = result.get("buyer_matches", [])
         if matches:
             parts.append(H3(f"Top {len(matches)} Buyer Matches", cls="font-semibold text-gray-800 mb-2"))
+            import main
             for i, match in enumerate(matches, 1):
-                rec = match.get("recommendation", "N/A")
-                rec_cls = {"STRONG BUY": "bg-green-100 text-green-800", "PROCEED": "bg-blue-100 text-blue-800", "CAUTIOUS": "bg-yellow-100 text-yellow-800", "PASS": "bg-red-100 text-red-800"}.get(rec, "bg-gray-100")
-                dims = match.get("dimensions", {})
-                dim_bars = []
-                for dk in ["revenue_synergies","cost_synergies","strategic_fit","cultural_fit","financial_health","integration_risk","market_timing"]:
-                    dv = dims.get(dk, {})
-                    s = dv.get("score", 5) if isinstance(dv, dict) else 5
-                    bar_w = s * 10
-                    bar_c = "bg-green-500" if s >= 7 else "bg-yellow-500" if s >= 5 else "bg-red-500"
-                    dim_bars.append(Div(
-                        Div(Span(dk.replace("_"," ").title(), cls="text-xs text-gray-500"), Span(f"{s}/10", cls="text-xs font-medium"), cls="flex justify-between"),
-                        Div(Div(cls=f"{bar_c} h-1.5 rounded-full", style=f"width:{bar_w}%"), cls="w-full bg-gray-200 rounded-full h-1.5"),
-                        cls="mb-1",
-                    ))
-                parts.append(Div(
-                    Div(
-                        Div(
-                            Span(f"#{i}", cls="text-xs font-bold text-gray-400 mr-2"),
-                            Span(match.get("buyer","Unknown"), cls="font-semibold text-gray-800"),
-                            Span(f" ({match.get('buyer_type','')})", cls="text-xs text-gray-500"),
-                        ),
-                        Div(
-                            Span(str(match.get("composite_score",0)), cls="text-lg font-bold text-blue-700"),
-                            Span(rec, cls=f"text-xs px-2 py-0.5 rounded-full font-medium {rec_cls} ml-2"),
-                        ),
-                        cls="flex items-center justify-between mb-2",
-                    ),
-                    P(match.get("rationale",""), cls="text-sm text-gray-600 mb-2"),
-                    *dim_bars,
-                    cls="bg-white rounded-lg p-4 border border-gray-200 mb-2",
-                ))
+                parts.append(main._buyer_match_card(match, i))
         else:
             parts.append(self._info("No buyer matches could be generated. Try with a more detailed document."))
 
-        # Open doc in right pane
+        # Auto-open canvas to Scores tab
         parts.append(
-            Script(f"document.getElementById('right-pane').classList.remove('translate-x-full'); htmx.ajax('GET', '/doc/panel?fn={filename}', '#doc-pane-content');")
+            Script("document.getElementById('right-pane').classList.remove('translate-x-full'); htmx.ajax('GET', '/canvas/scores', '#canvas-content');")
         )
         return parts
 
     async def _research(self, query: str) -> list:
         from utils.research_tools import research_tools
         res = await research_tools.deep_research(query)
+
+        # Store for canvas Research tab
+        self._store_canvas("research", res)
+
         parts = []
         # Thinking trace
         trace = res.get("thinking_trace", [])
@@ -322,6 +307,9 @@ class RenderAgent:
             ))
         if not parts:
             parts.append(P("No research results found.", cls="text-sm text-gray-400"))
+
+        # Auto-open canvas Research tab
+        parts.append(Script("document.getElementById('right-pane').classList.remove('translate-x-full'); htmx.ajax('GET', '/canvas/research', '#canvas-content');"))
         return [Div(*parts, cls="bg-white rounded-lg p-4 border border-gray-200")]
 
     # ------------------------------------------------------------------
@@ -335,6 +323,9 @@ class RenderAgent:
         try:
             from utils.research_tools import research_tools
             research_data = await research_tools.deep_research(user_input)
+            # Store for canvas Research tab
+            if research_data:
+                self._store_canvas("research", research_data)
         except Exception:
             pass
 
@@ -430,7 +421,7 @@ class RenderAgent:
         """List available documents from docs/ and uploads/ with view + score actions."""
         from pathlib import Path
         files = []
-        for folder in [Path("docs"), Path("uploads")]:
+        for folder in [Path("docs-data"), Path("docs"), Path("uploads")]:
             if folder.exists():
                 for f in sorted(folder.iterdir()):
                     if f.is_file() and f.suffix.lower() in (".pdf", ".xlsx", ".xls", ".pptx", ".ppt"):
@@ -448,7 +439,7 @@ class RenderAgent:
                     cls="flex items-center",
                 ),
                 Div(
-                    A("View", href="#", onclick=f"document.getElementById('right-pane').classList.remove('translate-x-full'); htmx.ajax('GET', '/doc/panel?fn={fname}', '#doc-pane-content'); return false;", cls="text-xs text-blue-600 hover:underline"),
+                    A("View", href="#", onclick=f"document.getElementById('right-pane').classList.remove('translate-x-full'); htmx.ajax('GET', '/doc/panel?fn={fname}', '#canvas-content'); return false;", cls="text-xs text-blue-600 hover:underline"),
                     Span(" | ", cls="text-xs text-gray-300"),
                     A("Score Buyers", href="#", hx_post="/chat", hx_vals=json.dumps({"msg": f"score doc:{fname}"}), hx_target="#chat-area", hx_swap="beforeend", cls="text-xs text-green-600 hover:underline"),
                     cls="mt-1",
