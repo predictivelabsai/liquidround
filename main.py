@@ -327,6 +327,19 @@ def _thinking_indicator():
     )
 
 
+_THINKING_JS = """
+    var ca = document.getElementById('chat-area');
+    if (ca) {
+        var t = document.createElement('div');
+        t.id = 'thinking-live';
+        t.className = 'flex justify-start mb-3';
+        t.innerHTML = '<div class="bg-white rounded-2xl rounded-bl-sm px-4 py-3 border border-gray-200 shadow-sm"><div class="flex items-center gap-2"><div class="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div><div class="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style="animation-delay:0.1s"></div><div class="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style="animation-delay:0.2s"></div><span class="text-xs text-blue-600 ml-2">Thinking...</span></div></div>';
+        ca.appendChild(t);
+        ca.scrollTop = ca.scrollHeight;
+        var ws = document.getElementById('welcome-section'); if(ws) ws.remove();
+    }
+"""
+
 def _nav_button(label, cmd, accent="gray"):
     """Single nav button that posts to chat."""
     return Button(
@@ -335,6 +348,8 @@ def _nav_button(label, cmd, accent="gray"):
         hx_vals=json.dumps({"msg": cmd}),
         hx_target="#chat-area",
         hx_swap="beforeend",
+        hx_on__before_request=_THINKING_JS,
+        hx_on__after_request="var t=document.getElementById('thinking-live'); if(t) t.remove(); var ca=document.getElementById('chat-area'); if(ca) ca.scrollTo({top:ca.scrollHeight, behavior:'smooth'});",
         cls="text-left text-xs text-gray-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-1.5 rounded transition-colors w-full",
     )
 
@@ -362,9 +377,16 @@ def _nav_section(session):
         )
 
     return Div(
+        # Restore button — visible only when nav is hidden
+        Button(
+            NotStr('<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>'),
+            id="nav-restore",
+            onclick="document.getElementById('nav-panel').classList.remove('-translate-x-full'); this.classList.add('hidden');",
+            cls="fixed top-3 left-3 z-30 bg-white border border-gray-200 rounded-lg p-2 shadow-sm hover:bg-blue-50 cursor-pointer hidden text-gray-500 hover:text-blue-600",
+        ),
         # Collapsible nav panel
         Div(
-            # Header with brand + toggle
+            # Header with brand + close
             Div(
                 Div(
                     H2("LiquidRound", cls="text-sm font-bold text-blue-800"),
@@ -373,10 +395,9 @@ def _nav_section(session):
                 ),
                 P("M&A Research Platform", cls="text-xs text-gray-400 mt-0.5"),
                 Button(
-                    NotStr('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>'),
-                    id="nav-toggle",
-                    onclick="document.getElementById('nav-panel').classList.toggle('-translate-x-full')",
-                    cls="absolute top-3 right-3 text-gray-400 hover:text-blue-600 cursor-pointer",
+                    NotStr('<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'),
+                    onclick="document.getElementById('nav-panel').classList.add('-translate-x-full'); document.getElementById('nav-restore').classList.remove('hidden');",
+                    cls="absolute top-3 right-3 text-gray-400 hover:text-gray-600 cursor-pointer",
                 ),
                 cls="px-3 py-3 border-b border-gray-200 relative",
             ),
@@ -475,6 +496,8 @@ def _welcome_section():
                 hx_vals=json.dumps({"msg": "I am looking to acquire a company. Help me find targets."}),
                 hx_target="#chat-area",
                 hx_swap="beforeend",
+                hx_on__before_request=_THINKING_JS,
+                hx_on__after_request="var t=document.getElementById('thinking-live'); if(t) t.remove();",
                 cls="bg-white border-2 border-blue-100 hover:border-blue-400 rounded-xl p-4 cursor-pointer transition-colors",
             ),
             # Seller card
@@ -486,6 +509,8 @@ def _welcome_section():
                 hx_vals=json.dumps({"msg": "I am looking to sell my company or raise capital. Help me find buyers."}),
                 hx_target="#chat-area",
                 hx_swap="beforeend",
+                hx_on__before_request=_THINKING_JS,
+                hx_on__after_request="var t=document.getElementById('thinking-live'); if(t) t.remove();",
                 cls="bg-white border-2 border-green-100 hover:border-green-400 rounded-xl p-4 cursor-pointer transition-colors",
             ),
             cls="grid grid-cols-2 gap-4 max-w-lg mx-auto",
@@ -548,6 +573,8 @@ def _contextual_chips(context_type: str, data: dict = {}):
             hx_vals=json.dumps({"msg": cmd}),
             hx_target="#chat-area",
             hx_swap="beforeend",
+            hx_on__before_request=_THINKING_JS,
+            hx_on__after_request="var t=document.getElementById('thinking-live'); if(t) t.remove();",
             cls="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:border-blue-400 hover:text-blue-700 transition-colors",
         ) for label, cmd in pills],
         id="suggestion-chips",
@@ -635,26 +662,6 @@ def index(session):
                     id="chat-area",
                     cls="space-y-2 mb-4 max-h-[calc(100vh-280px)] overflow-y-auto px-2",
                 ),
-                # Thinking indicator (shown during htmx request)
-                Div(
-                    Div(
-                        Div(
-                            Span("Understanding query...", cls="text-xs text-blue-600 thinking-step"),
-                            Span("Searching...", cls="text-xs text-blue-600 thinking-step"),
-                            Span("Analyzing...", cls="text-xs text-blue-600 thinking-step"),
-                            cls="flex flex-col gap-1",
-                        ),
-                        Div(
-                            Div(cls="w-2 h-2 bg-blue-400 rounded-full animate-bounce"),
-                            Div(cls="w-2 h-2 bg-blue-400 rounded-full animate-bounce [animation-delay:0.1s]"),
-                            Div(cls="w-2 h-2 bg-blue-400 rounded-full animate-bounce [animation-delay:0.2s]"),
-                            cls="flex gap-1 mt-1",
-                        ),
-                        cls="bg-white rounded-2xl rounded-bl-sm px-4 py-3 border border-gray-200 shadow-sm",
-                    ),
-                    cls="flex justify-start mb-3 htmx-indicator",
-                    id="thinking",
-                ),
                 # Input row: paperclip + text + send
                 Form(
                     Div(
@@ -682,8 +689,8 @@ def index(session):
                     hx_post="/chat",
                     hx_target="#chat-area",
                     hx_swap="beforeend",
-                    hx_indicator="#thinking",
-                    hx_on__after_request="this.reset(); document.getElementById('chat-area').scrollTo({top: document.getElementById('chat-area').scrollHeight, behavior: 'smooth'}); var ws=document.getElementById('welcome-section'); if(ws) ws.remove();",
+                    hx_on__before_request=_THINKING_JS,
+                    hx_on__after_request="this.reset(); var t=document.getElementById('thinking-live'); if(t) t.remove(); var ca=document.getElementById('chat-area'); if(ca) ca.scrollTo({top:ca.scrollHeight, behavior:'smooth'}); var ws=document.getElementById('welcome-section'); if(ws) ws.remove();",
                 ),
                 # Hidden upload form
                 Form(
