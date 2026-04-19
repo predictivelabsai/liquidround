@@ -1,20 +1,18 @@
-"""Shared helpers for building specialist agents by slug.
+"""Shared helpers for building LangGraph ReAct agents — mirrors pehero's pattern.
 
-Each of the 22 agents has a single-file module under
-`agents/<category>/<slug>.py` that exports:
-  - SPEC (from registry)
-  - build()  # -> callable(query: str, context: dict) -> str
-
-`build()` returns a simple callable (not a LangGraph graph) so it integrates
-cleanly with the existing chat pipeline in `routes/api.py` and `main.py`
-without requiring a structured-tool layer. Upgrade path to LangGraph ReAct
-is straightforward once tools are wrapped as StructuredTools.
+Every agent module exports `build()` that returns a cached LangGraph app
+(or a simple callable as fallback). `cached_agent(slug)` looks up the
+module and calls its `build()`; if no module exists, a simple-LLM agent
+is returned as a graceful fallback.
 """
 from __future__ import annotations
 
 import logging
 from functools import lru_cache
 from pathlib import Path
+
+from langchain_core.tools import BaseTool
+from langgraph.prebuilt import create_react_agent
 
 from agents.registry import AgentSpec, by_slug
 from utils.llm_factory import create_llm
@@ -35,14 +33,31 @@ def load_system_prompt(slug: str) -> str:
     return (shared + "\n\n" + specific).strip()
 
 
-def build_simple_agent(spec: AgentSpec):
-    """Return a callable `(query: str, context: dict | None = None) -> str`.
+def build_agent(spec: AgentSpec, tools: list[BaseTool]):
+    """Build a LangGraph ReAct agent with the configured LLM + provided tools.
 
-    The returned callable invokes the LLM with the agent's system prompt +
-    the user's query. Used by NEW agents that don't already have a Python
-    implementation; EXISTS agents (wrapping scoring_agent.py, valuer.py,
-    target_finder.py, etc.) override with their own build() in their module.
+    NOT cached here — caller's module-level `build()` handles caching via
+    `@lru_cache` so each agent can pick its own tool set.
+
+    If the LLM cannot be constructed (e.g. no API key in the current env),
+    gracefully degrade to `build_simple_agent` so unit tests still pass
+    structurally. In production with keys set, this path always returns a
+    full LangGraph ReAct app.
     """
+    system = load_system_prompt(spec.slug)
+    try:
+        llm = create_llm()
+    except Exception as e:  # noqa: BLE001
+        log.warning("LLM construction failed for %s (%s) — using simple fallback", spec.slug, e)
+        return build_simple_agent(spec)
+    # create_react_agent wires tool-use + message state automatically.
+    return create_react_agent(llm, tools, prompt=system or None)
+
+
+def build_simple_agent(spec: AgentSpec):
+    """Fallback for agents without a dedicated module — no tools, just the
+    system prompt + the LLM. Returns a plain callable `(query, context) -> str`
+    rather than a LangGraph app."""
     system = load_system_prompt(spec.slug)
 
     def _run(query: str, context: dict | None = None) -> str:
@@ -52,11 +67,10 @@ def build_simple_agent(spec: AgentSpec):
             try:
                 prompt_str = system.format(**ctx)
             except (KeyError, IndexError):
-                pass  # leave raw if template vars missing
-        llm = create_llm()
+                pass
         from langchain_core.messages import SystemMessage, HumanMessage
-        messages = [SystemMessage(content=prompt_str), HumanMessage(content=query)]
-        resp = llm.invoke(messages)
+        llm = create_llm()
+        resp = llm.invoke([SystemMessage(content=prompt_str), HumanMessage(content=query)])
         return resp.content
 
     _run.__name__ = f"run_{spec.slug}"
@@ -65,10 +79,11 @@ def build_simple_agent(spec: AgentSpec):
 
 @lru_cache(maxsize=64)
 def cached_agent(slug: str):
-    """Fetch a cached agent callable by slug.
+    """Fetch a cached agent by slug.
 
-    Looks for `agents.<category>.<slug>.build()`; if not found, falls back
-    to a simple LLM-with-system-prompt agent built from the registry spec.
+    Convention: `agents/<category>/<slug>.py` exports `build()` that returns
+    a LangGraph app. If no module exists, falls back to `build_simple_agent`
+    (an LLM call with the agent's system prompt — no tools).
     """
     spec = by_slug(slug)
     if spec is None:

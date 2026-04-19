@@ -1,258 +1,103 @@
-# LiquidRound - AI-Powered M&A Investment Research Platform
+# CLAUDE.md
 
-## Project Overview
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-LiquidRound helps **buyers find acquisition targets** and **sellers find merger targets / buyers**. It is an AI-powered multi-agent M&A and IPO deal flow platform by Predictive Labs Ltd.
+## Project
 
-## Routes
+LiquidRound is Predictive Labs Ltd's AI platform for **both sides of an M&A / IPO deal**. Buyers use it to find acquisition targets, underwrite, run diligence, and draft IC memos. Sellers use it to prepare for sale (teasers / CIMs), identify buyers, and assess IPO readiness. Marketing positions the agents as the "ECM Agent Squad" (ECM = Equity Capital Markets).
 
-- **`/`** — Marketing landing page (dark navy hero, two role CTAs, product GIF, 22-agent directory, how-it-works, pricing, contact). See `routes/landing.py` + `components/landing.py`.
-- **`/app`** — The chat-first product app (was previously at `/`). Reads `?role=buyer|seller` from the query string and persists it to `session["role"]`.
-- **`/agents`** and **`/agents/<slug>`** — Public directory of all 22 specialist agents.
-- **Type `settings` in chat** — renders the Configuration widget (role selector + LLM + API status). `/settings/save` persists the chosen role.
-
-## 22 specialist agents
-
-See `agents/registry.py` for the single source of truth (`AGENTS` tuple). Each agent has a category, audience (buyer / seller / shared), prefix (`profile:`, `triage:`, `memo:`, …), and a system prompt at `prompts/system/<slug>.md`.
-
-**Categories:** sourcing (4), underwriting (6), diligence (5), capital (5), portfolio (2).
-
-The router in `agents/router.py` maps free-form messages to the right agent via: (1) prefix match, (2) keyword heuristics, (3) LLM fallback classifier.
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| **Web Framework** | FastHTML (server-rendered hypermedia, HTMX) |
-| **CSS** | Tailwind CSS via CDN |
-| **LLM Provider** | XAI (Grok) as primary, swappable via LangChain |
-| **LLM Orchestration** | LangChain + LangGraph |
-| **Research APIs** | EXA (semantic search), TAVILY (web search) |
-| **Financial Data** | yfinance (company profiles, market cap, fundamentals) |
-| **Database** | PostgreSQL (schema `liquidround` on remote server) |
-| **Real-time Updates** | HTMX SSE (Server-Sent Events) |
-| **File Processing** | python-pptx (PPT), openpyxl (XLS/XLSX), PyMuPDF/pdfplumber (PDF) |
-| **Charts** | Plotly.js (embedded via FastHTML Script tags) |
-
-## Architecture
-
-### 3-Pane Layout
-
-```
-┌──────────────┬──────────────────────────┬──────────────────────┐
-│  LEFT PANE   │      MIDDLE PANE         │    RIGHT PANE        │
-│  (240px)     │      (flex-1)            │    (slide-out, 400px)│
-│              │                          │                      │
-│  Shortcuts   │  Sample Query Buttons    │  Research Panel      │
-│  & Commands  │  (2 rows x 3 cols)      │  (popup/slide-out)   │
-│              │                          │                      │
-│  - Buyer MA  │  Chat Interface          │  EXA Results         │
-│  - Seller MA │  (HTMX websocket/SSE)   │  TAVILY Results      │
-│  - IPO       │                          │  Thinking Trace      │
-│  - Upload    │  Agent Progress          │  Source Links        │
-│  - Score     │  (real-time via SSE)     │  Timestamps          │
-│  - History   │                          │                      │
-│  - Settings  │  Results Display         │                      │
-│              │  (expandable cards)      │                      │
-└──────────────┴──────────────────────────┴──────────────────────┘
-```
-
-### File Structure
-
-```
-liquidround/
-├── main.py                    # FastHTML app entry point (replaces Home.py)
-├── CLAUDE.md                  # This file
-├── .env                       # API keys (XAI_API, EXA_API_KEY, TAVILY_API_KEY)
-├── requirements.txt           # Python dependencies
-│
-├── routes/                    # FastHTML route modules (APIRouter)
-│   ├── __init__.py
-│   ├── home.py               # Main 3-pane layout, chat, sample buttons
-│   ├── deals.py              # Deal management views
-│   ├── market.py             # Market intelligence views
-│   ├── upload.py             # File upload handlers (XLS, PPT, PDF)
-│   ├── research.py           # EXA/TAVILY research panel endpoints
-│   └── api.py                # JSON API endpoints for HTMX
-│
-├── agents/                    # Multi-agent system
-│   ├── __init__.py
-│   ├── base_agent.py         # Base class (LangChain + XAI)
-│   ├── orchestrator.py       # Routes queries to workflows
-│   ├── target_finder.py      # Identifies acquisition targets
-│   ├── valuer.py             # Financial valuation (DCF, comps)
-│   ├── scoring_agent.py      # NEW: Match scoring with synergy dimensions
-│   ├── research_agent.py     # NEW: EXA + TAVILY deep research
-│   ├── document_agent.py     # NEW: XLS/PPT/PDF analysis agent
-│   └── workflow.py           # LangGraph workflow definition
-│
-├── prompts/                   # LLM system prompts (Markdown)
-│   ├── orchestrator.md
-│   ├── target_finder.md
-│   ├── valuer.md
-│   ├── scoring.md            # NEW: Scoring agent prompt
-│   ├── synergy_analyst.md
-│   ├── bid_strategist.md
-│   ├── seller_prep.md
-│   ├── market_outreach.md
-│   ├── ipo_readiness_assessor.md
-│   └── memo_writer.md
-│
-├── utils/                     # Utility modules
-│   ├── __init__.py
-│   ├── config.py             # Config (XAI, EXA, TAVILY keys)
-│   ├── state.py              # LangGraph state management
-│   ├── database.py           # SQLite via fastlite
-│   ├── logging.py            # Logging framework
-│   ├── llm_factory.py        # NEW: LangChain LLM factory (XAI/OpenAI/Anthropic swap)
-│   ├── research_tools.py     # NEW: EXA + TAVILY search wrappers
-│   ├── document_parser.py    # NEW: XLS/PPT/PDF parsing utilities
-│   ├── yfinance_util.py      # NEW: yfinance company data wrapper
-│   ├── workflow_service.py   # Workflow orchestration service
-│   ├── market_intelligence.py # Sector performance analysis
-│   └── companies_house_api.py # UK Companies House
-│
-├── components/                # NEW: Reusable FastHTML FT components
-│   ├── __init__.py
-│   ├── layout.py             # 3-pane shell, nav, header
-│   ├── cards.py              # Deal cards, target cards, score cards
-│   ├── chat.py               # Chat input, message bubbles
-│   ├── research_panel.py     # Right-pane research/thinking trace
-│   ├── upload_form.py        # File upload drag-and-drop
-│   └── charts.py             # Plotly chart wrappers
-│
-├── static/                    # Static assets
-│   └── app.css               # Custom Tailwind overrides if needed
-│
-├── db/                        # (legacy — now using remote PostgreSQL)
-│
-├── sql/                       # Schema definitions
-│   └── create-tables.sql
-│
-├── uploads/                   # Uploaded documents directory
-│
-├── tests/                     # Test suite
-│   ├── test_agents.py
-│   ├── test_scoring.py
-│   ├── test_research.py
-│   └── test_upload.py
-│
-└── test-data/                 # Test fixtures
-```
-
-## Key Design Decisions
-
-### 1. FastHTML + HTMX (not React/Vue)
-- Server-rendered HTML with HTMX for interactivity
-- SSE for real-time agent progress streaming
-- WebSockets for chat interface
-- No client-side JS framework (FastHTML constraint)
-
-### 2. Tailwind CSS
-- Via CDN `<script src="https://cdn.tailwindcss.com"></script>`
-- No Pico CSS (`pico=False` in `fast_app()`)
-- Utility-first classes for all styling
-
-### 3. XAI as Primary LLM via LangChain
-- `ChatOpenAI(base_url="https://api.x.ai/v1", api_key=XAI_API, model="grok-3-mini-fast")`
-- LangChain abstraction allows swapping to OpenAI, Anthropic, etc.
-- Factory pattern in `utils/llm_factory.py`
-
-### 4. Research Panel (Right Pane)
-- Slide-out panel triggered by research actions
-- Shows EXA semantic search results with links
-- Shows TAVILY web search results with snippets
-- Displays LLM thinking trace / reasoning steps
-- Updated via HTMX `hx-get` with `hx-swap="innerHTML"`
-
-### 5. yfinance for Company Data
-- Company profiles, market cap, sector, industry
-- Financial statements (revenue, EBITDA, margins)
-- NOT for real-time price tracking (this is research, not trading)
-
-### 6. Scoring Agent Dimensions
-The scoring agent evaluates buyer-target matches across:
-- **Revenue Synergies** (0-10): Cross-sell, market expansion, pricing power
-- **Cost Synergies** (0-10): Operational overlap, procurement, headcount
-- **Strategic Fit** (0-10): Vision alignment, market positioning, competitive moat
-- **Cultural Fit** (0-10): Management style, org structure, geographic overlap
-- **Financial Health** (0-10): Balance sheet strength, cash flow, debt capacity
-- **Integration Risk** (0-10, inverted): Technical complexity, regulatory, timeline
-- **Market Timing** (0-10): Sector trends, valuation cycle, macro conditions
-
-## Authentication
-
-- **Sign up**: Email/password or Google OAuth
-- **Sign in**: Email/password or Google OAuth
-- **Password reset**: Token-based (1-hour expiry)
-- **Session**: FastHTML session middleware with `SESSION_SECRET`
-- **Beforeware**: All routes protected except `/signin`, `/register`, `/login`, `/logout`, `/forgot`, `/reset`
-- **User isolation**: `user_id` column on `workflows`, `deals`, `documents` tables
-- **Password hashing**: bcrypt
-- **Google OAuth**: authlib (OpenID Connect)
-
-## Running the App
+## Commands
 
 ```bash
-# Install dependencies
 pip install -r requirements.txt
-# Playwright chromium for E2E + demo GIF
-playwright install chromium
+playwright install chromium      # needed for E2E tests + demo GIF
 
-# Run locally (serves on port 5007)
+# Run (port 5007, configurable via PORT env)
 python main.py
+# or docker compose up --build
 
-# Run with Docker
-docker compose up --build
-```
+# Tests
+pytest -q                                         # unit only (pytest.ini excludes `e2e` by default)
+pytest -q tests/test_registry.py                  # 22-agent registry integrity (76 cases)
+pytest -q tests/test_e2e_smoke.py -m e2e          # Playwright — requires server on :5007
+pytest -q tests/test_registry.py -k prefix_routing  # run a single test
 
-## Tests
-
-```bash
-# Unit tests (default — excludes E2E via pytest.ini addopts)
-pytest -q
-
-# End-to-end Playwright tests (requires server on :5007)
-pytest -q tests/test_e2e_smoke.py -m e2e
-
-# Registry integrity (22 agents, unique slugs, prefixes, prompts load, every agent builds)
-pytest -q tests/test_registry.py
-```
-
-## Demo GIF
-
-Regenerate the landing-page product demo:
-
-```bash
-# Server must be running on :5007
-python -m scripts.capture_screenshots   # → ./screenshots/*.png (14 frames)
+# Regenerate landing-page demo GIF (server must be running on :5007)
+python -m scripts.capture_screenshots   # → screenshots/*.png (14 frames)
 python -m scripts.make_gif              # → docs/liquidround.gif + static/liquidround.gif
 ```
 
-Ported from `~/dev/plai/pehero/scripts/` (which in turn came from bricksmith). No ffmpeg / ImageMagick — Pillow + Playwright only.
+## Architecture (big picture)
 
-## Environment Variables (.env)
+**Two FastHTML shells share one process:**
 
-```
-XAI_API_KEY=...              # XAI/Grok API key (primary LLM)
-OPENAI_API_KEY=...           # OpenAI key (fallback LLM)
-EXA_API_KEY=...              # Exa.ai semantic search
-TAVILY_API_KEY=...           # Tavily web search
-DB_URL=postgresql://user:pass@host:5432/dbname  # PostgreSQL (schema: liquidround)
-DEFAULT_MODEL=grok-3-mini-fast
-DEFAULT_TEMPERATURE=0.7
-ENVIRONMENT=development
-```
+1. **`/` — the landing page** (`routes/landing.py` + `components/landing.py`). Dark-navy hero with two role CTAs (`Buyer-Led → /app?role=buyer`, `Seller-Led → /app?role=seller`), product-demo GIF, agent directory, pricing, contact. Distinct visual identity (navy #0B1220 + amber #F59E0B accents).
+2. **`/app` — the chat-first product** (`main.py`). Left nav, chat area, slide-out right "canvas" pane (Documents / Research / Scores / Compare tabs). Was at `/` before the landing refactor — the `@rt("/app")` function is the entry point, backed by in-memory `SessionState` keyed by `session["sid"]`.
+
+**Route wiring** — all in `main.py`'s top-level block. Order matters: `routes/landing.py` is mounted **first** so `/` resolves to the landing, not the chat. Other `APIRouter` modules (`auth`, `upload`, `research`, `api`, `pipeline`) are mounted after. `routes/home.py` exists but is **not mounted** — its `/settings`, `/targets`, `/buyers`, `/ipo`, `/score`, `/company` endpoints are dead code; those flows live inline in `main.py` and `agents/render_agent.py`.
+
+**Role modes.** `/app?role=buyer|seller` writes to `session["role"]`, which drives: (a) which nav section opens by default in `_nav_section()`, (b) which welcome cards render, (c) which agent chips surface. Persisted best-effort to `liquidround.users.default_role` (see `sql/04-add-default-role.sql`) when a user is logged in. The Configuration widget (type `settings` in chat) lets the user switch; POST `/settings/save` persists.
+
+**Two agent entry paths — keep them straight.**
+
+1. `agents/render_agent.py` (legacy, but live) — the dispatcher wired to `main.py`'s `/chat` endpoint. Handles the command DSL parsed by `utils/command_parser.py`: `profile:MSFT`, `targets industry:fintech`, `score buyer:X target:Y`, `keyterms filename.pdf`, `settings`, `help`, `clear`. Returns FastHTML `FT` components that go straight into the chat bubble.
+
+2. `agents/registry.py` + `agents/router.py` + `agents/base.py` + 22 per-slug modules under `agents/<category>/<slug>.py` — the **ECM Agent Squad** architecture, modelled after `~/dev/plai/pehero`. Each agent module exports `SPEC` + `TOOLS` + `build()`. `build_agent(spec, tools)` wraps a `create_react_agent(llm, tools, prompt=system)` LangGraph app. `cached_agent(slug)` imports the module and returns its cached graph. If the LLM can't be constructed (no API key), falls back to `build_simple_agent` — the structural tests still pass without keys.
+
+   - Categories: `sourcing` (4), `underwriting` (6), `diligence` (5), `capital` (5), `portfolio` (2) = **22 agents**.
+   - Router in `agents/router.py` picks a slug: (1) explicit prefix match (`has_specialist_prefix`), (2) keyword heuristics, (3) LLM fallback. `strip_prefix` removes the leading `xxx:` for the agent.
+
+**How they compose in the running chat:**
+- Legacy command prefixes (`profile:`, `financials:`, `news:`, `valuation:`, `targets`, `buyers`, `ipo`, `score`, `keyterms`, `research`, `settings`, `help`, `clear`, `market`, `tools`, `upload`, `docs`, `deals`) — handled inline by `render_agent.process()` with hand-rolled `FT` components.
+- **New specialist prefixes** (`scan:`, `triage:`, `intent:`, `comps:`, `ltm:`, `dcf:`, `multi:`, `synergy:`, `vdr:`, `abstract:`, `legal:`, `ops:`, `esg:`, `memo:`, `teaser:`, `bid:`, `integrate:`) — `render_agent._specialist()` invokes the LangGraph agent via `cached_agent(slug).ainvoke(...)`, extracts the final `AIMessage`, and renders both the text bubble and any `__ARTIFACT__` payloads as inline tables / citations. Matching artifacts land in the right-pane canvas (`_canvas_state`) as well.
+- **SSE streaming endpoint** `/app/chat` (POST) — pehero-compatible event stream: `agent_route`, `token`, `tool_start`, `tool_end`, `artifact_show`, `done`, `error`. Helpers in `chat_sse.py`. The existing HTMX `/chat` endpoint stays as the primary chat path; the SSE endpoint is the streaming alternative for a future JS client.
+
+**`tools/` layer** — LangChain StructuredTools consumed by the 22 agents. Each tool is a sync function wrapped with `StructuredTool.from_function(...)` and, where relevant, emits an artifact via `tools.artifact.emit(...)` (which prepends `__ARTIFACT__` + JSON). Current tools:
+- `tools/companies.py` — `get_company_profile`, `get_financials`, `get_peer_companies` (wraps `utils/yfinance_util`).
+- `tools/research.py` — `exa_search`, `tavily_search`, `deep_research` (sync wrappers around async `utils/research_tools`).
+- `tools/documents.py` — `read_document`, `extract_key_terms`, `list_documents` (wraps `utils/document_parser`).
+- `tools/valuation.py` — `dcf_valuer`, `multiples_valuer` (pure Python, consumes yfinance data).
+- `tools/scoring.py` — `score_match` (invokes legacy `ScoringAgent` for 7-dimension radar).
+- `tools/artifact.py` — `emit`, `is_artifact`, `parse_artifact`, `ARTIFACT_PREFIX`.
+
+**LLM.** All LLM calls flow through `utils/llm_factory.create_llm()` — swap providers via `DEFAULT_PROVIDER` env (`xai` | `openai`). XAI/Grok hits `https://api.x.ai/v1` via `ChatOpenAI`. Never construct `ChatOpenAI` directly outside this factory.
+
+**Research / data tools.** `utils/yfinance_util.py` for company fundamentals (profile, financials, market cap — not real-time quotes), `utils/research_tools.py` for EXA (semantic) + Tavily (web). `utils/document_parser.py` for PDF (pdfplumber) / XLSX (openpyxl) / PPTX (python-pptx). `utils/command_parser.py` is the legacy command DSL; `agents/router.py` is the newer free-form router. Both must stay in sync for new prefixes.
+
+**Database.** PostgreSQL, schema `liquidround`. Connection via `utils/database.py` (`get_conn()` + `db_service = DatabaseService()`). Schema: `users`, `workflows`, `agent_results`, `conversations`, `messages`, `pipelines`, `documents`. Always qualify tables as `liquidround.<table>` — do not rely on `search_path`. Migrations are numbered SQL files in `sql/`.
+
+**Authentication is optional, not enforced.** `main.py` has **no auth beforeware** — guests can use chat. `routes/auth.py` provides `/signin`, `/register`, `/login`, `/logout`, `/forgot`, `/reset`, Google OAuth. Logged-in users get persistent conversations (`liquidround.conversations`) and pipelines; guests use the in-memory `SessionState` dict in `main.py`.
 
 ## Conventions
 
-- FastHTML routes use decorator `@rt` with function-name-as-path
-- FT components are Python functions returning FastTags (Div, P, H1, etc.)
-- HTMX attributes: `hx_get`, `hx_post`, `hx_target`, `hx_swap`, `hx_trigger`
-- Use `serve()` to run (no `if __name__ == "__main__"` needed)
-- Prefer Python over JS; use vanilla JS only when necessary
-- No React, Vue, or Svelte (FastHTML constraint)
-- Use `NotStr()` for raw HTML (e.g., markdown rendering)
-- Use SSE for streaming agent responses
-- All database operations through `utils/database.py` (psycopg2 → PostgreSQL `liquidround` schema)
-- No local SQLite — remote PostgreSQL only
+- **FastHTML + HTMX only.** No React / Vue / Svelte. Server-rendered hypermedia with `hx_get`, `hx_post`, `hx_target`, `hx_swap`, `hx_swap_oob`. Vanilla JS only when HTMX can't cover it. `NotStr(...)` when you need raw HTML (markdown rendering, inline SVG icons).
+- **No Pico CSS.** `fast_app(pico=False)`. Styling is Tailwind via CDN; any CSS overrides go in `static/app.css`. The landing page has its own palette + fonts defined inline in `components/landing.py` — keep it distinct from the chat app.
+- **Static files served at root**, not `/static/...`. `fast_app(static_path="static")` exposes `static/foo.png` as `/foo.png`. `static/app.css` is referenced as `/app.css`; favicons are `/favicon.svg` etc.
+- **Dark chat theme.** `/app` sets `<body class="lr-dark">` (via a tiny Script in `app_shell`) + inline `<style>` for the navy background to avoid a flash of light content. `static/app.css` contains the overrides that convert Tailwind light utility classes (`bg-gray-50`, `bg-white`, `text-gray-600`, blue accents) to the landing palette (navy `#0B1220`, slate text, amber accents). Don't use the `.lr-dark` class on the landing — the landing has its own inline palette via `components/landing.py`.
+- **Adding a new 22-agent entry:** append an `AgentSpec` to `agents/registry.py` (keep the `assert len(AGENTS) == 22` honest by bumping it or keeping the count), add `prompts/system/<slug>.md`, and if it needs custom tools or non-LLM logic, create `agents/<category>/<slug>.py` with `SPEC` + `build() -> callable`. Add the prefix to the router's `_best_in_category_for` if it should win on keyword matches. Re-run `pytest tests/test_registry.py`.
+- **E2E test isolation:** Playwright tests live in `tests/test_e2e_smoke.py` with `@pytest.mark.e2e`. `pytest.ini` has `addopts = -m "not e2e"` so the default run is unit-only. Run E2E explicitly: `pytest -m e2e`. They assume a server on `$LIQUIDROUND_URL` (default `http://localhost:5007`).
+- **Commit style:** sentence-case, one short line describing the change (see `git log --oneline`). Commits created by Claude are co-authored per the project default.
+
+## Environment
+
+```
+XAI_API_KEY=...              # primary LLM (Grok via x.ai OpenAI-compat endpoint)
+OPENAI_API_KEY=...           # fallback LLM
+EXA_API_KEY=...              # semantic search
+TAVILY_API_KEY=...           # web search
+DB_URL=postgresql://...      # PostgreSQL, schema `liquidround`
+SESSION_SECRET=...           # FastHTML session cookie signing
+DEFAULT_PROVIDER=xai         # xai | openai — drives utils/llm_factory.create_llm
+DEFAULT_MODEL=grok-3-mini-fast
+DEFAULT_TEMPERATURE=0.7
+PORT=5007
+```
+
+At least one of `XAI_API_KEY` or `OPENAI_API_KEY` must be set or `utils/config.Config` raises at import time.
+
+## Known stale code to leave alone unless touched deliberately
+
+- `Home.py` (if present) and the README's "Streamlit run Home.py" sections — predate the FastHTML rewrite.
+- `routes/home.py` — defines `ar` but isn't mounted; its routes are superseded by `main.py` + `render_agent.py`.
+- `agents/workflow.py` — has a relative-import bug that breaks `tests/test_integration.py` collection. Not part of the live chat path.
+- `agents/base_agent.py` — the old `BaseAgent` ABC, still used by `scoring_agent.py`, `valuer.py`, `target_finder.py`, `research_agent.py`, `document_agent.py`. The new 22-agent architecture uses `agents/base.py` (`cached_agent`, `build_simple_agent`) — different file, different pattern, don't confuse them.

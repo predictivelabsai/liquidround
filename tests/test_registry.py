@@ -61,11 +61,36 @@ def test_every_agent_has_system_prompt(spec):
 # ── Agent build ─────────────────────────────────────────────────────────
 
 @pytest.mark.parametrize("spec", AGENTS, ids=lambda s: s.slug)
+def test_every_agent_has_module(spec):
+    """Every registry entry must have a module at agents/<category>/<slug>.py
+    that exports SPEC + TOOLS + build(). Enforces the pehero convention."""
+    import importlib
+    module = importlib.import_module(f"agents.{spec.category}.{spec.slug}")
+    assert hasattr(module, "SPEC"), f"{spec.slug}: module missing SPEC"
+    assert hasattr(module, "TOOLS"), f"{spec.slug}: module missing TOOLS"
+    assert hasattr(module, "build"), f"{spec.slug}: module missing build()"
+    assert module.SPEC.slug == spec.slug, f"{spec.slug}: SPEC mismatch"
+    assert isinstance(module.TOOLS, list), f"{spec.slug}: TOOLS must be a list"
+    assert len(module.TOOLS) > 0, f"{spec.slug}: TOOLS is empty — agents need at least one tool"
+
+
+@pytest.mark.parametrize("spec", AGENTS, ids=lambda s: s.slug)
 def test_every_agent_builds(spec):
-    """cached_agent(slug) returns a callable for every registered agent."""
+    """cached_agent(slug) returns a callable for every registered agent.
+    With API keys set, returns a LangGraph ReAct app; without, returns a
+    simple-LLM callable fallback."""
     from agents.base import cached_agent
     agent = cached_agent(spec.slug)
-    assert callable(agent), f"{spec.slug}: agent not callable"
+    assert callable(agent) or hasattr(agent, "invoke"), f"{spec.slug}: agent not callable and not a graph"
+
+
+@pytest.mark.parametrize("spec", AGENTS, ids=lambda s: s.slug)
+def test_every_agent_has_tools(spec):
+    """Every agent module exposes at least one StructuredTool."""
+    import importlib
+    module = importlib.import_module(f"agents.{spec.category}.{spec.slug}")
+    from langchain_core.tools import BaseTool
+    assert all(isinstance(t, BaseTool) for t in module.TOOLS), f"{spec.slug}: TOOLS contains non-BaseTool"
 
 
 # ── Router ──────────────────────────────────────────────────────────────

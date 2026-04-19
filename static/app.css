@@ -138,3 +138,117 @@ details[open] > summary::before {
 @media (display-mode: standalone) {
     body { padding-top: env(safe-area-inset-top); }
 }
+
+/* ==========================================================================
+   DARK THEME — matches the landing page (navy #0B1220 + amber #F59E0B)
+   Applied when <body class="lr-dark"> is set. Overrides Tailwind utility
+   classes used throughout main.py so we don't have to rewrite the shell.
+   ========================================================================== */
+
+body.lr-dark {
+    --lr-bg:        #0B1220;
+    --lr-bg-elev:   #111A2E;
+    --lr-bg-raise:  #162038;
+    --lr-ink:       #E5E7EB;
+    --lr-ink-muted: #94A3B8;
+    --lr-ink-dim:   #64748B;
+    --lr-line:      #1E293B;
+    --lr-line-br:   #334155;
+    --lr-accent:    #F59E0B;   /* amber */
+    --lr-buyer:     #3B82F6;   /* blue */
+    --lr-seller:    #10B981;   /* emerald */
+    background: var(--lr-bg);
+    color: var(--lr-ink);
+}
+
+/* Backgrounds — swap Tailwind light greys for navy surfaces */
+body.lr-dark .bg-gray-50,
+body.lr-dark .bg-gray-100                  { background-color: var(--lr-bg) !important; }
+body.lr-dark .bg-white                     { background-color: var(--lr-bg-elev) !important; }
+body.lr-dark .bg-blue-50                   { background-color: rgba(59, 130, 246, 0.10) !important; }
+body.lr-dark .bg-blue-100                  { background-color: rgba(59, 130, 246, 0.18) !important; }
+body.lr-dark .bg-green-50                  { background-color: rgba(16, 185, 129, 0.10) !important; }
+body.lr-dark .bg-green-100                 { background-color: rgba(16, 185, 129, 0.18) !important; }
+body.lr-dark .bg-red-50,
+body.lr-dark .bg-red-100                   { background-color: rgba(239, 68, 68, 0.15) !important; }
+body.lr-dark .bg-yellow-50,
+body.lr-dark .bg-yellow-100                { background-color: rgba(245, 158, 11, 0.15) !important; }
+body.lr-dark .bg-purple-50,
+body.lr-dark .bg-purple-100                { background-color: rgba(168, 85, 247, 0.15) !important; }
+body.lr-dark .bg-orange-50,
+body.lr-dark .bg-orange-100                { background-color: rgba(249, 115, 22, 0.15) !important; }
+
+/* Buyer / seller section tint on hover */
+body.lr-dark .hover\:bg-blue-50:hover      { background-color: rgba(59, 130, 246, 0.12) !important; }
+body.lr-dark .hover\:bg-green-50:hover     { background-color: rgba(16, 185, 129, 0.12) !important; }
+body.lr-dark .hover\:bg-gray-50:hover      { background-color: var(--lr-bg-raise) !important; }
+body.lr-dark .hover\:bg-gray-100:hover     { background-color: var(--lr-bg-raise) !important; }
+
+/* Text colours — flip greys to slate */
+body.lr-dark .text-gray-800                { color: var(--lr-ink) !important; }
+body.lr-dark .text-gray-700                { color: var(--lr-ink) !important; }
+body.lr-dark .text-gray-600                { color: var(--lr-ink-muted) !important; }
+body.lr-dark .text-gray-500                { color: var(--lr-ink-muted) !important; }
+body.lr-dark .text-gray-400                { color: var(--lr-ink-dim) !important; }
+body.lr-dark .text-gray-300                { color: var(--lr-ink-dim) !important; }
+body.lr-dark .text-blue-700,
+body.lr-dark .text-blue-800                { color: #60A5FA !important; }
+body.lr-dark .text-blue-600                { color: var(--lr-buyer) !important; }
+body.lr-dark .text-green-700,
+body.lr-dark .text-green-800               { color: #34D399 !important; }
+body.lr-dark .text-green-600               { color: var(--lr-seller) !important; }
+body.lr-dark .text-red-600                 { color: #F87171 !important; }
+body.lr-dark .text-yellow-600              { color: var(--lr-accent) !important; }
+
+/* Borders — slate 800 */
+body.lr-dark .border-gray-100,
+body.lr-dark .border-gray-200              { border-color: var(--lr-line) !important; }
+body.lr-dark .border-blue-100              { border-color: rgba(59, 130, 246, 0.25) !important; }
+body.lr-dark .border-blue-200              { border-color: rgba(59, 130, 246, 0.35) !important; }
+body.lr-dark .border-green-100             { border-color: rgba(16, 185, 129, 0.25) !important; }
+body.lr-dark .border-green-200             { border-color: rgba(16, 185, 129, 0.35) !important; }
+body.lr-dark .hover\:border-blue-400:hover { border-color: var(--lr-accent) !important; }
+body.lr-dark .focus\:border-transparent:focus { border-color: transparent !important; }
+body.lr-dark .focus\:ring-blue-500:focus   { --tw-ring-color: var(--lr-accent) !important; }
+body.lr-dark .focus\:ring-blue-400:focus   { --tw-ring-color: var(--lr-accent) !important; }
+
+/* User chat bubble — keep blue accent but brighter against dark bg */
+body.lr-dark .bg-blue-600                  { background-color: var(--lr-buyer) !important; }
+body.lr-dark .hover\:bg-blue-700:hover     { background-color: #2563EB !important; }
+body.lr-dark .bg-green-600                 { background-color: var(--lr-seller) !important; }
+body.lr-dark .hover\:bg-green-700:hover    { background-color: #059669 !important; }
+
+/* Inputs */
+body.lr-dark input[type="text"],
+body.lr-dark input[type="email"],
+body.lr-dark input[type="password"],
+body.lr-dark input:not([type]),
+body.lr-dark textarea,
+body.lr-dark select {
+    background-color: var(--lr-bg-raise);
+    color: var(--lr-ink);
+    border-color: var(--lr-line-br);
+}
+body.lr-dark input::placeholder,
+body.lr-dark textarea::placeholder         { color: var(--lr-ink-dim); }
+
+/* Shadows — softer on dark */
+body.lr-dark .shadow-sm                    { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45); }
+body.lr-dark .shadow-lg                    { box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55); }
+
+/* Header brand colour */
+body.lr-dark .text-blue-800                { color: var(--lr-ink) !important; }
+body.lr-dark #nav-panel h2                 { color: var(--lr-ink) !important; }
+
+/* Paperclip / send button hover */
+body.lr-dark .hover\:text-blue-600:hover   { color: var(--lr-accent) !important; }
+body.lr-dark .hover\:text-blue-700:hover   { color: var(--lr-accent) !important; }
+body.lr-dark .hover\:text-green-600:hover  { color: var(--lr-seller) !important; }
+body.lr-dark .hover\:text-green-700:hover  { color: var(--lr-seller) !important; }
+
+/* Thinking dots — amber on dark looks better than blue */
+body.lr-dark .bg-blue-400                  { background-color: var(--lr-accent) !important; }
+
+/* Card hover outlines */
+body.lr-dark .border-2                     { border-width: 1px !important; }
+

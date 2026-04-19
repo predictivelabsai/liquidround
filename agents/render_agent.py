@@ -70,6 +70,23 @@ class RenderAgent:
         if cmd == "settings":
             return [self._settings_widget(active_role=active_role)]
 
+        # ───────────────────────────────────────────────────────────────
+        # 22-specialist-agent dispatch (ECM Agent Squad)
+        # If the message starts with a specialist prefix (scan:, triage:,
+        # dcf:, memo:, ipo:, teaser:, bid:, vdr:, ...) or the router picks
+        # one of them over the keyword fallback, invoke that agent's
+        # LangGraph ReAct graph and surface its response + any artifacts.
+        # ───────────────────────────────────────────────────────────────
+        try:
+            from agents.router import route as _route_specialist
+            from agents.router import has_specialist_prefix
+            if has_specialist_prefix(user_input):
+                slug = _route_specialist(user_input)
+                return await self._specialist(slug, user_input)
+        except Exception as e:  # noqa: BLE001
+            # Fall through to free-form chat
+            pass
+
         # Free-form chat — LLM with research
         return await self._chat(user_input)
 
@@ -473,6 +490,134 @@ class RenderAgent:
     # ------------------------------------------------------------------
     # Free-form chat — LLM
     # ------------------------------------------------------------------
+    async def _specialist(self, slug: str, user_input: str) -> list:
+        """Invoke one of the 22 ECM Squad specialists via its LangGraph graph.
+
+        Strips the `<prefix>:` from the message, runs `agent.ainvoke(...)`,
+        and renders the final response + any tool artifacts. Artifacts are
+        also stored in the canvas state so they surface in the right pane.
+        """
+        from agents.base import cached_agent
+        from agents.registry import by_slug
+        from agents.router import strip_prefix
+        from tools.artifact import parse_artifact, is_artifact
+        from langchain_core.messages import HumanMessage
+
+        spec = by_slug(slug)
+        query = strip_prefix(user_input)
+        label = f"{spec.icon} {spec.name}" if spec else slug
+
+        try:
+            agent = cached_agent(slug)
+        except Exception as e:  # noqa: BLE001
+            return [self._error(f"Specialist unavailable: {e}")]
+
+        parts: list = []
+        artifacts: list[dict] = []
+
+        # LangGraph app path (has `.ainvoke` / `astream_events`)
+        if hasattr(agent, "ainvoke"):
+            try:
+                result = await agent.ainvoke({"messages": [HumanMessage(content=query)]})
+                final = ""
+                # Walk messages to extract the final assistant content + any tool artifacts
+                msgs = result.get("messages", []) if isinstance(result, dict) else []
+                for m in msgs:
+                    content = getattr(m, "content", None)
+                    if isinstance(content, str):
+                        if is_artifact(content):
+                            try:
+                                artifacts.append(parse_artifact(content))
+                            except Exception:
+                                pass
+                        elif content.strip() and getattr(m, "type", "") in ("ai", "AIMessage"):
+                            final = content
+                if not final and msgs:
+                    last = msgs[-1]
+                    final = getattr(last, "content", "") or ""
+                if final:
+                    parts.append(self._markdown_bubble(f"**{label}**\n\n{final}"))
+                elif not artifacts:
+                    parts.append(self._markdown_bubble(f"**{label}**\n\n(no response)"))
+            except Exception as e:  # noqa: BLE001
+                return [self._error(f"{label} error: {str(e)[:400]}")]
+        else:
+            # Simple-LLM callable fallback
+            try:
+                text = agent(query) if callable(agent) else str(agent)
+                parts.append(self._markdown_bubble(f"**{label}**\n\n{text}"))
+            except Exception as e:  # noqa: BLE001
+                return [self._error(f"{label} error: {str(e)[:400]}")]
+
+        # Surface artifacts inline and in the canvas state
+        if artifacts:
+            for art in artifacts:
+                parts.append(self._render_artifact(art))
+            # Stash the latest artifact under the correct canvas tab
+            for art in artifacts:
+                kind = art.get("kind", "note")
+                if kind == "citations":
+                    self._store_canvas("research", {"exa": {"results": [
+                        {"title": i.get("title"), "url": i.get("url"), "snippet": i.get("snippet")}
+                        for i in art.get("items", []) if i.get("doc_type") == "exa"
+                    ]}, "tavily": {"results": [
+                        {"title": i.get("title"), "url": i.get("url"), "content": i.get("snippet")}
+                        for i in art.get("items", []) if i.get("doc_type") == "tavily"
+                    ]}})
+                elif kind == "table":
+                    self._store_canvas("scores", art.get("summary") or {"table": art})
+
+        return parts
+
+    def _render_artifact(self, art: dict) -> "FT":
+        """Render an artifact payload as an inline chat bubble attachment."""
+        kind = art.get("kind", "note")
+        title = art.get("title", "Artifact")
+        subtitle = art.get("subtitle", "")
+        header = Div(
+            Div(
+                Span(kind.upper(), cls="text-[10px] font-semibold tracking-widest text-amber-400 mr-2"),
+                Span(title, cls="text-sm font-semibold text-gray-800"),
+                cls="flex items-center",
+            ),
+            P(subtitle, cls="text-xs text-gray-500 mt-0.5") if subtitle else "",
+            cls="mb-2",
+        )
+
+        if kind == "table" and art.get("rows"):
+            cols = art.get("columns") or list(art["rows"][0].keys())
+            head = Tr(*[Th(c.replace("_", " "), cls="text-left text-xs text-gray-500 font-medium py-1 pr-3 border-b border-gray-200") for c in cols])
+            body = [Tr(*[Td(str(row.get(c, "—")), cls="text-xs text-gray-700 py-1 pr-3 border-b border-gray-100") for c in cols]) for row in art["rows"][:20]]
+            return Div(
+                header,
+                Table(Thead(head), Tbody(*body), cls="w-full"),
+                cls="bg-white rounded-lg p-3 border border-gray-200 mt-2 max-w-2xl overflow-x-auto",
+            )
+        if kind == "citations" and art.get("items"):
+            return Div(
+                header,
+                *[Div(
+                    Div(
+                        Span((i.get("doc_type") or "").upper(), cls="text-[10px] font-mono bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded mr-2"),
+                        A(i.get("title", ""), href=i.get("url", ""), target="_blank", cls="text-sm text-blue-600 hover:underline"),
+                    ),
+                    P((i.get("snippet") or "")[:200], cls="text-xs text-gray-500 mt-0.5"),
+                    cls="py-1.5 border-b border-gray-100",
+                ) for i in art["items"][:8]],
+                cls="bg-white rounded-lg p-3 border border-gray-200 mt-2 max-w-2xl",
+            )
+        if art.get("body_md"):
+            return Div(header, self._markdown_bubble(art["body_md"]), cls="bg-white rounded-lg p-3 border border-gray-200 mt-2 max-w-2xl")
+        return Div(header, Pre(json.dumps(art, indent=2, default=str), cls="text-xs text-gray-600 overflow-x-auto"), cls="bg-white rounded-lg p-3 border border-gray-200 mt-2 max-w-2xl")
+
+    def _store_canvas(self, key: str, data):
+        """Store latest artifact data for the right-pane canvas."""
+        try:
+            import main as _main
+            _main._canvas_state[key] = data
+        except Exception:
+            pass
+
     async def _chat(self, user_input: str) -> list:
         """Free-form question → LLM + optional research."""
         parts = []

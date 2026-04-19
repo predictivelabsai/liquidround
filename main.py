@@ -405,6 +405,50 @@ def _nav_button(label, cmd, accent="gray"):
         cls="text-left text-xs text-gray-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-1.5 rounded transition-colors w-full",
     )
 
+def _all_agents_nav_section():
+    """Collapsible browser of all 22 ECM Squad specialists, grouped by category.
+
+    Clicking an agent inserts its prefix into the chat input so the user can
+    complete the prompt. Mirrors pehero's agent_browser pattern.
+    """
+    from agents.registry import CATEGORIES, AGENTS_BY_CATEGORY
+    groups = []
+    for cat in CATEGORIES:
+        agents = AGENTS_BY_CATEGORY.get(cat["key"], [])
+        items = []
+        for a in agents:
+            items.append(Button(
+                Span(a.icon, cls="text-xs mr-2 text-amber-400"),
+                Span(a.name, cls="text-xs flex-1 truncate"),
+                Span(a.prefix, cls="text-[10px] font-mono text-gray-400 ml-1"),
+                type="button",
+                onclick=(
+                    f"var i=document.querySelector(\"input[name='msg']\"); "
+                    f"if(i){{i.value={a.prefix + ' '!r};i.focus();}}"
+                ),
+                title=a.one_liner,
+                cls="text-left text-xs text-gray-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-1 rounded transition-colors w-full flex items-center",
+            ))
+        groups.append(Details(
+            Summary(
+                Span(cat["icon"], cls="text-xs text-amber-400 mr-2"),
+                Span(cat["name"], cls="text-xs font-semibold text-gray-600"),
+                Span(f"{len(agents)}", cls="text-[10px] text-gray-400 ml-auto font-mono"),
+                cls="px-3 py-1.5 cursor-pointer hover:bg-gray-50 rounded list-none flex items-center nav-section-header",
+            ),
+            Div(*items, cls="pl-2 border-l-2 border-amber-100 ml-3 mb-1"),
+            cls="mb-0.5",
+        ))
+    return Details(
+        Summary(
+            Span("ECM SQUAD · 22 AGENTS", cls="text-xs font-bold text-amber-500 uppercase tracking-wide"),
+            cls="px-3 py-2 cursor-pointer hover:bg-gray-50 rounded list-none flex items-center nav-section-header",
+        ),
+        Div(*groups, cls="pl-2 ml-2 mb-2"),
+        cls="mb-1",
+    )
+
+
 def _nav_section(session):
     """Left navigation — grouped by buyer/seller workflow. Role-aware: the
     active role's section renders first and stays open by default, with a
@@ -517,6 +561,8 @@ def _nav_section(session):
                     open=seller_open,
                     cls="mb-1",
                 ),
+                # ALL 22 SPECIALISTS section (collapsed) — full ECM Squad browser
+                _all_agents_nav_section(),
                 # RESEARCH section (collapsed)
                 Details(
                     Summary(
@@ -791,7 +837,12 @@ def app_shell(session, role: str = ""):
     # Choose default context cards based on role
     default_ctx = "buyer_welcome" if active_role == "buyer" else "seller_welcome" if active_role == "seller" else "default"
     return (
-        Title("LiquidRound"),
+        Title("LiquidRound — App"),
+        # Apply dark-navy theme on the chat app (matches landing page look/feel).
+        # Script adds the class synchronously so app.css dark rules apply without
+        # a visible flash of light content.
+        Script("document.body.classList.add('lr-dark');"),
+        Style("html{background:#0B1220;} body{background:#0B1220;color:#E5E7EB;}"),
         _nav_section(session),
         Main(
             # Header
@@ -909,6 +960,94 @@ def _determine_context(msg: str, result_components: list) -> tuple:
 def context_cards(context_key: str = "default"):
     """Return 3 context-sensitive action cards."""
     return _render_context_cards(context_key)
+
+
+@rt("/app/chat", methods=["POST"])
+async def app_chat_sse(request):
+    """SSE streaming chat — routes to one of the 22 ECM Squad specialists.
+
+    Event stream format (pehero-compatible):
+      event: agent_route  → {slug, agent, icon}
+      event: token        → {text}        — incremental LLM chunks
+      event: tool_start   → {name, args}
+      event: tool_end     → {name, output}
+      event: artifact_show→ {kind, title, ...}
+      event: done         → {slug, tools}
+      event: error        → {message}
+    """
+    from starlette.responses import StreamingResponse
+    from langchain_core.messages import HumanMessage
+    from agents.base import cached_agent
+    from agents.registry import by_slug
+    from agents.router import route as route_slug, strip_prefix
+    from tools.artifact import is_artifact, parse_artifact, ARTIFACT_PREFIX
+    import chat_sse as sse
+
+    form = await request.form()
+    user_msg = (form.get("msg") or "").strip()
+    if not user_msg:
+        return Response("empty message", status_code=400)
+
+    slug = route_slug(user_msg)
+    spec = by_slug(slug)
+    stripped = strip_prefix(user_msg)
+
+    async def event_stream():
+        yield sse.event(sse.AGENT_ROUTE, {
+            "slug": slug,
+            "agent": spec.name if spec else slug,
+            "icon": spec.icon if spec else "◆",
+        })
+
+        tool_calls = 0
+        try:
+            agent = cached_agent(slug)
+        except Exception as e:  # noqa: BLE001
+            yield sse.event(sse.ERROR, {"message": f"agent build failed: {e}"})
+            yield sse.event(sse.DONE, {"slug": slug, "tools": 0})
+            return
+
+        # LangGraph app path
+        if hasattr(agent, "astream_events"):
+            try:
+                async for ev in agent.astream_events({"messages": [HumanMessage(content=stripped)]}, version="v2"):
+                    kind = ev["event"]
+                    if kind == "on_chat_model_stream":
+                        chunk = ev["data"].get("chunk")
+                        text = getattr(chunk, "content", None) if chunk else None
+                        if isinstance(text, str) and text:
+                            yield sse.event(sse.TOKEN, {"text": text})
+                    elif kind == "on_tool_start":
+                        tool_calls += 1
+                        yield sse.event(sse.TOOL_START, {
+                            "name": ev.get("name", "?"),
+                            "args": ev["data"].get("input", {}),
+                        })
+                    elif kind == "on_tool_end":
+                        raw = ev["data"].get("output", "")
+                        output = getattr(raw, "content", None) or (raw if isinstance(raw, str) else str(raw))
+                        yield sse.event(sse.TOOL_END, {
+                            "name": ev.get("name", "?"),
+                            "output": (output or "")[:2000],
+                        })
+                        if isinstance(output, str) and output.startswith(ARTIFACT_PREFIX):
+                            try:
+                                yield sse.event(sse.ARTIFACT, parse_artifact(output))
+                            except Exception:
+                                pass
+            except Exception as e:  # noqa: BLE001
+                yield sse.event(sse.ERROR, {"message": str(e)})
+        else:
+            # Simple-LLM callable fallback
+            try:
+                text = agent(stripped) if callable(agent) else str(agent)
+                yield sse.event(sse.TOKEN, {"text": text})
+            except Exception as e:  # noqa: BLE001
+                yield sse.event(sse.ERROR, {"message": str(e)})
+
+        yield sse.event(sse.DONE, {"slug": slug, "tools": tool_calls})
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 
 @rt("/settings/save", methods=["POST"])

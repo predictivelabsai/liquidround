@@ -159,6 +159,11 @@ def route(message: str, forced_slug: str | None = None) -> str:
     return _llm_classify(message)
 
 
+def has_specialist_prefix(message: str) -> bool:
+    """True if the message starts with one of the 22 agent prefixes."""
+    return _prefix_match(message) is not None
+
+
 def strip_prefix(message: str) -> str:
     """Remove the leading `xxx:` prefix from a message, if present."""
     m = re.match(r"^\s*([a-z]{2,12}):\s*", message, flags=re.IGNORECASE)
