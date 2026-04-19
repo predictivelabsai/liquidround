@@ -36,50 +36,47 @@ TOUR = [
     ("05-how-it-works.png",    "/how-it-works",      "text=How it works",                True,  None),
     ("06-pricing.png",         "/pricing",           "text=synthetic data",              True,  None),
     # Product app — buyer + seller defaults
-    ("07-app-buyer.png",       "/app?role=buyer",    "input[name='msg']",                False, None),
-    ("08-app-seller.png",      "/app?role=seller",   "input[name='msg']",                False, None),
-    # Chat flow (buyer)
-    ("09-chat-profile.png",    "/app?role=buyer",    "input[name='msg']",                False, "profile"),
-    ("10-chat-triage.png",     "/app?role=buyer",    "input[name='msg']",                False, "triage"),
-    ("11-chat-score.png",      "/app?role=buyer",    "input[name='msg']",                False, "score"),
+    ("07-app-buyer.png",       "/app?role=buyer",    ".app",                             False, None),
+    ("08-app-seller.png",      "/app?role=seller",   ".app",                             False, None),
+    # Agent browser expanded
+    ("09-agent-browser.png",   "/app?role=buyer",    ".agent-browser",                   False, "expand_agents"),
+    # Chat flow
+    ("10-chat-triage.png",     "/app?role=buyer",    "#chat-input",                      False, "triage"),
+    ("11-chat-dcf.png",        "/app?role=buyer",    "#chat-input",                      False, "dcf"),
+    ("12-chat-memo.png",       "/app?role=buyer",    "#chat-input",                      False, "memo"),
     # Seller
-    ("12-chat-buyers.png",     "/app?role=seller",   "input[name='msg']",                False, "buyers"),
-    ("13-chat-ipo.png",        "/app?role=seller",   "input[name='msg']",                False, "ipo"),
+    ("13-chat-ipo.png",        "/app?role=seller",   "#chat-input",                      False, "ipo"),
     # Configuration
-    ("14-settings.png",        "/app?role=buyer",    "input[name='msg']",                False, "settings"),
+    ("14-config.png",          "/app?role=buyer",    ".config-section",                  False, None),
 ]
 
 
 CHAT_MSGS = {
-    "profile":  "profile: SAP.DE",
-    "triage":   "triage: Nordic renewable energy target, EUR 80M revenue, 15% EBITDA margin",
-    "score":    "score buyer:Siemens target:Harju Elekter",
-    "buyers":   "buyers company:B2B SaaS revenue:15M",
-    "ipo":      "ipo company:Ignitis industry:Energy",
-    "settings": "settings",
+    "triage":   "triage: Nordic renewable energy target, EUR 80M revenue, 15% EBITDA",
+    "dcf":      "dcf: Harju Elekter at 9% WACC and 2.5% terminal growth",
+    "memo":     "memo: draft the IC memo for Meridian Healthcare",
+    "ipo":      "ipo: Ignitis Group readiness assessment for Nasdaq Baltic",
 }
 
 
 def _run_chat(page, msg: str) -> None:
-    page.fill("input[name='msg']", msg)
-    page.evaluate(
-        "() => document.querySelector('form[hx-post=\"/chat\"]').dispatchEvent("
-        "new Event('submit', {cancelable: true, bubbles: true}))"
-    )
-    # Wait for a bubble to render in #chat-area
+    """Type a message and send via the SSE /app/chat endpoint (JS-driven)."""
+    page.fill("#chat-input", msg)
+    page.evaluate("() => window.sendMessage && window.sendMessage(null)")
+    # Wait for at least one message bubble (or a few seconds if the backend
+    # errors out without an API key — the UI still shows error bubbles).
     try:
-        page.wait_for_function(
-            """() => {
-                const ca = document.getElementById('chat-area');
-                if (!ca) return false;
-                const bubbles = ca.querySelectorAll('div.bg-white');
-                return bubbles.length >= 1;
-            }""",
-            timeout=60_000,
-        )
+        page.wait_for_selector("#messages .msg", timeout=60_000)
     except Exception:
-        log.warning("chat response didn't appear within 60s for: %s", msg)
-    time.sleep(1.0)  # let any late paint settle
+        log.warning("no message appeared within 60s for: %s", msg)
+    time.sleep(1.5)
+
+
+def _expand_all_agent_groups(page) -> None:
+    """Expand the first 2 agent categories to show the 22-agent browser."""
+    for cat_id in ["cat-sourcing", "cat-underwriting"]:
+        page.evaluate(f"() => window.toggleGroup && window.toggleGroup({cat_id!r})")
+    time.sleep(0.4)
 
 
 def main() -> None:
@@ -106,7 +103,9 @@ def main() -> None:
                 except Exception:
                     log.warning("selector %r didn't appear on %s", wait_for, path)
 
-            if action and action in CHAT_MSGS:
+            if action == "expand_agents":
+                _expand_all_agent_groups(page)
+            elif action and action in CHAT_MSGS:
                 _run_chat(page, CHAT_MSGS[action])
 
             out = SHOTS / fname

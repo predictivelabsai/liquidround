@@ -72,41 +72,46 @@ def test_agents_page_shows_22_cards(page):
 
 
 @pytest.mark.e2e
-def test_app_buyer_role_opens_buyer_section(page):
+def test_app_buyer_role_renders_3pane_shell(page):
     page.goto(BASE_URL + "/app?role=buyer")
-    page.wait_for_selector("input[name='msg']", timeout=10_000)
-    # Buyer details element should be open
-    buying = page.locator("details:has-text(\"I'M BUYING\")")
-    assert buying.count() >= 1
-    # Either the "I'M BUYING" details has attribute open OR a blue dot marks it active
+    # New pehero-faithful shell uses a textarea, not an input
+    page.wait_for_selector("#chat-input", timeout=10_000)
     html = page.content()
-    assert "I'M BUYING" in html
-    # "Find Targets" shown in buyer nav
-    assert "Find Targets" in html
+    assert 'class="app' in html            # 3-pane grid
+    assert 'class="left-pane"' in html
+    assert 'id="right-pane"' in html
+    assert 'id="artifact-empty"' in html
+    # Buyer is the active role chip
+    assert 'role-buyer active' in html or 'data-role="buyer" class="cfg-role-chip role-buyer active"' in html
 
 
 @pytest.mark.e2e
-def test_app_seller_role_opens_seller_section(page):
+def test_app_seller_role_highlights_seller_chip(page):
     page.goto(BASE_URL + "/app?role=seller")
-    page.wait_for_selector("input[name='msg']", timeout=10_000)
+    page.wait_for_selector("#chat-input", timeout=10_000)
     html = page.content()
-    assert "I'M SELLING" in html
-    assert "Find Buyers" in html
+    assert 'role-seller active' in html
 
 
 @pytest.mark.e2e
-def test_settings_widget_has_role_selector(page):
+def test_agent_browser_shows_all_22(page):
     page.goto(BASE_URL + "/app?role=buyer")
-    page.wait_for_selector("input[name='msg']")
-    # Post "settings" as a chat message
-    page.fill("input[name='msg']", "settings")
-    page.evaluate(
-        "() => document.querySelector('form[hx-post=\"/chat\"]').dispatchEvent("
-        "new Event('submit', {cancelable: true, bubbles: true}))"
-    )
-    page.wait_for_selector("text=Default view", timeout=20_000)
-    html = page.content()
-    # Radio options present
-    assert "Buyer-Led" in html
-    assert "Seller-Led" in html
-    assert "Both" in html
+    page.wait_for_selector(".agent-browser", timeout=10_000)
+    assert page.locator(".agent-item").count() == 22
+    # All 5 categories
+    assert page.locator(".cat-toggle").count() == 5
+
+
+@pytest.mark.e2e
+def test_configuration_has_currency_and_role(page):
+    page.goto(BASE_URL + "/app?role=buyer")
+    page.wait_for_selector(".config-section", timeout=10_000)
+    assert page.locator(".cfg-chip").count() == 3         # EUR / GBP / USD
+    assert page.locator(".cfg-role-chip").count() == 3    # Buyer / Seller / Both
+
+
+@pytest.mark.e2e
+def test_sample_cards_present(page):
+    page.goto(BASE_URL + "/app?role=buyer")
+    page.wait_for_selector(".sample-cards", timeout=10_000)
+    assert page.locator(".sample-card").count() == 3

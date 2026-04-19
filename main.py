@@ -827,100 +827,64 @@ def _right_pane():
 
 
 @rt("/app")
-def app_shell(session, role: str = ""):
-    """Main chat-first app shell. Reads ?role=buyer|seller to set the default view."""
-    ss = _get_ss(session)
-    # Persist role if provided via query param, else fall back to what's in session
-    if role in ("buyer", "seller"):
+def app_shell(session, role: str = "", sid: str = ""):
+    """3-pane chat app shell — pehero-faithful (Sessions / Agents / Workspace /
+    Configuration). Dark navy palette matching the landing. SSE streaming
+    via /app/chat."""
+    from components.chat_shell import left_pane, center_pane, right_pane
+
+    # Persist role from query param (from landing CTAs) into session
+    if role in ("buyer", "seller", "both"):
         session["role"] = role
     active_role = session.get("role", "buyer")
-    # Choose default context cards based on role
-    default_ctx = "buyer_welcome" if active_role == "buyer" else "seller_welcome" if active_role == "seller" else "default"
+    current_currency = session.get("currency", "EUR")
+
+    # Load sessions for left pane (logged-in users only)
+    user = session.get("user")
+    sessions_list = []
+    if user and user.get("user_id"):
+        try:
+            from utils.database import db_service
+            convs = db_service.get_user_conversations(user["user_id"], limit=20) or []
+            sessions_list = [{"id": c["id"], "title": c.get("conversation_title") or c.get("user_query", "Untitled")}
+                             for c in convs]
+        except Exception:
+            pass
+
+    # Load messages for the active session (sid=... from URL)
+    messages = []
+    if user and sid:
+        try:
+            from utils.database import db_service
+            conv_msgs = db_service.get_messages(sid) or []
+            messages = [{"role": m["role"], "content": m["content"]} for m in conv_msgs]
+            session["conversation_id"] = sid
+        except Exception:
+            pass
+
+    user_email = user.get("email") if user else None
+
     return (
         Title("LiquidRound — App"),
-        # Apply dark-navy theme on the chat app (matches landing page look/feel).
-        # Script adds the class synchronously so app.css dark rules apply without
-        # a visible flash of light content.
-        Script("document.body.classList.add('lr-dark');"),
-        Style("html{background:#0B1220;} body{background:#0B1220;color:#E5E7EB;}"),
-        _nav_section(session),
-        Main(
-            # Header
-            Div(
-                Div(
-                    H1("LiquidRound", cls="text-2xl font-bold text-blue-800"),
-                    P("AI-Powered M&A Research Platform", cls="text-sm text-gray-500"),
-                    cls="text-center",
-                ),
-                # Canvas toggle (top-right)
-                Button(
-                    "Canvas", id="canvas-toggle",
-                    onclick="document.getElementById('right-pane').classList.toggle('translate-x-full')",
-                    cls="fixed top-3 right-3 z-30 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm hover:bg-blue-50 hover:text-blue-700 cursor-pointer",
-                ),
-                cls="pt-6 mb-4",
+        # Mount a hidden sign-in overlay so the "Sign in" button can open it
+        Div(cls="left-overlay", id="left-overlay", onclick="toggleLeftPane()"),
+        Div(
+            left_pane(
+                user_email=user_email,
+                sessions=sessions_list,
+                current_sid=sid,
+                current_currency=current_currency,
+                current_role=active_role,
             ),
-            # Welcome section (role-aware cards)
-            Div(_render_context_cards("find-targets" if active_role == "buyer" else "find-buyers" if active_role == "seller" else "default"), id="welcome-section"),
-            # Suggestion chips (updated dynamically via OOB)
-            Div(id="suggestion-chips", cls="flex flex-wrap gap-2 justify-center mb-4"),
-            # Chat area
-            Div(
-                Div(
-                    id="chat-area",
-                    cls="space-y-2 mb-4 max-h-[calc(100vh-280px)] overflow-y-auto px-2",
-                ),
-                # Input row: paperclip + text + send
-                Div(
-                    # Paperclip triggers the hidden upload form's file input
-                    Label(
-                        NotStr('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>'),
-                        htmlFor="file-upload",
-                        cls="flex items-center justify-center w-10 h-10 border border-gray-300 rounded-xl text-gray-400 hover:text-blue-600 hover:border-blue-400 cursor-pointer transition-colors",
-                        title="Upload document (PDF, XLS, PPT)",
-                    ),
-                    cls="flex items-center",
-                ),
-                Form(
-                    Div(
-                        Input(
-                            name="msg", placeholder="Ask a question or describe what you're looking for...",
-                            autofocus=True, autocomplete="off",
-                            cls="flex-1 border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
-                        ),
-                        Button("Send", type="submit",
-                               cls="bg-blue-600 text-white px-5 py-3 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"),
-                        cls="flex gap-2 items-center flex-1",
-                    ),
-                    hx_post="/chat",
-                    hx_target="#chat-area",
-                    hx_swap="beforeend",
-                    hx_on__before_request=_THINKING_JS,
-                    hx_on__after_request="this.reset(); var t=document.getElementById('thinking-live'); if(t) t.remove(); var ca=document.getElementById('chat-area'); if(ca) ca.scrollTo({top:ca.scrollHeight, behavior:'smooth'}); var ws=document.getElementById('welcome-section'); if(ws) ws.remove();",
-                    cls="flex-1",
-                ),
-                # Upload form — file input triggered by paperclip label
-                Form(
-                    Input(
-                        type="file", name="file", id="file-upload",
-                        accept=".pdf,.xlsx,.xls,.pptx,.ppt",
-                        cls="hidden",
-                        onchange=_THINKING_JS + " document.getElementById('upload-form').requestSubmit();",
-                    ),
-                    id="upload-form",
-                    hx_post="/chat-upload",
-                    hx_target="#chat-area",
-                    hx_swap="beforeend",
-                    hx_encoding="multipart/form-data",
-                    hx_on__after_request="var t=document.getElementById('thinking-live'); if(t) t.remove();",
-                    cls="hidden",
-                ),
-                cls="max-w-3xl mx-auto flex gap-2 items-center",
+            center_pane(
+                messages=messages,
+                current_agent_slug=None,
+                current_role=active_role,
             ),
-            id="main-content",
-            cls="min-h-screen bg-gray-50 px-4 pb-6 ml-56",
+            right_pane(),
+            cls="app pane-closed",
         ),
-        _right_pane(),
+        Script(src="/chat.js"),
     )
 
 
@@ -960,6 +924,16 @@ def _determine_context(msg: str, result_components: list) -> tuple:
 def context_cards(context_key: str = "default"):
     """Return 3 context-sensitive action cards."""
     return _render_context_cards(context_key)
+
+
+@rt("/app/config", methods=["POST"])
+async def app_config(session, request):
+    """Persist session-level chat preferences (currency for now)."""
+    form = await request.form()
+    currency = (form.get("currency") or "").upper()
+    if currency in ("EUR", "GBP", "USD"):
+        session["currency"] = currency
+    return {"ok": True, "currency": session.get("currency", "EUR")}
 
 
 @rt("/app/chat", methods=["POST"])

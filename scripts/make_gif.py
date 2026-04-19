@@ -21,15 +21,15 @@ STATIC_GIF = ROOT / "static" / "liquidround.gif"
 # App-focused tour. Landing frames intentionally shortened (the GIF lives ON
 # the landing page — no point watching it play the landing again).
 FRAMES = [
-    ("03-agents.png",          2400),  # agent directory (hook)
-    ("07-app-buyer.png",       2000),  # buyer default view
-    ("09-chat-profile.png",    3000),  # profile:SAP.DE
-    ("10-chat-triage.png",     3200),  # triage:
-    ("11-chat-score.png",      3400),  # score match
-    ("08-app-seller.png",      2000),  # switch to seller
-    ("12-chat-buyers.png",     3000),  # find buyers
-    ("13-chat-ipo.png",        3000),  # IPO readiness
-    ("14-settings.png",        2400),  # configuration
+    ("03-agents.png",          2400),  # landing agent directory
+    ("07-app-buyer.png",       2200),  # chat buyer view
+    ("09-agent-browser.png",   2800),  # ECM Squad agent browser expanded
+    ("10-chat-triage.png",     3200),  # triage
+    ("11-chat-dcf.png",        3200),  # DCF
+    ("12-chat-memo.png",       3400),  # IC memo
+    ("08-app-seller.png",      2000),  # seller default view
+    ("13-chat-ipo.png",        3200),  # IPO readiness
+    ("14-config.png",          2400),  # currency + role config
 ]
 
 TARGET_W = 1200
