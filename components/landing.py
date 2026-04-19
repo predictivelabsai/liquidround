@@ -120,29 +120,37 @@ def hero():
             # Eyebrow
             Div(
                 Span("◈", cls="mono mr-2", style=f"color:{CTA}"),
-                Span("Your ECM Agent Squad · Both sides of every deal",
+                Span("AI Investment Banking · Both sides of every deal",
                      cls="text-xs mono uppercase tracking-widest", style=f"color:{INK_MUTED}"),
                 cls="flex items-center justify-center mb-8",
             ),
             # Headline
             H1(
-                Span("Your ECM Agent Squad "),
+                Span("Your AI "),
+                Span("ECM / IB ", style=f"color:{CTA};"),
+                Span("analyst squad "),
                 Span("for M&A ", style=f"color:{BUY}"),
                 Span("and "),
                 Span("IPO.", style=f"color:{SELL}"),
                 cls="text-5xl md:text-6xl font-bold tightest text-center mb-6",
                 style=f"color:{INK};",
             ),
-            # Sub — explicitly spells out ECM
+            # Sub — explicitly spells out ECM, mentions BYOD, memo/pitch drafting
             P(
                 Span("ECM = ", cls="mono", style=f"color:{CTA};"),
                 Span("Equity Capital Markets", cls="mono", style=f"color:{INK};"),
-                Span(". Twenty-two specialist AI agents working both sides of every deal — ",
+                Span(". 22 specialist AI analysts — ",
                      style=f"color:{INK_MUTED};"),
                 Span("buyer-led ", style=f"color:{BUY};"),
                 Span("sourcing and diligence, ", style=f"color:{INK_MUTED};"),
                 Span("seller-led ", style=f"color:{SELL};"),
-                Span("positioning and IPO readiness.", style=f"color:{INK_MUTED};"),
+                Span("positioning and IPO readiness. ", style=f"color:{INK_MUTED};"),
+                Span("Real-time market data, ", style=f"color:{INK};"),
+                Span("investment-memo and pitch-deck drafting, and ",
+                     style=f"color:{INK_MUTED};"),
+                Span("BYOD ", style=f"color:{CTA};"),
+                Span("— bring your own pitch books, CIMs and term sheets.",
+                     style=f"color:{INK_MUTED};"),
                 cls="text-lg md:text-xl text-center max-w-3xl mx-auto mb-10 leading-relaxed",
             ),
             # Two CTAs
@@ -197,8 +205,8 @@ def stats_bar():
     items = [
         ("22", "in the ECM squad"),
         ("2", "sides of every deal"),
-        ("M&A + IPO", "both workflows"),
-        ("Real-time", "yfinance + EXA + Tavily"),
+        ("M&A + IPO", "buyer and seller"),
+        ("BYOD", "bring your own pitch books"),
     ]
     return Div(
         Div(
@@ -239,7 +247,7 @@ def pillars_section():
             H2("One system. Every stage. Both sides.",
                cls="text-3xl md:text-4xl font-bold tightest text-center mb-4",
                style=f"color:{INK};"),
-            P("Your ECM Agent Squad spans 5 workflow categories.",
+            P("Your AI ECM / IB analyst squad spans 5 workflow categories.",
               cls="text-center mb-12", style=f"color:{INK_MUTED};"),
             Div(
                 *[category_pillar(c["icon"], c["name"], c["blurb"], emph.get(c["key"], ""))
@@ -301,7 +309,7 @@ def agent_grid_section():
             H2("Every role already defined.",
                cls="text-3xl md:text-4xl font-bold tightest text-center mb-4",
                style=f"color:{INK};"),
-            P("The full ECM Agent Squad — prompts and prefixes pre-wired. Talk to them directly or let the router pick.",
+            P("22 AI ECM / IB analysts — each with a defined role and a one-word prefix. Talk to them directly or let the router pick.",
               cls="text-center mb-12", style=f"color:{INK_MUTED};"),
             *sections,
             cls="max-w-6xl mx-auto px-6 py-20",
@@ -312,8 +320,8 @@ def agent_grid_section():
 def how_it_works_section():
     steps = [
         ("1. Choose your side", "Buyer-Led if you're acquiring. Seller-Led if you're exiting. The app adapts its default view; you can switch anytime.", BUY),
-        ("2. Ask a question, paste a prefix, or upload a doc", "The router sends your message to the right specialist — profile:, triage:, memo:, ipo: — across your ECM squad. Or upload a PDF and we'll extract key terms.", CTA),
-        ("3. Iterate in the canvas", "Research results, valuation comps, scoring matrices and documents all land in the right-pane canvas, ready to compose into a memo or CIM.", SELL),
+        ("2. Ask a question, paste a prefix, or upload a doc", "The router sends your message to the right analyst — profile:, triage:, memo:, ipo: — across your ECM / IB squad. Upload a pitch book or CIM (BYOD) and the analysts read, cite and draft from it.", CTA),
+        ("3. Preview the memo", "Research results, valuation comps and scoring matrices all land in the right pane. Click Preview PDF on any memo to render a polished document instantly.", SELL),
     ]
     return Div(
         Div(

@@ -8,8 +8,8 @@ A research question (company, sector, geography, theme).
 
 ## Method
 
-1. Use EXA for semantic search of high-quality primary sources.
-2. Use TAVILY for real-time news and recent signals.
+1. Use semantic search for high-quality primary sources.
+2. Use real-time web search for news and recent signals.
 3. Read and triangulate — prefer primary sources, cross-check claims.
 
 ## Output

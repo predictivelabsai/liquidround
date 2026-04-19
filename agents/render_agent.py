@@ -464,18 +464,18 @@ class RenderAgent:
         if trace:
             from components.research_panel import ThinkingTrace
             parts.append(ThinkingTrace(trace))
-        # EXA results
+        # Deep-search results (semantic source)
         for r in res.get("exa", {}).get("results", [])[:5]:
             parts.append(Div(
-                Span("EXA", cls="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded mr-2"),
+                Span("DEEP", cls="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded mr-2"),
                 A(r.get("title",""), href=r.get("url",""), target="_blank", cls="text-sm text-blue-700 hover:underline"),
                 P(r.get("snippet","")[:150], cls="text-xs text-gray-500 mt-0.5"),
                 cls="py-1.5 border-b border-gray-50",
             ))
-        # Tavily results
+        # Web / news results
         for r in res.get("tavily", {}).get("results", [])[:5]:
             parts.append(Div(
-                Span("TAV", cls="text-xs bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded mr-2"),
+                Span("WEB", cls="text-xs bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded mr-2"),
                 A(r.get("title",""), href=r.get("url",""), target="_blank", cls="text-sm text-blue-700 hover:underline"),
                 P(r.get("content","")[:150], cls="text-xs text-gray-500 mt-0.5"),
                 cls="py-1.5 border-b border-gray-50",
@@ -799,20 +799,18 @@ class RenderAgent:
                 ),
                 cls="mb-4 pb-4 border-b border-gray-100",
             ),
-            # ─── LLM + API ───
-            P("LLM + API status", cls="text-xs font-medium text-gray-700 uppercase tracking-wide mb-2"),
+            # ─── Status ───
+            P("Services", cls="text-xs font-medium text-gray-700 uppercase tracking-wide mb-2"),
             *[Div(
-                Span(k, cls="text-xs text-gray-500 w-24 inline-block"),
+                Span(k, cls="text-xs text-gray-500 w-40 inline-block"),
                 Span(v, cls="text-sm font-medium"),
                 cls="py-1",
               ) for k, v in [
-                ("Provider", config.default_provider.upper()),
-                ("Model", config.default_model),
-                ("Temperature", str(config.default_temperature)),
-                ("XAI", "Configured" if config.xai_api_key else "Not set"),
-                ("OpenAI", "Configured" if config.openai_api_key else "Not set"),
-                ("EXA", "Configured" if config.exa_api_key else "Not set"),
-                ("Tavily", "Configured" if config.tavily_api_key else "Not set"),
+                ("AI analyst engine",    "Online" if (config.xai_api_key or config.openai_api_key) else "Offline"),
+                ("Market data",          "Online"),
+                ("Real-time search",     "Online" if (config.exa_api_key and config.tavily_api_key) else "Partial" if (config.exa_api_key or config.tavily_api_key) else "Offline"),
+                ("Memo & pitch drafting","Online"),
+                ("BYOD document ingest", "Online"),
             ]],
             cls="bg-white rounded-lg p-4 border border-gray-200 max-w-xl",
         )

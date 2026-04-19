@@ -56,9 +56,12 @@ def page(browser):
 @pytest.mark.e2e
 def test_landing_has_hero_and_two_ctas(page):
     page.goto(BASE_URL + "/")
-    page.wait_for_selector("text=ECM Agent Squad", timeout=10_000)
+    # Hero mentions the AI ECM/IB analyst squad positioning
+    page.wait_for_selector("text=analyst squad", timeout=10_000)
     # Must explicitly spell out what ECM means
     assert page.locator("text=Equity Capital Markets").count() >= 1
+    # BYOD messaging present
+    assert page.locator("text=BYOD").count() >= 1
     assert page.locator("text=Buyer-Led").count() >= 1
     assert page.locator("text=Seller-Led").count() >= 1
 

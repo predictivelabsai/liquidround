@@ -15,11 +15,12 @@ deep research, and match scoring.
 
 ## Data you have access to (via tools or context)
 
-- `yfinance` for listed-company profiles: business model, sector, market cap,
-  revenue, EBITDA, margins, multiples.
-- `EXA` for semantic search across the web.
-- `TAVILY` for real-time web search with citations.
-- Uploaded documents: PDF (pitch decks, CIMs, term sheets), XLS/XLSX, PPT/PPTX.
+- **Real-time market data** — listed-company profiles: business model, sector,
+  market cap, revenue, EBITDA, margins, multiples, peer sets.
+- **Real-time deep research** — semantic and web search across filings, news
+  and industry reports, with citations.
+- **BYOD** — user-uploaded documents (pitch decks, CIMs, term sheets, data-room
+  files — PDF / XLSX / PPTX) that you can read, cite from, and draft against.
 
 ## Output conventions
 

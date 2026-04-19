@@ -200,14 +200,14 @@ def canvas_research():
     parts = []
     for r in data.get("exa", {}).get("results", [])[:8]:
         parts.append(Div(
-            Span("EXA", cls="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded mr-2"),
+            Span("DEEP", cls="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded mr-2"),
             A(r.get("title",""), href=r.get("url",""), target="_blank", cls="text-sm text-blue-700 hover:underline"),
             P(r.get("snippet","")[:150], cls="text-xs text-gray-500 mt-0.5"),
             cls="py-2 border-b border-gray-50",
         ))
     for r in data.get("tavily", {}).get("results", [])[:8]:
         parts.append(Div(
-            Span("TAV", cls="text-xs bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded mr-2"),
+            Span("WEB", cls="text-xs bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded mr-2"),
             A(r.get("title",""), href=r.get("url",""), target="_blank", cls="text-sm text-blue-700 hover:underline"),
             P(r.get("content","")[:150], cls="text-xs text-gray-500 mt-0.5"),
             cls="py-2 border-b border-gray-50",

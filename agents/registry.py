@@ -123,7 +123,7 @@ AGENTS: tuple[AgentSpec, ...] = (
         slug="company_profiler", name="Company Profiler",
         category="underwriting", audience="shared", icon="☰", prefix="profile:",
         one_liner="Ticker → clean profile: business model, financials, industry.",
-        description="Pulls company profiles from yfinance + proprietary research: business model, key products, markets, market cap, revenue, EBITDA, margins, and sector multiples.",
+        description="Pulls a live company profile from real-time market data: business model, key products, markets, market cap, revenue, EBITDA, margins, and sector multiples.",
         example_prompts=(
             "profile: SAP.DE",
             "profile: NOVO-B.CO",
@@ -326,8 +326,8 @@ AGENTS: tuple[AgentSpec, ...] = (
     AgentSpec(
         slug="research_analyst", name="Deep Research Analyst",
         category="portfolio", audience="shared", icon="⌬", prefix="research:",
-        one_liner="Deep semantic + web research via EXA and Tavily.",
-        description="Runs deep research across EXA (semantic search) and Tavily (web search). Returns a synthesized summary with cited sources covering market context, competitive landscape, and recent news.",
+        one_liner="Real-time deep research across web, filings, and industry sources.",
+        description="Runs deep research across real-time semantic and web search. Returns a synthesized summary with cited sources covering market context, competitive landscape, and recent news.",
         example_prompts=(
             "research: Baltic M&A trends in renewable energy 2024",
             "Deep research on European HCIT consolidation",

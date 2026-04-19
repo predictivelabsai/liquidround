@@ -246,7 +246,7 @@ def welcome_hero(current_role: str = "buyer"):
             ("dcf: Harju Elekter 9% WACC", "dcf_valuer"),
             ("research: Nordic M&A 2026", "research_analyst"),
         ]
-        sub = "Your ECM Agent Squad for sell-side M&A and IPO readiness."
+        sub = "Your AI ECM / IB analyst squad for sell-side M&A and IPO readiness. Upload your pitch book and they'll read, cite and draft from it."
     else:
         prompts = [
             ("triage: Nordic SaaS, EUR 8M EBITDA, 20% growth", "deal_triage"),
@@ -256,7 +256,7 @@ def welcome_hero(current_role: str = "buyer"):
             ("vdr: audit the data room for NovaTech", "vdr_auditor"),
             ("research: Baltic renewable M&A", "research_analyst"),
         ]
-        sub = "Your ECM Agent Squad for buy-side M&A. Type a prompt — the router picks the right specialist."
+        sub = "Your AI ECM / IB analyst squad for buy-side M&A. Type a prompt — the router picks the right analyst."
 
     return Div(
         Div(
