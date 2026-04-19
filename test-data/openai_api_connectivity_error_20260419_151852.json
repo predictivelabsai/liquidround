@@ -1,0 +1,7 @@
+{
+  "test": "openai_api_connectivity",
+  "success": false,
+  "api_key_present": false,
+  "error": "The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable",
+  "error_type": "OpenAIError"
+}

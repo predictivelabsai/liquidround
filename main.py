@@ -30,6 +30,10 @@ app, rt = fast_app(
     secret_key=os.getenv("SESSION_SECRET", "liquidround-dev-secret-change-me"),
 )
 
+# Register landing-page routes FIRST so `/` resolves to the landing, not the chat
+from routes.landing import ar as landing_router
+landing_router.to_app(app)
+
 # Register auth routes (login/register still available)
 from routes.auth import ar as auth_router
 auth_router.to_app(app)
@@ -398,8 +402,13 @@ def _nav_button(label, cmd, accent="gray"):
     )
 
 def _nav_section(session):
-    """Left navigation — grouped by buyer/seller workflow."""
+    """Left navigation — grouped by buyer/seller workflow. Role-aware: the
+    active role's section renders first and stays open by default, with a
+    coloured accent border; the inactive role collapses."""
     user = session.get("user")
+    active_role = session.get("role", "buyer")
+    buyer_open = active_role != "seller"
+    seller_open = active_role == "seller"
 
     # Auth section
     if user:
@@ -467,9 +476,10 @@ def _nav_section(session):
                         cls="mb-2",
                     ),
                 ] if user else []),
-                # I'M BUYING section (open by default)
+                # I'M BUYING section (open if active role is buyer)
                 Details(
                     Summary(
+                        Span("● ", cls="text-[10px] text-blue-600 mr-1") if buyer_open else "",
                         Span("I'M BUYING", cls="text-xs font-bold text-blue-700 uppercase tracking-wide"),
                         cls="px-3 py-2 cursor-pointer hover:bg-blue-50 rounded list-none flex items-center nav-section-header",
                     ),
@@ -480,14 +490,15 @@ def _nav_section(session):
                         _nav_context_button("Score Match", "score-match"),
                         *([ A("Target Pipeline", hx_get="/pipeline/target", hx_target="#main-content", hx_push_url="true",
                               cls="text-left text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-1.5 rounded transition-colors w-full block font-medium") ] if user else []),
-                        cls="pl-2 border-l-2 border-blue-200 ml-3 mb-2",
+                        cls=("pl-2 border-l-2 ml-3 mb-2 " + ("border-blue-500" if buyer_open else "border-blue-100")),
                     ),
-                    open=True,
+                    open=buyer_open,
                     cls="mb-1",
                 ),
-                # I'M SELLING section (open by default)
+                # I'M SELLING section (open if active role is seller)
                 Details(
                     Summary(
+                        Span("● ", cls="text-[10px] text-green-600 mr-1") if seller_open else "",
                         Span("I'M SELLING", cls="text-xs font-bold text-green-700 uppercase tracking-wide"),
                         cls="px-3 py-2 cursor-pointer hover:bg-green-50 rounded list-none flex items-center nav-section-header",
                     ),
@@ -497,9 +508,9 @@ def _nav_section(session):
                         _nav_context_button("IPO Assessment", "ipo-assessment"),
                         *([ A("Buyer Pipeline", hx_get="/pipeline/buyer", hx_target="#main-content", hx_push_url="true",
                               cls="text-left text-xs text-green-600 hover:text-green-800 hover:bg-green-50 px-3 py-1.5 rounded transition-colors w-full block font-medium") ] if user else []),
-                        cls="pl-2 border-l-2 border-green-200 ml-3 mb-2",
+                        cls=("pl-2 border-l-2 ml-3 mb-2 " + ("border-green-500" if seller_open else "border-green-100")),
                     ),
-                    open=True,
+                    open=seller_open,
                     cls="mb-1",
                 ),
                 # RESEARCH section (collapsed)
@@ -765,9 +776,16 @@ def _right_pane():
     )
 
 
-@rt
-def index(session):
+@rt("/app")
+def app_shell(session, role: str = ""):
+    """Main chat-first app shell. Reads ?role=buyer|seller to set the default view."""
     ss = _get_ss(session)
+    # Persist role if provided via query param, else fall back to what's in session
+    if role in ("buyer", "seller"):
+        session["role"] = role
+    active_role = session.get("role", "buyer")
+    # Choose default context cards based on role
+    default_ctx = "buyer_welcome" if active_role == "buyer" else "seller_welcome" if active_role == "seller" else "default"
     return (
         Title("LiquidRound"),
         _nav_section(session),
@@ -787,8 +805,8 @@ def index(session):
                 ),
                 cls="pt-6 mb-4",
             ),
-            # Welcome section (buyer/seller cards)
-            Div(_render_context_cards("default"), id="welcome-section"),
+            # Welcome section (role-aware cards)
+            Div(_render_context_cards("find-targets" if active_role == "buyer" else "find-buyers" if active_role == "seller" else "default"), id="welcome-section"),
             # Suggestion chips (updated dynamically via OOB)
             Div(id="suggestion-chips", cls="flex flex-wrap gap-2 justify-center mb-4"),
             # Chat area
@@ -887,6 +905,31 @@ def _determine_context(msg: str, result_components: list) -> tuple:
 def context_cards(context_key: str = "default"):
     """Return 3 context-sensitive action cards."""
     return _render_context_cards(context_key)
+
+
+@rt("/settings/save", methods=["POST"])
+def settings_save(session, role: str = ""):
+    """Persist role to session (and to users.default_role when logged in, best-effort)."""
+    if role in ("buyer", "seller", "both"):
+        session["role"] = role
+        user = session.get("user")
+        if user and user.get("user_id"):
+            try:
+                from utils.database import get_conn
+                with get_conn() as conn:
+                    with conn.cursor() as cur:
+                        cur.execute(
+                            "UPDATE liquidround.users SET default_role=%s, updated_at=NOW() WHERE user_id=%s",
+                            (role, user["user_id"]),
+                        )
+                    conn.commit()
+            except Exception:
+                pass  # column may not exist yet; session still persists
+    return Span(
+        NotStr('<span class="text-green-600">●</span> '),
+        f"Saved — default view set to {role.title()}.",
+        cls="text-xs text-gray-700",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1138,7 +1181,7 @@ async def chat(session, msg: str = ""):
     # Process with render agent
     response_text = ""
     try:
-        result_components = await render_agent.process(msg)
+        result_components = await render_agent.process(msg, active_role=session.get("role", "buyer"))
         if result_components:
             parts.append(_assistant_bubble(*result_components))
             response_text = msg  # Fallback: store the query as context

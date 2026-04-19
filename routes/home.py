@@ -239,35 +239,121 @@ def company(ticker: str = ""):
 
 
 @ar
-def settings():
-    """Settings page."""
+def settings(session):
+    """Configuration page — role, default view, LLM, API status."""
     from utils.config import config
-    return Shell(
-        H1("Settings", cls="text-2xl font-bold text-gray-800 mb-4"),
-        Div(
+    active_role = session.get("role", "buyer")
+
+    def _role_option(value, label, color, active):
+        border = f"border-{color}-500 ring-2 ring-{color}-200" if active else "border-gray-200 hover:border-gray-300"
+        dot    = f"bg-{color}-500" if active else "bg-gray-300"
+        return Label(
+            Input(type="radio", name="role", value=value, checked=active, cls="sr-only"),
             Div(
-                H2("LLM Configuration", cls="text-lg font-semibold text-gray-700 mb-3"),
+                Div(cls=f"w-3 h-3 rounded-full {dot} mr-3"),
                 Div(
-                    MetricCard("Provider", config.default_provider.upper(), "LLM provider"),
-                    MetricCard("Model", config.default_model, "Active model"),
-                    MetricCard("Temperature", str(config.default_temperature), "Creativity"),
-                    MetricCard("Environment", config.environment.title(), "Runtime mode"),
-                    cls="grid grid-cols-4 gap-4",
+                    Span(label, cls="text-sm font-semibold text-gray-800"),
+                    P({
+                        "buyer":  "Find acquisition targets, underwrite deals, draft IC memos.",
+                        "seller": "Prepare for sale, identify buyers, assess IPO readiness.",
+                        "both":   "Show both sections open. Best for advisors working both sides.",
+                    }[value], cls="text-xs text-gray-500 mt-0.5"),
+                ),
+                cls="flex items-start",
+            ),
+            cls=f"block cursor-pointer p-4 rounded-lg border-2 {border} transition",
+        )
+
+    return Shell(
+        H1("Configuration", cls="text-2xl font-bold text-gray-800 mb-2"),
+        P("Change your default view, LLM provider, or check API key status.",
+          cls="text-sm text-gray-500 mb-6"),
+
+        # ─── Role / default view ───────────────────────────────────────
+        Form(
+            Div(
+                H2("Default view", cls="text-lg font-semibold text-gray-700 mb-1"),
+                P("The role-led view you see when you open the app. You can always switch here.",
+                  cls="text-xs text-gray-500 mb-4"),
+                Div(
+                    _role_option("buyer",  "Buyer-Led",  "blue",  active_role == "buyer"),
+                    _role_option("seller", "Seller-Led", "green", active_role == "seller"),
+                    _role_option("both",   "Both sides open", "amber", active_role == "both"),
+                    cls="space-y-3",
+                ),
+                Div(
+                    Button("Save",
+                           type="submit",
+                           cls="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 mt-5"),
+                    Span(" ",
+                         A("← Back to app", href="/app",
+                           cls="text-xs text-gray-500 hover:text-blue-700 ml-4")),
+                    cls="mt-4",
                 ),
                 cls="bg-white rounded-lg p-6 border border-gray-200 mb-6",
             ),
-            Div(
-                H2("API Keys Status", cls="text-lg font-semibold text-gray-700 mb-3"),
-                Div(
-                    _api_status("XAI (Grok)", bool(config.xai_api_key)),
-                    _api_status("OpenAI", bool(config.openai_api_key)),
-                    _api_status("EXA Search", bool(config.exa_api_key)),
-                    _api_status("Tavily Search", bool(config.tavily_api_key)),
-                    cls="space-y-2",
-                ),
-                cls="bg-white rounded-lg p-6 border border-gray-200",
-            ),
+            hx_post="/settings/save",
+            hx_target="#config-toast",
+            hx_swap="innerHTML",
         ),
+        Div(id="config-toast", cls="mb-4"),
+
+        # ─── LLM ──────────────────────────────────────────────────────
+        Div(
+            H2("LLM configuration", cls="text-lg font-semibold text-gray-700 mb-3"),
+            Div(
+                MetricCard("Provider", config.default_provider.upper(), "Active LLM"),
+                MetricCard("Model", config.default_model, "Active model"),
+                MetricCard("Temperature", str(config.default_temperature), "Creativity"),
+                MetricCard("Environment", config.environment.title(), "Runtime"),
+                cls="grid grid-cols-4 gap-4",
+            ),
+            P("Edit .env to switch providers (xai | openai). Hot-swap UI coming soon.",
+              cls="text-xs text-gray-400 mt-2"),
+            cls="bg-white rounded-lg p-6 border border-gray-200 mb-6",
+        ),
+
+        # ─── API keys ─────────────────────────────────────────────────
+        Div(
+            H2("API keys status", cls="text-lg font-semibold text-gray-700 mb-3"),
+            Div(
+                _api_status("XAI (Grok)", bool(config.xai_api_key)),
+                _api_status("OpenAI", bool(config.openai_api_key)),
+                _api_status("EXA Search", bool(config.exa_api_key)),
+                _api_status("Tavily Search", bool(config.tavily_api_key)),
+                cls="space-y-2",
+            ),
+            cls="bg-white rounded-lg p-6 border border-gray-200",
+        ),
+    )
+
+
+@ar("/settings/save")
+def settings_save(session, role: str = ""):
+    """Persist the role to session (and to users.default_role if logged in).
+
+    DB persistence is best-effort — if the `default_role` column is missing,
+    we still keep the session value so the UX works immediately.
+    """
+    if role in ("buyer", "seller", "both"):
+        session["role"] = role
+        user = session.get("user")
+        if user and user.get("user_id"):
+            try:
+                from utils.database import get_conn
+                with get_conn() as conn:
+                    with conn.cursor() as cur:
+                        cur.execute(
+                            "UPDATE liquidround.users SET default_role=%s, updated_at=NOW() WHERE user_id=%s",
+                            (role, user["user_id"]),
+                        )
+                    conn.commit()
+            except Exception:
+                pass  # column may not exist yet; session still persists
+    return Div(
+        Span("● ", cls="text-green-600"),
+        Span(f"Saved — default view set to {role.title()}.", cls="text-sm text-gray-700"),
+        cls="bg-green-50 border border-green-200 rounded-lg px-4 py-2 inline-block",
     )
 
 

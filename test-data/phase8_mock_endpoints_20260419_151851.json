@@ -1,0 +1,37 @@
+{
+  "test": "mock_tool_endpoints",
+  "endpoints": {
+    "deal-room": {
+      "status": 200,
+      "has_content": true
+    },
+    "cim-generator": {
+      "status": 200,
+      "has_content": true
+    },
+    "comparable-transactions": {
+      "status": 200,
+      "has_content": true
+    },
+    "loi---term-sheet-drafter": {
+      "status": 200,
+      "has_content": true
+    },
+    "due-diligence-checklist": {
+      "status": 200,
+      "has_content": true
+    },
+    "regulatory-screening": {
+      "status": 200,
+      "has_content": true
+    },
+    "stakeholder-mapping": {
+      "status": 200,
+      "has_content": true
+    },
+    "integration-playbook": {
+      "status": 200,
+      "has_content": true
+    }
+  }
+}

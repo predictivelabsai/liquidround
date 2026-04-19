@@ -14,10 +14,13 @@ from utils.config import config
 class RenderAgent:
     """Processes user input and returns FastHTML components."""
 
-    async def process(self, user_input: str) -> list:
+    async def process(self, user_input: str, active_role: str = "buyer") -> list:
         """
         Process user input. Returns a list of FT components.
         Components are rendered into HTML and streamed to the chat.
+
+        `active_role` (buyer | seller | both) drives role-aware rendering in
+        widgets that care — currently the Configuration widget.
         """
         cmd, subject, params = parse_command(user_input)
 
@@ -65,7 +68,7 @@ class RenderAgent:
         if cmd == "upload":
             return [self._upload_widget()]
         if cmd == "settings":
-            return [self._settings_widget()]
+            return [self._settings_widget(active_role=active_role)]
 
         # Free-form chat — LLM with research
         return await self._chat(user_input)
@@ -611,15 +614,62 @@ class RenderAgent:
         from components.upload_form import UploadZone
         return UploadZone()
 
-    def _settings_widget(self) -> "FT":
+    def _settings_widget(self, active_role: str = "buyer") -> "FT":
+        def _opt(value, label, color, active, blurb):
+            border = f"border-{color}-500 ring-2 ring-{color}-200" if active else "border-gray-200 hover:border-gray-300"
+            dot = f"bg-{color}-500" if active else "bg-gray-300"
+            return Label(
+                Input(type="radio", name="role", value=value, checked=active, cls="sr-only"),
+                Div(
+                    Div(cls=f"w-2.5 h-2.5 rounded-full {dot} mr-3 mt-1 flex-shrink-0"),
+                    Div(
+                        Span(label, cls="text-sm font-semibold text-gray-800"),
+                        P(blurb, cls="text-xs text-gray-500 mt-0.5"),
+                    ),
+                    cls="flex items-start",
+                ),
+                cls=f"block cursor-pointer p-3 rounded-lg border-2 {border} transition",
+            )
         return Div(
-            H3("Configuration", cls="font-semibold text-gray-800 mb-2"),
-            *[Div(Span(k, cls="text-xs text-gray-500 w-28 inline-block"), Span(v, cls="text-sm font-medium"), cls="py-1") for k, v in [
-                ("Provider", config.default_provider.upper()),("Model", config.default_model),
-                ("Temperature", str(config.default_temperature)),("EXA", "Configured" if config.exa_api_key else "Not set"),
+            H3("Configuration", cls="font-semibold text-gray-800 mb-3"),
+            # ─── Role selector ───
+            Div(
+                P("Default view", cls="text-xs font-medium text-gray-700 uppercase tracking-wide mb-2"),
+                Form(
+                    Div(
+                        _opt("buyer",  "Buyer-Led",  "blue",   active_role == "buyer",  "Targets, diligence, IC memos."),
+                        _opt("seller", "Seller-Led", "green",  active_role == "seller", "Teasers, buyers, IPO readiness."),
+                        _opt("both",   "Both",       "amber",  active_role == "both",   "Show both sections open."),
+                        cls="space-y-2",
+                    ),
+                    Div(
+                        Button("Save view", type="submit",
+                               cls="bg-blue-600 text-white px-4 py-1.5 rounded-md text-xs font-medium hover:bg-blue-700"),
+                        Span(id="config-toast", cls="ml-3 text-xs"),
+                        cls="mt-3 flex items-center",
+                    ),
+                    hx_post="/settings/save",
+                    hx_target="#config-toast",
+                    hx_swap="innerHTML",
+                ),
+                cls="mb-4 pb-4 border-b border-gray-100",
+            ),
+            # ─── LLM + API ───
+            P("LLM + API status", cls="text-xs font-medium text-gray-700 uppercase tracking-wide mb-2"),
+            *[Div(
+                Span(k, cls="text-xs text-gray-500 w-24 inline-block"),
+                Span(v, cls="text-sm font-medium"),
+                cls="py-1",
+              ) for k, v in [
+                ("Provider", config.default_provider.upper()),
+                ("Model", config.default_model),
+                ("Temperature", str(config.default_temperature)),
+                ("XAI", "Configured" if config.xai_api_key else "Not set"),
+                ("OpenAI", "Configured" if config.openai_api_key else "Not set"),
+                ("EXA", "Configured" if config.exa_api_key else "Not set"),
                 ("Tavily", "Configured" if config.tavily_api_key else "Not set"),
             ]],
-            cls="bg-white rounded-lg p-4 border border-gray-200",
+            cls="bg-white rounded-lg p-4 border border-gray-200 max-w-xl",
         )
 
     # ------------------------------------------------------------------

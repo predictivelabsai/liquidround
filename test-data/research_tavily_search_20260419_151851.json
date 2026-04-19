@@ -1,0 +1,7 @@
+{
+  "test": "tavily_search",
+  "result_count": 0,
+  "elapsed": 0.52,
+  "error": "This request exceeds your plan's set usage limit. Please upgrade your plan or contact support@tavily.com",
+  "sample_titles": []
+}

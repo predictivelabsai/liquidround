@@ -1,0 +1,37 @@
+{
+  "test": "exa_api_connectivity",
+  "success": true,
+  "api_key_present": true,
+  "status_code": 200,
+  "query": "fintech companies acquisition",
+  "results_count": 3,
+  "results": [
+    {
+      "id": "https://www.bloomberg.com/news/articles/2026-01-22/capital-one-to-buy-fintech-brex-for-5-1-billion-in-cash-stock",
+      "title": "Capital One to Buy Fintech Brex for $5.1 Billion in Cash, Stock - Bloomberg",
+      "url": "https://www.bloomberg.com/news/articles/2026-01-22/capital-one-to-buy-fintech-brex-for-5-1-billion-in-cash-stock",
+      "publishedDate": "2026-01-22T00:00:00.000Z",
+      "author": "Paige Smith",
+      "image": "https://assets.bwbx.io/images/users/iqjWHBFdfxIU/ic20j1RV9Tsg/v1/1200x800.jpg",
+      "favicon": "https://www.bloomberg.com/favicon-black.png"
+    },
+    {
+      "id": "https://techcrunch.com/2026/01/05/flutterwave-buys-nigerias-mono-in-rare-african-fintech-exit",
+      "title": "Flutterwave buys Nigeria's Mono in rare African fintech exit | TechCrunch",
+      "url": "https://techcrunch.com/2026/01/05/flutterwave-buys-nigerias-mono-in-rare-african-fintech-exit",
+      "publishedDate": "2026-01-05T08:55:28.000Z",
+      "author": "Tage Kene-Okafor",
+      "image": "https://techcrunch.com/wp-content/uploads/2026/01/IMG_2979.jpeg?w=1170",
+      "favicon": "https://techcrunch.com/wp-content/uploads/2015/02/cropped-cropped-favicon-gradient.png?w=32"
+    },
+    {
+      "id": "https://www.reuters.com/world/asia-pacific/airwallex-buys-south-koreas-paynuri-after-fundraising-8-billion-valuation-2026-01-20/",
+      "title": "Fintech Airwallex buys South Korea's Paynuri in Asia expansion | Reuters",
+      "url": "https://www.reuters.com/world/asia-pacific/airwallex-buys-south-koreas-paynuri-after-fundraising-8-billion-valuation-2026-01-20/",
+      "publishedDate": "2026-01-20T22:51:51.000Z",
+      "author": "Yantoultra Ngui",
+      "image": "https://www.reuters.com/resizer/v2/65V4HD3PSRPQXFWRAMGP3Q4XAU.jpg?auth=12a5e0b56375c91bdef90f885db948de11dfde20f67067f1dfd2e4a2a28c0a9c&height=1005&width=1920&quality=80&smart=true",
+      "favicon": "https://www.reuters.com/pf/resources/images/reuters/favicon/tr_fvcn_kinesis_32x32_v2.ico?d=354"
+    }
+  ]
+}

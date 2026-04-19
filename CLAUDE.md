@@ -4,6 +4,21 @@
 
 LiquidRound helps **buyers find acquisition targets** and **sellers find merger targets / buyers**. It is an AI-powered multi-agent M&A and IPO deal flow platform by Predictive Labs Ltd.
 
+## Routes
+
+- **`/`** — Marketing landing page (dark navy hero, two role CTAs, product GIF, 22-agent directory, how-it-works, pricing, contact). See `routes/landing.py` + `components/landing.py`.
+- **`/app`** — The chat-first product app (was previously at `/`). Reads `?role=buyer|seller` from the query string and persists it to `session["role"]`.
+- **`/agents`** and **`/agents/<slug>`** — Public directory of all 22 specialist agents.
+- **Type `settings` in chat** — renders the Configuration widget (role selector + LLM + API status). `/settings/save` persists the chosen role.
+
+## 22 specialist agents
+
+See `agents/registry.py` for the single source of truth (`AGENTS` tuple). Each agent has a category, audience (buyer / seller / shared), prefix (`profile:`, `triage:`, `memo:`, …), and a system prompt at `prompts/system/<slug>.md`.
+
+**Categories:** sourcing (4), underwriting (6), diligence (5), capital (5), portfolio (2).
+
+The router in `agents/router.py` maps free-form messages to the right agent via: (1) prefix match, (2) keyword heuristics, (3) LLM fallback classifier.
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -181,13 +196,40 @@ The scoring agent evaluates buyer-target matches across:
 ```bash
 # Install dependencies
 pip install -r requirements.txt
+# Playwright chromium for E2E + demo GIF
+playwright install chromium
 
-# Run locally (serves on port 5001)
+# Run locally (serves on port 5007)
 python main.py
 
 # Run with Docker
 docker compose up --build
 ```
+
+## Tests
+
+```bash
+# Unit tests (default — excludes E2E via pytest.ini addopts)
+pytest -q
+
+# End-to-end Playwright tests (requires server on :5007)
+pytest -q tests/test_e2e_smoke.py -m e2e
+
+# Registry integrity (22 agents, unique slugs, prefixes, prompts load, every agent builds)
+pytest -q tests/test_registry.py
+```
+
+## Demo GIF
+
+Regenerate the landing-page product demo:
+
+```bash
+# Server must be running on :5007
+python -m scripts.capture_screenshots   # → ./screenshots/*.png (14 frames)
+python -m scripts.make_gif              # → docs/liquidround.gif + static/liquidround.gif
+```
+
+Ported from `~/dev/plai/pehero/scripts/` (which in turn came from bricksmith). No ffmpeg / ImageMagick — Pillow + Playwright only.
 
 ## Environment Variables (.env)
 

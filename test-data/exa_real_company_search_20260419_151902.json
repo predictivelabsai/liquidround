@@ -1,0 +1,30 @@
+{
+  "test": "exa_real_company_search",
+  "results": [
+    {
+      "query": "Apple Inc financial results 2024",
+      "success": false,
+      "error": "API returned 400: {\"requestId\":\"6a755c0afbc30c3558bcfb92ef85c099\",\"error\":\"Invalid request body | Validation error: Invalid input: expected array, received boolean at \\\"includeText\\\"\",\"tag\":\"INVALID_REQUEST_BODY\"}"
+    },
+    {
+      "query": "Microsoft Azure cloud revenue growth",
+      "success": false,
+      "error": "API returned 400: {\"requestId\":\"ccccab9ff46db1a41143c053a6042a86\",\"error\":\"Invalid request body | Validation error: Invalid input: expected array, received boolean at \\\"includeText\\\"\",\"tag\":\"INVALID_REQUEST_BODY\"}"
+    },
+    {
+      "query": "Tesla electric vehicle sales data",
+      "success": false,
+      "error": "API returned 400: {\"requestId\":\"14ec6eec9bca3e8ebdbcd6655dbbcaf7\",\"error\":\"Invalid request body | Validation error: Invalid input: expected array, received boolean at \\\"includeText\\\"\",\"tag\":\"INVALID_REQUEST_BODY\"}"
+    },
+    {
+      "query": "Amazon AWS market share",
+      "success": false,
+      "error": "API returned 400: {\"requestId\":\"2d43b3d1fe0e7b784aa1e933a3bcc82e\",\"error\":\"Invalid request body | Validation error: Invalid input: expected array, received boolean at \\\"includeText\\\"\",\"tag\":\"INVALID_REQUEST_BODY\"}"
+    },
+    {
+      "query": "Google Alphabet advertising revenue",
+      "success": false,
+      "error": "API returned 400: {\"requestId\":\"df62807f8f5d2f535d12161a91259286\",\"error\":\"Invalid request body | Validation error: Invalid input: expected array, received boolean at \\\"includeText\\\"\",\"tag\":\"INVALID_REQUEST_BODY\"}"
+    }
+  ]
+}

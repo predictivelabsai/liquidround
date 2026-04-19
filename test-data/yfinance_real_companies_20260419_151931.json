@@ -1,0 +1,277 @@
+{
+  "test": "yfinance_real_companies",
+  "total_companies": 10,
+  "successful": 10,
+  "results": [
+    {
+      "company": {
+        "ticker": "AAPL",
+        "name": "Apple Inc.",
+        "sector": "Technology"
+      },
+      "success": true,
+      "financial_data": {
+        "ticker": "AAPL",
+        "company_name": "Apple Inc.",
+        "sector": "Technology",
+        "industry": "Consumer Electronics",
+        "market_cap": 3971820552192,
+        "enterprise_value": 3990886547456,
+        "revenue_ttm": 435617005568,
+        "ebitda": 152901992448,
+        "pe_ratio": 34.249683,
+        "profit_margin": 0.27037,
+        "revenue_growth": 0.157,
+        "employees": 150000,
+        "website": "https://www.apple.com",
+        "business_summary": "N/A",
+        "current_price": 270.2300109863281,
+        "52_week_high": 288.62,
+        "52_week_low": 189.81
+      }
+    },
+    {
+      "company": {
+        "ticker": "MSFT",
+        "name": "Microsoft Corporation",
+        "sector": "Technology"
+      },
+      "success": true,
+      "financial_data": {
+        "ticker": "MSFT",
+        "company_name": "Microsoft Corporation",
+        "sector": "Technology",
+        "industry": "Software - Infrastructure",
+        "market_cap": 3142335070208,
+        "enterprise_value": 3173297684480,
+        "revenue_ttm": 305453006848,
+        "ebitda": 175258992640,
+        "pe_ratio": 26.457449,
+        "profit_margin": 0.39044,
+        "revenue_growth": 0.167,
+        "employees": 228000,
+        "website": "https://www.microsoft.com",
+        "business_summary": "N/A",
+        "current_price": 422.7900085449219,
+        "52_week_high": 555.45,
+        "52_week_low": 355.67
+      }
+    },
+    {
+      "company": {
+        "ticker": "GOOGL",
+        "name": "Alphabet Inc.",
+        "sector": "Technology"
+      },
+      "success": true,
+      "financial_data": {
+        "ticker": "GOOGL",
+        "company_name": "Alphabet Inc.",
+        "sector": "Communication Services",
+        "industry": "Internet Content & Information",
+        "market_cap": 4133303091200,
+        "enterprise_value": 4073455878144,
+        "revenue_ttm": 402835996672,
+        "ebitda": 150175006720,
+        "pe_ratio": 31.637035,
+        "profit_margin": 0.32810003,
+        "revenue_growth": 0.18,
+        "employees": 190820,
+        "website": "https://abc.xyz",
+        "business_summary": "N/A",
+        "current_price": 341.67999267578125,
+        "52_week_high": 349.0,
+        "52_week_low": 146.1
+      }
+    },
+    {
+      "company": {
+        "ticker": "AMZN",
+        "name": "Amazon.com Inc.",
+        "sector": "Consumer Discretionary"
+      },
+      "success": true,
+      "financial_data": {
+        "ticker": "AMZN",
+        "company_name": "Amazon.com, Inc.",
+        "sector": "Consumer Cyclical",
+        "industry": "Internet Retail",
+        "market_cap": 2694585253888,
+        "enterprise_value": 2745259786240,
+        "revenue_ttm": 716923994112,
+        "ebitda": 145730994176,
+        "pe_ratio": 34.945606,
+        "profit_margin": 0.108339995,
+        "revenue_growth": 0.136,
+        "employees": 1576000,
+        "website": "https://www.amazon.com",
+        "business_summary": "N/A",
+        "current_price": 250.55999755859375,
+        "52_week_high": 258.6,
+        "52_week_low": 165.29
+      }
+    },
+    {
+      "company": {
+        "ticker": "TSLA",
+        "name": "Tesla Inc.",
+        "sector": "Consumer Discretionary"
+      },
+      "success": true,
+      "financial_data": {
+        "ticker": "TSLA",
+        "company_name": "Tesla, Inc.",
+        "sector": "Consumer Cyclical",
+        "industry": "Auto Manufacturers",
+        "market_cap": 1503299239936,
+        "enterprise_value": 1474687270912,
+        "revenue_ttm": 94827003904,
+        "ebitda": 10503000064,
+        "pe_ratio": 370.94443,
+        "profit_margin": 0.040009998,
+        "revenue_growth": -0.031,
+        "employees": 134785,
+        "website": "https://www.tesla.com",
+        "business_summary": "N/A",
+        "current_price": 400.6199951171875,
+        "52_week_high": 498.83,
+        "52_week_low": 222.79
+      }
+    },
+    {
+      "company": {
+        "ticker": "NVDA",
+        "name": "NVIDIA Corporation",
+        "sector": "Technology"
+      },
+      "success": true,
+      "financial_data": {
+        "ticker": "NVDA",
+        "company_name": "NVIDIA Corporation",
+        "sector": "Technology",
+        "industry": "Semiconductors",
+        "market_cap": 4901832228864,
+        "enterprise_value": 4849680252928,
+        "revenue_ttm": 215938007040,
+        "ebitda": 133230002176,
+        "pe_ratio": 41.15918,
+        "profit_margin": 0.55603004,
+        "revenue_growth": 0.732,
+        "employees": 42000,
+        "website": "https://www.nvidia.com",
+        "business_summary": "N/A",
+        "current_price": 201.67999267578125,
+        "52_week_high": 212.19,
+        "52_week_low": 95.04
+      }
+    },
+    {
+      "company": {
+        "ticker": "META",
+        "name": "Meta Platforms Inc.",
+        "sector": "Technology"
+      },
+      "success": true,
+      "financial_data": {
+        "ticker": "META",
+        "company_name": "Meta Platforms, Inc.",
+        "sector": "Communication Services",
+        "industry": "Internet Content & Information",
+        "market_cap": 1747831357440,
+        "enterprise_value": 1745214373888,
+        "revenue_ttm": 200965996544,
+        "ebitda": 101891997696,
+        "pe_ratio": 29.324957,
+        "profit_margin": 0.30084,
+        "revenue_growth": 0.238,
+        "employees": 78865,
+        "website": "https://www.meta.com",
+        "business_summary": "N/A",
+        "current_price": 688.5499877929688,
+        "52_week_high": 796.25,
+        "52_week_low": 479.8
+      }
+    },
+    {
+      "company": {
+        "ticker": "NFLX",
+        "name": "Netflix Inc.",
+        "sector": "Communication Services"
+      },
+      "success": true,
+      "financial_data": {
+        "ticker": "NFLX",
+        "company_name": "Netflix, Inc.",
+        "sector": "Communication Services",
+        "industry": "Entertainment",
+        "market_cap": 410858586112,
+        "enterprise_value": 414400774144,
+        "revenue_ttm": 46889992192,
+        "ebitda": 14288497664,
+        "pe_ratio": 31.491909,
+        "profit_margin": 0.28521,
+        "revenue_growth": 0.162,
+        "employees": 16000,
+        "website": "https://www.netflix.com",
+        "business_summary": "N/A",
+        "current_price": 97.30999755859375,
+        "52_week_high": 134.115,
+        "52_week_low": 75.01
+      }
+    },
+    {
+      "company": {
+        "ticker": "CRM",
+        "name": "Salesforce Inc.",
+        "sector": "Technology"
+      },
+      "success": true,
+      "financial_data": {
+        "ticker": "CRM",
+        "company_name": "Salesforce, Inc.",
+        "sector": "Technology",
+        "industry": "Software - Application",
+        "market_cap": 168115224576,
+        "enterprise_value": 176261218304,
+        "revenue_ttm": 41524998144,
+        "ebitda": 12547999744,
+        "pe_ratio": 23.351282,
+        "profit_margin": 0.17958,
+        "revenue_growth": 0.121,
+        "employees": 83334,
+        "website": "https://www.salesforce.com",
+        "business_summary": "N/A",
+        "current_price": 182.13999938964844,
+        "52_week_high": 296.05,
+        "52_week_low": 163.52
+      }
+    },
+    {
+      "company": {
+        "ticker": "SNOW",
+        "name": "Snowflake Inc.",
+        "sector": "Technology"
+      },
+      "success": true,
+      "financial_data": {
+        "ticker": "SNOW",
+        "company_name": "Snowflake Inc.",
+        "sector": "Technology",
+        "industry": "Software - Application",
+        "market_cap": 49773883392,
+        "enterprise_value": 48427864064,
+        "revenue_ttm": 4683945984,
+        "ebitda": -1286213248,
+        "pe_ratio": "N/A",
+        "profit_margin": -0.28429002,
+        "revenue_growth": 0.301,
+        "employees": 9060,
+        "website": "https://www.snowflake.com",
+        "business_summary": "N/A",
+        "current_price": 143.97999572753906,
+        "52_week_high": 280.67,
+        "52_week_low": 118.3
+      }
+    }
+  ]
+}

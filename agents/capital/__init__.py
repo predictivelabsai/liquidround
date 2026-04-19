@@ -1,0 +1,1 @@
+"""LiquidRound agents — capital category."""
