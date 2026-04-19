@@ -283,6 +283,30 @@ html, body {
 .thinking-indicator .secs { color: var(--ink-dim); }
 @keyframes pulse { 0%, 100% { opacity: .35; transform: scale(.85); } 50% { opacity: 1; transform: scale(1); } }
 
+/* ───── Memo preview / PDF iframe in right pane ───── */
+.memo-preview-row {
+    display: flex; flex-wrap: wrap; align-items: center; gap: .6rem;
+    margin-top: .5rem; padding: .55rem .75rem;
+    background: var(--accent-dim); border: 1px solid var(--accent);
+    border-radius: .55rem; align-self: flex-start; max-width: 100%;
+}
+.memo-preview-btn {
+    padding: .35rem .85rem; border-radius: .4rem; font-size: .75rem;
+    background: var(--accent); color: var(--bg); border: none; cursor: pointer;
+    font-weight: 600; transition: background .15s;
+}
+.memo-preview-btn:hover { background: #FBBF24; }
+.memo-preview-btn:disabled { opacity: .6; cursor: wait; }
+.memo-preview-hint { color: var(--ink-muted); font-size: .7rem; line-height: 1.4; flex: 1 1 200px; }
+
+.pdf-wrap { display: flex; flex-direction: column; height: 100%; min-height: 560px; }
+.pdf-caption { font-size: .7rem; color: var(--ink-dim); padding: .2rem .25rem .55rem; font-family: 'JetBrains Mono', monospace; }
+.pdf-caption i { font-style: italic; color: var(--accent); }
+.pdf-iframe {
+    flex: 1; width: 100%; min-height: 560px;
+    border: 1px solid var(--line); border-radius: .5rem; background: #FFF;
+}
+
 /* Follow-up "Next step" */
 .followup-row {
     display: flex; align-items: center; gap: .55rem;

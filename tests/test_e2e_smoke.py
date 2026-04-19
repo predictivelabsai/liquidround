@@ -115,3 +115,53 @@ def test_sample_cards_present(page):
     page.goto(BASE_URL + "/app?role=buyer")
     page.wait_for_selector(".sample-cards", timeout=10_000)
     assert page.locator(".sample-card").count() == 3
+
+
+@pytest.mark.e2e
+def test_memo_pdf_render_and_preview_in_right_pane(page):
+    """Render a memo PDF via the API, then open it via openPdfInPane in the
+    client. The right pane should show a PDF iframe."""
+    page.goto(BASE_URL + "/app?role=buyer")
+    page.wait_for_selector("#chat-input", timeout=10_000)
+
+    result = page.evaluate(
+        """async () => {
+            const md = "# Test Memo\\n\\n## Section\\n\\n- point A\\n- point B\\n\\nMore content here.";
+            const data = await window.renderMemoPdf(md, "Test IC memo");
+            return { file_id: data.file_id, file_url: data.file_url };
+        }"""
+    )
+    assert result["file_id"], "renderMemoPdf did not return a file_id"
+
+    # Right pane should now be open with a PDF iframe
+    page.wait_for_selector("#pdf-frame", timeout=5_000)
+    assert page.locator(".pdf-caption").count() == 1
+    frame_src = page.locator("#pdf-frame").get_attribute("src")
+    assert "mozilla.github.io/pdf.js" in frame_src
+    assert result["file_id"] in frame_src
+
+
+@pytest.mark.e2e
+def test_memo_pdf_highlight_intent_shortcut(page):
+    """After a memo PDF is open, typing `show me the deal size` should
+    intercept client-side and update the iframe src with #search=...&phrase=true."""
+    page.goto(BASE_URL + "/app?role=buyer")
+    page.wait_for_selector("#chat-input", timeout=10_000)
+
+    # Render first
+    page.evaluate(
+        """async () => {
+            const md = "# Memo\\n\\n## Deal size\\n\\nEUR 120M EV.";
+            await window.renderMemoPdf(md, "Test");
+        }"""
+    )
+    page.wait_for_selector("#pdf-frame")
+
+    # Now type a highlight intent
+    page.fill("#chat-input", "show me the deal size")
+    page.evaluate("() => window.sendMessage && window.sendMessage(null)")
+    page.wait_for_timeout(500)
+
+    # The iframe src should now contain the search phrase
+    frame_src = page.locator("#pdf-frame").get_attribute("src")
+    assert "search=deal%20size" in frame_src or "search=deal+size" in frame_src or "search=deal size" in frame_src

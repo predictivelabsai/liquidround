@@ -56,6 +56,10 @@ api_router.to_app(app)
 from routes.pipeline import ar as pipeline_router
 pipeline_router.to_app(app)
 
+# Register memo → PDF preview routes (/app/memo-pdf/*)
+from chat_memo_pdf import ar as memo_pdf_router
+memo_pdf_router.to_app(app)
+
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 DOCS_DIR = Path("docs")

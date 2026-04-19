@@ -170,6 +170,108 @@
         }
     };
 
+    /* ── Memo → PDF preview + highlight ────────────────────────── */
+
+    // Agents whose responses can be previewed as a PDF memo.
+    const MEMO_AGENTS = new Set(["ic_memo_writer", "teaser_designer", "bid_strategist", "ipo_readiness"]);
+    let lastMemoFileId = null;
+
+    async function renderMemoPdf(markdown, title) {
+        const body = new URLSearchParams({ markdown, title: title || "IC memo" });
+        const r = await fetch("/app/memo-pdf/render", { method: "POST", body });
+        if (!r.ok) throw new Error("render failed " + r.status);
+        const data = await r.json();
+        if (data.error) throw new Error(data.error);
+        lastMemoFileId = data.file_id;
+        openPdfInPane(data.file_url, null, data.title);
+        return data;
+    }
+
+    function openPdfInPane(fileUrl, searchText, title) {
+        const abs = fileUrl.startsWith("http") ? fileUrl : (window.location.origin + fileUrl);
+        let viewer = "https://mozilla.github.io/pdf.js/web/viewer.html?file=" + encodeURIComponent(abs);
+        if (searchText) {
+            viewer += "#search=" + encodeURIComponent(String(searchText).slice(0, 120)) + "&phrase=true";
+        }
+        const body = $("#artifact-body");
+        const empty = $("#artifact-empty");
+        if (empty) empty.style.display = "none";
+        body.style.display = "block";
+        body.innerHTML = `
+            <div class="pdf-wrap">
+              <div class="pdf-caption"></div>
+              <iframe id="pdf-frame" class="pdf-iframe" src="${viewer}" allow="fullscreen"></iframe>
+            </div>`;
+        const cap = body.querySelector(".pdf-caption");
+        cap.innerHTML = (title ? escapeHtml(title) : "Memo preview") +
+            (searchText ? ' · <i>highlighting "' + escapeHtml(String(searchText).slice(0, 40)) + '"</i>' : "");
+        const sub = $("#artifact-subtitle");
+        if (sub) sub.textContent = title || "PDF preview";
+        document.querySelector(".app").classList.remove("pane-closed");
+        $("#right-pane").classList.add("open");
+        $("#artifact-btn").classList.add("active");
+    }
+
+    async function highlightInLastPdf(searchText) {
+        if (!lastMemoFileId) return false;
+        const body = new URLSearchParams({ search: searchText, file_id: lastMemoFileId });
+        const r = await fetch("/app/memo-pdf/highlight", { method: "POST", body });
+        if (!r.ok) return false;
+        const data = await r.json();
+        if (data.error) return false;
+        const frame = document.getElementById("pdf-frame");
+        if (frame) frame.src = data.viewer_url;
+        const cap = document.querySelector(".pdf-caption");
+        if (cap) cap.innerHTML = 'Memo preview · <i>highlighting "' + escapeHtml(String(searchText).slice(0, 40)) + '"</i>';
+        return true;
+    }
+
+    function maybeAppendMemoPreviewButton(bubble, text, agentSlug) {
+        if (!bubble || !text) return;
+        if (!MEMO_AGENTS.has(agentSlug)) return;
+        // Heuristic: a memo needs a couple of markdown headers + some length.
+        const looksMemo = text.length > 400 && /(^|\n)##?\s+\w/.test(text);
+        if (!looksMemo) return;
+        const existing = bubble.parentElement.querySelector(".memo-preview-row");
+        if (existing) return;
+        const row = document.createElement("div");
+        row.className = "memo-preview-row";
+        row.innerHTML = `
+            <button class="memo-preview-btn">📄 Preview PDF</button>
+            <span class="memo-preview-hint">Renders this memo as a PDF in the right pane — then ask "show me the deal size" to jump to it.</span>`;
+        bubble.parentElement.appendChild(row);
+        const btn = row.querySelector(".memo-preview-btn");
+        btn.onclick = async () => {
+            btn.disabled = true; btn.textContent = "Rendering…";
+            try {
+                const title = (AGENT_NAMES[agentSlug] || "Memo") + " — " + new Date().toLocaleDateString();
+                await renderMemoPdf(text, title);
+                btn.textContent = "✓ PDF open in the right pane";
+            } catch (e) {
+                btn.textContent = "Render failed";
+                console.error(e);
+            }
+        };
+    }
+
+    // If the user's last message looks like a PDF-highlight intent AND a memo
+    // PDF is already rendered, intercept and navigate the iframe — no SSE roundtrip.
+    function tryHighlightIntent(msg) {
+        if (!lastMemoFileId) return false;
+        const m = msg.match(/^\s*(?:show|find|highlight|jump to|where (?:is|does))\s+(?:me\s+)?(?:the\s+)?(.+?)[?.!]?\s*$/i);
+        if (!m) return false;
+        const term = m[1].trim();
+        if (term.length < 3 || term.length > 60) return false;
+        highlightInLastPdf(term);
+        addBubble("user", msg);
+        addBubble("assistant", `Highlighted "${term}" in the memo PDF →`, null);
+        return true;
+    }
+    window.renderMemoPdf = renderMemoPdf;
+    window.openPdfInPane = openPdfInPane;
+    window.highlightInLastPdf = highlightInLastPdf;
+    window.tryHighlightIntent = tryHighlightIntent;
+
     /* ── Follow-up ("Next step") detection ─────────────────────── */
 
     function maybeAppendFollowUp(bubble, text) {
@@ -201,6 +303,15 @@
         const ta = $("#chat-input");
         const msg = ta.value.trim();
         if (!msg) return;
+
+        // Client-side fast path: if a memo PDF is already open and the user
+        // asks "show me the deal size", highlight directly in the iframe
+        // and skip the round-trip.
+        if (tryHighlightIntent(msg)) {
+            ta.value = "";
+            ta.style.height = "";
+            return;
+        }
 
         streaming = true;
         const sendBtn = $("#send-btn");
@@ -277,6 +388,7 @@
                         hideThinking();
                         if (bubble) bubble.classList.remove("streaming");
                         maybeAppendFollowUp(bubble, accumulated);
+                        maybeAppendMemoPreviewButton(bubble, accumulated, payload.slug || currentAgentSlug);
                     }
                 });
             }
