@@ -147,6 +147,7 @@ def config_section(current_currency: str = "EUR", current_role: str = "buyer"):
 def bottom_nav(current_path: str = ""):
     items = [
         ("Pipelines",    "/pipeline/target",   "◆"),
+        ("Valuation",    "/app/valuation",     "◎"),
         ("Documents",    "/page/documents",    "▦"),
         ("Deal history", "/page/deals",        "∑"),
         ("Settings",     None,                 "⚙"),
@@ -218,6 +219,20 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
                 Div(Span("Workspace", cls="section-label")),
                 bottom_nav(current_path),
                 cls="workspace-section",
+            ),
+            Hr(cls="left-hr"),
+            Div(
+                Div(Span("Training", cls="section-label")),
+                Div(
+                    A(
+                        Span("🏦", cls="bottom-nav-icon"),
+                        Span("Deal Street", cls="bottom-nav-label"),
+                        href="/app/training",
+                        cls=f"bottom-nav-link{' active' if current_path.startswith('/app/training') else ''}",
+                    ),
+                    cls="bottom-nav",
+                ),
+                cls="training-section",
             ),
             Hr(cls="left-hr"),
             Div(
@@ -337,6 +352,8 @@ def center_pane(*, messages: list[dict] | None = None,
                 cls="chat-header-left",
             ),
             Div(
+                Button("News", id="news-btn", cls="news-toggle-btn",
+                       onclick="toggleNewsPane()", type="button"),
                 Button("Artifact", id="artifact-btn", cls="artifact-toggle-btn",
                        onclick="toggleArtifactPane()", type="button"),
                 cls="chat-header-actions",
@@ -372,12 +389,21 @@ def center_pane(*, messages: list[dict] | None = None,
 def right_pane():
     return Div(
         Div(
-            Div(H3("Artifact", cls="right-title"),
+            Div(
+                Div(
+                    Button("Artifact", id="rpane-tab-artifact", cls="rpane-tab active",
+                           onclick="switchRightTab('artifact')", type="button"),
+                    Button("News", id="rpane-tab-news", cls="rpane-tab",
+                           onclick="switchRightTab('news')", type="button"),
+                    cls="rpane-tabs",
+                ),
                 Span("", id="artifact-subtitle", cls="right-subtitle"),
-                cls="right-header-left"),
-            Button("✕", cls="right-close", onclick="toggleArtifactPane()", type="button"),
+                cls="right-header-left",
+            ),
+            Button("✕", cls="right-close", onclick="closeRightPane()", type="button"),
             cls="right-header",
         ),
+        # Artifact body
         Div(
             Div(
                 Div("◈", cls="artifact-empty-icon"),
@@ -388,7 +414,22 @@ def right_pane():
                 cls="artifact-empty",
             ),
             Div(id="artifact-body", cls="artifact-body", style="display:none"),
-            cls="right-body",
+            id="rpane-content-artifact", cls="right-body",
+        ),
+        # News body (HTMX auto-refresh)
+        Div(
+            Div(
+                Div("◌", cls="news-loading-icon"),
+                P("Loading news...", cls="news-loading-text"),
+                id="news-loading",
+                cls="news-loading",
+            ),
+            Div(id="news-body",
+                hx_get="/app/news/html",
+                hx_trigger="load, every 1800s",
+                hx_swap="innerHTML",
+                hx_indicator="#news-loading"),
+            id="rpane-content-news", cls="right-body", style="display:none",
         ),
         id="right-pane", cls="right-pane",
     )

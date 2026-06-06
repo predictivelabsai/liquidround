@@ -2,14 +2,26 @@
 LiquidRound — AI-Powered M&A Research Platform
 Chat-first FastHTML app. Deployed with uvicorn.
 """
-import os, uuid, time, asyncio, collections, json
+import os, uuid, time, asyncio, collections, json, threading
 from dotenv import load_dotenv
 load_dotenv()
 
 from fasthtml.common import *
-from starlette.responses import RedirectResponse, Response
+from starlette.responses import RedirectResponse, Response, JSONResponse
 from starlette.datastructures import UploadFile
 from pathlib import Path
+
+# Pre-fetch news in background so first request is instant
+def _prefetch_news():
+    from utils.news import fetch_news
+    try:
+        asyncio.run(fetch_news())
+    except Exception:
+        pass
+
+_news_t = threading.Thread(target=_prefetch_news, daemon=True)
+_news_t.start()
+_news_t.join(timeout=8)
 
 # ---------------------------------------------------------------------------
 # App setup — NO auth beforeware (login is optional)
@@ -59,6 +71,105 @@ pipeline_router.to_app(app)
 # Register memo → PDF preview routes (/app/memo-pdf/*)
 from chat_memo_pdf import ar as memo_pdf_router
 memo_pdf_router.to_app(app)
+
+# Register valuation simulator routes (/app/valuation/*)
+from valuation import ar as valuation_router
+valuation_router.to_app(app)
+
+# Register Deal Street training game routes (/app/training/*)
+from game.routes import ar as game_router
+game_router.to_app(app)
+
+# ---------------------------------------------------------------------------
+# News feed routes
+# ---------------------------------------------------------------------------
+@rt("/app/news")
+async def news_feed_json():
+    from utils.news import fetch_news
+    articles = await fetch_news()
+    return JSONResponse({"articles": articles})
+
+
+@rt("/app/news/html")
+async def news_feed_html():
+    """HTMX HTML fragment — renders news items for the right pane."""
+    from utils.news import fetch_news
+    from datetime import datetime, timezone
+    articles = await fetch_news()
+
+    def _time_ago(iso: str) -> str:
+        try:
+            dt = datetime.fromisoformat(iso)
+            diff = (datetime.now(tz=timezone.utc) - dt).total_seconds()
+            if diff < 60:
+                return "now"
+            if diff < 3600:
+                return f"{int(diff // 60)}m ago"
+            if diff < 86400:
+                return f"{int(diff // 3600)}h ago"
+            return f"{int(diff // 86400)}d ago"
+        except Exception:
+            return ""
+
+    items = []
+    for a in articles[:30]:
+        items.append(
+            A(
+                Div(
+                    Span(a["icon"], cls="news-source"),
+                    Span(_time_ago(a["published"]), cls="news-time"),
+                    cls="news-item-header",
+                ),
+                Div(a["title"], cls="news-item-title"),
+                Div(a.get("summary", "")[:120], cls="news-item-summary") if a.get("summary") else "",
+                href=a["url"], target="_blank", rel="noopener",
+                cls="news-item",
+            )
+        )
+    if not items:
+        items.append(Div("No news available.", cls="news-empty",
+                         style="color:var(--ink-dim); font-size:.78rem; padding:1rem;"))
+    return Div(*items)
+
+
+# ---------------------------------------------------------------------------
+# Daily deals email routes
+# ---------------------------------------------------------------------------
+@rt("/app/deals/send-test", methods=["POST"])
+async def send_test_deals():
+    """Send a test daily deals digest to TO_EMAIL."""
+    from utils.deals_scanner import (
+        scan_top_companies, scan_recent_additions, fetch_ma_news,
+        build_digest_html, build_digest_text,
+    )
+    from utils.email import send_email
+    from datetime import datetime as _dt
+
+    companies = scan_top_companies(limit=10)
+    recent = scan_recent_additions(limit=5)
+    news = fetch_ma_news(num_results=8)
+    html = build_digest_html(companies, news, recent)
+    text = build_digest_text(companies, news)
+
+    to = os.getenv("TO_EMAIL", "kaljuvee@gmail.com")
+    subject = f"LiquidRound Daily Deals — {_dt.now().strftime('%b %d, %Y')}"
+    result = send_email(to=to, subject=subject, html_body=html, text_body=text, tag="daily-deals")
+    return JSONResponse(result)
+
+
+@rt("/app/deals/preview")
+async def preview_deals():
+    """Preview the daily deals digest as HTML (no email sent)."""
+    from utils.deals_scanner import (
+        scan_top_companies, scan_recent_additions, fetch_ma_news,
+        build_digest_html,
+    )
+    companies = scan_top_companies(limit=10)
+    recent = scan_recent_additions(limit=5)
+    news = fetch_ma_news(num_results=8)
+    html = build_digest_html(companies, news, recent)
+    return Response(content=html, media_type="text/html")
+
 
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)

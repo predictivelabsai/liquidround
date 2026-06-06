@@ -75,13 +75,16 @@ def landing_nav(active: str = "home"):
                 link("/agents", "ECM Squad", "agents"),
                 link("/how-it-works", "How it works", "how"),
                 link("/pricing", "Pricing", "pricing"),
+                cls="hidden lg:flex items-center gap-6",
+            ),
+            Div(
                 A("Open the app",
                   href="/app",
-                  cls="ml-2 text-sm px-3 py-1.5 rounded-md font-medium",
+                  cls="text-sm px-3 py-1.5 rounded-md font-medium",
                   style=f"background:{BG_ELEV}; color:{INK}; border:1px solid {LINE};"),
-                cls="flex items-center gap-6",
+                cls="flex items-center",
             ),
-            cls="max-w-6xl mx-auto flex items-center justify-between px-6 py-4",
+            cls="max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-6 py-4",
         ),
         cls="border-b sticky top-0 z-40 backdrop-blur",
         style=f"border-color:{LINE}; background: rgba(11,18,32,0.85);",
@@ -104,7 +107,7 @@ def landing_footer():
                 A("ECM Squad", href="/agents", cls="text-xs text-slate-400 nav-link"),
                 cls="flex items-center",
             ),
-            cls="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between",
+            cls="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3",
         ),
         cls="border-t mt-20",
         style=f"border-color:{LINE};",
@@ -122,7 +125,7 @@ def hero():
                 Span("◈", cls="mono mr-2", style=f"color:{CTA}"),
                 Span("AI Investment Banking · Both sides of every deal",
                      cls="text-xs mono uppercase tracking-widest", style=f"color:{INK_MUTED}"),
-                cls="flex items-center justify-center mb-8",
+                cls="flex items-center justify-center mb-6 md:mb-8",
             ),
             # Headline
             H1(
@@ -132,7 +135,7 @@ def hero():
                 Span("for M&A ", style=f"color:{BUY}"),
                 Span("and "),
                 Span("IPO.", style=f"color:{SELL}"),
-                cls="text-5xl md:text-6xl font-bold tightest text-center mb-6",
+                cls="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tightest text-center mb-4 md:mb-6",
                 style=f"color:{INK};",
             ),
             # Sub — explicitly spells out ECM, mentions BYOD, memo/pitch drafting
@@ -151,7 +154,7 @@ def hero():
                 Span("BYOD ", style=f"color:{CTA};"),
                 Span("— bring your own pitch books, CIMs and term sheets.",
                      style=f"color:{INK_MUTED};"),
-                cls="text-lg md:text-xl text-center max-w-3xl mx-auto mb-10 leading-relaxed",
+                cls="text-base md:text-lg lg:text-xl text-center max-w-3xl mx-auto mb-8 md:mb-10 leading-relaxed px-2",
             ),
             # Two CTAs
             Div(
@@ -169,7 +172,7 @@ def hero():
                     cls="cta-glow-sell rounded-lg px-6 py-3 inline-flex items-center text-white no-underline tracking-tight",
                     style=f"background:{SELL};",
                 ),
-                cls="flex items-center justify-center gap-4 mb-4",
+                cls="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-4",
             ),
             # Sub-CTA text
             P(
@@ -195,7 +198,7 @@ def hero():
                 ),
                 cls="px-6",
             ),
-            cls="max-w-4xl mx-auto px-6 pt-20 pb-12 text-center",
+            cls="max-w-4xl mx-auto px-4 sm:px-6 pt-12 md:pt-20 pb-10 md:pb-12 text-center",
         ),
         cls="hero-gradient",
     )
@@ -215,7 +218,7 @@ def stats_bar():
                 Div(label, cls="text-xs mono uppercase tracking-widest mt-1", style=f"color:{INK_MUTED};"),
                 cls="text-center",
             ) for val, label in items],
-            cls="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto px-6 py-12",
+            cls="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 max-w-4xl mx-auto px-4 sm:px-6 py-10 md:py-12",
         ),
         cls="border-y", style=f"border-color:{LINE};",
     )
@@ -254,7 +257,7 @@ def pillars_section():
                   for c in CATEGORIES],
                 cls="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4",
             ),
-            cls="max-w-6xl mx-auto px-6 py-20",
+            cls="max-w-6xl mx-auto px-4 sm:px-6 py-14 md:py-20",
         ),
     )
 
@@ -300,7 +303,7 @@ def agent_grid_section():
             ),
             Div(
                 *[agent_card(a) for a in agents_in_cat],
-                cls="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3",
+                cls="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3",
             ),
             cls="mb-12",
         ))
@@ -312,7 +315,7 @@ def agent_grid_section():
             P("22 AI ECM / IB analysts — each with a defined role and a one-word prefix. Talk to them directly or let the router pick.",
               cls="text-center mb-12", style=f"color:{INK_MUTED};"),
             *sections,
-            cls="max-w-6xl mx-auto px-6 py-20",
+            cls="max-w-6xl mx-auto px-4 sm:px-6 py-14 md:py-20",
         ),
     )
 
@@ -342,7 +345,7 @@ def how_it_works_section():
                 ) for label, body, color in steps],
                 cls="grid grid-cols-1 md:grid-cols-3 gap-4",
             ),
-            cls="max-w-6xl mx-auto px-6 py-20",
+            cls="max-w-6xl mx-auto px-4 sm:px-6 py-14 md:py-20",
         ),
     )
 
@@ -364,9 +367,9 @@ def cta_section():
                   href="/app?role=seller",
                   cls="cta-glow-sell rounded-lg px-6 py-3 text-base font-semibold text-white no-underline",
                   style=f"background:{SELL};"),
-                cls="flex items-center justify-center gap-4",
+                cls="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4",
             ),
-            cls="max-w-4xl mx-auto px-6 py-20 text-center",
+            cls="max-w-4xl mx-auto px-4 sm:px-6 py-14 md:py-20 text-center",
         ),
     )
 

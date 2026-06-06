@@ -482,10 +482,51 @@
             app.classList.add("pane-closed");
             $("#artifact-btn").classList.remove("active");
         } else {
+            switchRightTab("artifact");
             r.classList.add("open");
             app.classList.remove("pane-closed");
             $("#artifact-btn").classList.add("active");
         }
+    };
+    window.toggleNewsPane = () => {
+        const r = $("#right-pane");
+        const app = document.querySelector(".app");
+        if (r.classList.contains("open") && $("#rpane-content-news") && $("#rpane-content-news").style.display !== "none") {
+            r.classList.remove("open");
+            app.classList.add("pane-closed");
+            const nb = $("#news-btn"); if (nb) nb.classList.remove("active");
+        } else {
+            switchRightTab("news");
+            r.classList.add("open");
+            app.classList.remove("pane-closed");
+            const nb = $("#news-btn"); if (nb) nb.classList.add("active");
+            const ab = $("#artifact-btn"); if (ab) ab.classList.remove("active");
+        }
+    };
+    window.switchRightTab = (tab) => {
+        const artifact = $("#rpane-content-artifact");
+        const news = $("#rpane-content-news");
+        const tabArt = $("#rpane-tab-artifact");
+        const tabNews = $("#rpane-tab-news");
+        if (tab === "news") {
+            if (artifact) artifact.style.display = "none";
+            if (news) news.style.display = "";
+            if (tabArt) tabArt.classList.remove("active");
+            if (tabNews) tabNews.classList.add("active");
+        } else {
+            if (artifact) artifact.style.display = "";
+            if (news) news.style.display = "none";
+            if (tabArt) tabArt.classList.add("active");
+            if (tabNews) tabNews.classList.remove("active");
+        }
+    };
+    window.closeRightPane = () => {
+        const r = $("#right-pane");
+        const app = document.querySelector(".app");
+        r.classList.remove("open");
+        app.classList.add("pane-closed");
+        const ab = $("#artifact-btn"); if (ab) ab.classList.remove("active");
+        const nb = $("#news-btn"); if (nb) nb.classList.remove("active");
     };
     window.toggleGroup = (id) => {
         const el = document.getElementById(id);
