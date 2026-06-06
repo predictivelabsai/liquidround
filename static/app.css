@@ -510,9 +510,8 @@ html, body {
     .right-pane { width: 92vw; right: -95vw; }
     .right-pane.open { right: -95vw; }
 
-    /* Hide suggestion chips and sample cards on mobile */
+    /* Hide suggestion chips on mobile (sample cards stay visible) */
     .welcome-hero .suggestions { display: none; }
-    .sample-cards { display: none; }
 
     /* Compact welcome hero */
     .welcome-hero { top: 30%; }
