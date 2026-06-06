@@ -150,8 +150,11 @@ def bottom_nav(current_path: str = ""):
         ("Pipelines",    "/pipeline/target",   "◆"),
         ("Valuation",    "/app/valuation",     "◎"),
         ("Analytics",    "/app/analytics",     "◇"),
+        ("Data Room",    "/app/dataroom",      "◈"),
         ("Documents",    "/page/documents",    "▦"),
         ("Deal history", "/page/deals",        "∑"),
+        ("Instructions", "/app/instructions",  "✎"),
+        ("Help",         "/app/help",          "?"),
         ("Settings",     None,                 "⚙"),
     ]
     links = []

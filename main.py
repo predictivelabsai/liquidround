@@ -89,6 +89,22 @@ game_router.to_app(app)
 from routes.analytics import ar as analytics_router
 analytics_router.to_app(app)
 
+# Register export routes (XLSX, DOCX, chart)
+from routes.exports import ar as exports_router
+exports_router.to_app(app)
+
+# Register data room routes (/app/dataroom)
+from routes.dataroom import ar as dataroom_router
+dataroom_router.to_app(app)
+
+# Register help page (/app/help)
+from routes.help import ar as help_router
+help_router.to_app(app)
+
+# Register instructions editor + prompt versioning API
+from routes.instructions import ar as instructions_router
+instructions_router.to_app(app)
+
 # ---------------------------------------------------------------------------
 # News feed routes
 # ---------------------------------------------------------------------------
