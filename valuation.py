@@ -208,7 +208,7 @@ def _autocomplete_js() -> str:
 """
 
 
-@ar.route("/app/valuation")
+@ar("/app/valuation")
 def valuation_home(sess, company: str = ""):
     from components.chat_shell import left_pane
 
@@ -688,7 +688,7 @@ def valuation_home(sess, company: str = ""):
     return Html(head, body)
 
 
-@ar.route("/app/valuation/search")
+@ar("/app/valuation/search")
 def valuation_search(q: str = ""):
     q = q.strip()
     if len(q) < 1:
@@ -709,7 +709,7 @@ def valuation_search(q: str = ""):
     return JSONResponse(results)
 
 
-@ar.route("/app/valuation/export", methods=["POST"])
+@ar("/app/valuation/export", methods=["POST"])
 async def valuation_export(request: Request):
     from openpyxl import Workbook
     from openpyxl.styles import Font, PatternFill

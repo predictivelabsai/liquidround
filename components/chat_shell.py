@@ -146,6 +146,7 @@ def config_section(current_currency: str = "EUR", current_role: str = "buyer"):
 
 def bottom_nav(current_path: str = ""):
     items = [
+        ("Companies",    "/app/companies",     "⊞"),
         ("Pipelines",    "/pipeline/target",   "◆"),
         ("Valuation",    "/app/valuation",     "◎"),
         ("Documents",    "/page/documents",    "▦"),

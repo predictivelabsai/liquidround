@@ -1,0 +1,183 @@
+/* pipeline.css — Companies search + Company detail pages
+   Uses LiquidRound dark-theme CSS variables from app.css */
+
+/* ── Pipeline / Companies page layout ── */
+.pipeline-center { overflow-y: auto; }
+.companies-wrap { padding: 1.25rem 1.5rem; max-width: 1200px; margin: 0 auto; width: 100%; }
+
+/* ── Search bar ── */
+.search-bar { display: flex; gap: .5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.search-input { flex: 1; min-width: 200px; padding: .65rem 1rem; background: var(--bg-elev); border: 1px solid var(--line); border-radius: .45rem; color: var(--ink); font-size: .88rem; }
+.search-input:focus { outline: none; border-color: var(--accent); }
+.search-select { padding: .65rem .8rem; background: var(--bg-elev); border: 1px solid var(--line); border-radius: .45rem; color: var(--ink); font-size: .82rem; min-width: 140px; }
+.search-select:focus { outline: none; border-color: var(--accent); }
+.search-submit { padding: .65rem 1.4rem; background: var(--accent); color: var(--bg); border: none; border-radius: .45rem; font-weight: 600; cursor: pointer; font-size: .82rem; }
+.search-submit:hover { background: var(--ink); }
+
+/* ── Search results meta + table ── */
+.search-meta { margin-bottom: .75rem; }
+.search-count { font-size: .78rem; color: var(--ink-muted); font-family: 'JetBrains Mono', monospace; }
+.search-empty { padding: 2rem; text-align: center; color: var(--ink-dim); font-size: .88rem; }
+
+.search-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+.search-table thead th {
+    text-align: left; padding: .55rem .7rem; font-size: .68rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .1em; color: var(--ink-dim);
+    border-bottom: 2px solid var(--line); white-space: nowrap;
+    font-family: 'JetBrains Mono', monospace;
+}
+.search-table thead th.text-right { text-align: right; }
+.search-table tbody td { padding: .55rem .7rem; border-bottom: 1px solid var(--line); color: var(--ink); vertical-align: middle; }
+.search-table tbody td.text-right { text-align: right; }
+.search-table tbody td.mono { font-family: 'JetBrains Mono', monospace; font-size: .76rem; }
+.search-row { transition: background .12s; }
+.search-row:hover { background: var(--bg-raise); }
+
+/* ── Company link + sector chip ── */
+.company-link { color: var(--accent-deep); text-decoration: none; font-weight: 500; }
+.company-link:hover { text-decoration: underline; color: var(--accent); }
+.sector-chip { font-size: .68rem; color: var(--ink-muted); font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: .06em; }
+
+/* ── Company detail / overview page ── */
+.company-overview { padding: 1.25rem 1.5rem; max-width: 900px; margin: 0 auto; width: 100%; }
+.company-header { margin-bottom: 1.5rem; }
+.company-name { color: var(--ink); font-size: 1.4rem; font-weight: 600; margin: 0 0 .5rem; letter-spacing: -.02em; }
+.company-tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .8rem; }
+.company-tags .tag {
+    padding: .15rem .5rem; font-size: .62rem;
+    border: 1px solid var(--line); border-radius: 999px;
+    color: var(--ink-muted); font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase; letter-spacing: .08em;
+}
+.company-tags .tag-stage { background: var(--accent-dim); color: var(--accent-deep); border-color: var(--accent); }
+
+.company-kv { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem .75rem; font-size: .82rem; color: var(--ink-muted); margin-bottom: 1.2rem; }
+.company-kv strong { color: var(--ink-dim); font-weight: 500; display: block; font-size: .62rem; text-transform: uppercase; letter-spacing: .1em; }
+
+.company-metrics {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; margin-bottom: 1.5rem;
+}
+.metric-card {
+    background: var(--bg-elev); border: 1px solid var(--line); border-radius: .5rem;
+    padding: .75rem .85rem;
+}
+.metric-label { font-size: .62rem; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-dim); margin-bottom: .3rem; }
+.metric-value { font-size: 1.1rem; font-weight: 600; color: var(--ink); font-family: 'JetBrains Mono', monospace; }
+.metric-value.accent { color: var(--accent); }
+
+.company-desc { font-size: .82rem; color: var(--ink-muted); line-height: 1.6; padding-top: 1rem; border-top: 1px solid var(--line); }
+
+/* ── Back button ── */
+.back-to-chat-btn {
+    padding: .3rem .7rem; font-size: .7rem;
+    border: 1px solid var(--line-br); border-radius: .4rem;
+    color: var(--ink-muted); background: transparent;
+    text-decoration: none; transition: all .15s;
+}
+.back-to-chat-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Deal brief (right pane, company detail) ── */
+.deal-brief { padding: 0; }
+.deal-brief h3.deal-name { color: var(--ink); font-size: 1rem; margin: 0 0 .5rem; }
+.deal-brief h4 { color: var(--ink-dim); font-size: .7rem; text-transform: uppercase; letter-spacing: .12em; margin: .95rem 0 .35rem; }
+.deal-tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .8rem; }
+.deal-tags .tag { padding: .15rem .5rem; font-size: .62rem; border: 1px solid var(--line); border-radius: 999px; color: var(--ink-muted); font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: .08em; }
+.deal-tags .tag-stage { background: var(--accent-dim); color: var(--accent-deep); border-color: var(--accent); }
+.deal-kv { display: grid; grid-template-columns: 1fr 1fr; gap: .3rem .75rem; font-size: .75rem; color: var(--ink-muted); }
+.deal-kv strong { color: var(--ink-dim); font-weight: 500; display: block; font-size: .62rem; text-transform: uppercase; letter-spacing: .1em; }
+.deal-desc { margin-top: .9rem; padding-top: .8rem; border-top: 1px solid var(--line); font-size: .72rem; color: var(--ink-muted); line-height: 1.5; }
+
+/* ── Company search page (co- prefixed) ── */
+.co-search-form { margin-bottom: 1.25rem; }
+.co-search-row { display: flex; gap: .5rem; flex-wrap: wrap; }
+.co-search-input {
+    flex: 1; min-width: 200px; padding: .65rem 1rem;
+    background: var(--bg-elev); border: 1px solid var(--line);
+    border-radius: .45rem; color: var(--ink); font-size: .88rem;
+}
+.co-search-input:focus { outline: none; border-color: var(--accent); }
+.co-search-input::placeholder { color: var(--ink-dim); }
+.co-sector-select {
+    padding: .65rem .8rem; background: var(--bg-elev); border: 1px solid var(--line);
+    border-radius: .45rem; color: var(--ink); font-size: .82rem; min-width: 140px;
+}
+.co-sector-select:focus { outline: none; border-color: var(--accent); }
+.co-search-btn {
+    padding: .65rem 1.4rem; background: var(--accent); color: var(--bg);
+    border: none; border-radius: .45rem; font-weight: 600; cursor: pointer; font-size: .82rem;
+}
+.co-search-btn:hover { background: var(--ink); }
+
+.co-result-count {
+    display: block; font-size: .78rem; color: var(--ink-muted);
+    font-family: 'JetBrains Mono', monospace; margin-bottom: .75rem;
+}
+.co-empty { padding: 2rem; text-align: center; color: var(--ink-dim); font-size: .88rem; }
+
+.co-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+.co-table thead th {
+    text-align: left; padding: .55rem .7rem; font-size: .68rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .1em; color: var(--ink-dim);
+    border-bottom: 2px solid var(--line); white-space: nowrap;
+    font-family: 'JetBrains Mono', monospace;
+}
+.co-table tbody td {
+    padding: .55rem .7rem; border-bottom: 1px solid var(--line);
+    color: var(--ink); vertical-align: middle;
+}
+.co-table tbody tr { transition: background .12s; }
+.co-table tbody tr:hover { background: var(--bg-raise); }
+.co-num { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: .76rem; }
+
+.co-name-link { color: var(--accent); text-decoration: none; font-weight: 500; }
+.co-name-link:hover { text-decoration: underline; color: var(--accent-deep); }
+
+/* ── Company detail page (co- prefixed) ── */
+.co-detail-header { margin-bottom: 1.5rem; }
+.co-detail-name { color: var(--ink); font-size: 1.35rem; font-weight: 600; margin: 0 0 .5rem; letter-spacing: -.02em; }
+.co-tags-row { display: flex; flex-wrap: wrap; gap: .4rem; }
+
+.co-back-btn {
+    padding: .3rem .7rem; font-size: .7rem; margin-right: .5rem;
+    border: 1px solid var(--line-br); border-radius: .4rem;
+    color: var(--ink-muted); background: transparent;
+    text-decoration: none; transition: all .15s;
+}
+.co-back-btn:hover { border-color: var(--accent); color: var(--accent); }
+.co-back-link { color: var(--accent); text-decoration: none; font-size: .82rem; }
+.co-back-link:hover { text-decoration: underline; }
+
+.co-kv-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: .5rem .75rem;
+    margin-bottom: 1.5rem; padding: 1rem;
+    background: var(--bg-elev); border: 1px solid var(--line); border-radius: .5rem;
+}
+.co-kv-item { display: flex; flex-direction: column; gap: .15rem; }
+.co-kv-label {
+    font-size: .62rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--ink-dim);
+}
+.co-kv-value { font-size: .82rem; color: var(--ink); }
+
+.co-fin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; margin-bottom: 1.5rem; }
+
+.co-section-title {
+    font-size: .72rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--ink-dim); margin: 0 0 .5rem;
+}
+.co-description { padding-top: 1rem; border-top: 1px solid var(--line); }
+.co-description-text { font-size: .82rem; color: var(--ink-muted); line-height: 1.6; margin: 0; }
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+    .companies-wrap { padding: .75rem; }
+    .company-overview { padding: .75rem; }
+    .company-metrics { grid-template-columns: repeat(2, 1fr); }
+    .co-fin-grid { grid-template-columns: repeat(2, 1fr); }
+    .co-kv-grid { grid-template-columns: 1fr; }
+    .search-bar, .co-search-row { flex-direction: column; }
+    .search-input, .co-search-input { min-width: unset; }
+    .search-table, .co-table { font-size: .72rem; }
+    .search-table thead th, .search-table tbody td,
+    .co-table thead th, .co-table tbody td { padding: .4rem .5rem; }
+}

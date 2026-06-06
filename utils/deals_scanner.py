@@ -12,6 +12,7 @@ from datetime import datetime
 log = logging.getLogger(__name__)
 
 DB_SCHEMA = os.getenv("COMPANY_DB_SCHEMA", "pehero")
+BASE_URL = os.getenv("SERVICE_URL_LIQUIDROUND", "https://liquidround.com")
 
 
 def scan_top_companies(limit: int = 10) -> list[dict]:
@@ -118,10 +119,12 @@ def build_digest_html(
         margin = float(c["ebitda_margin"]) if c.get("ebitda_margin") else 0
         growth = float(c["growth_rate"]) if c.get("growth_rate") else 0
         multiple = float(c["ask_multiple"]) if c.get("ask_multiple") else 0
+        slug = c.get("slug") or ""
+        detail_url = f"{BASE_URL}/app/company/{slug}" if slug else "#"
         company_rows += f"""
         <tr>
             <td style="padding:8px 12px; border-bottom:1px solid #1E293B;">
-                <strong style="color:#F59E0B;">{c['name']}</strong><br>
+                <a href="{detail_url}" style="color:#F59E0B; text-decoration:none; font-weight:600;">{c['name']}</a><br>
                 <span style="font-size:12px; color:#94A3B8;">{c.get('hq_city') or ''} · {sector}</span>
             </td>
             <td style="padding:8px 12px; border-bottom:1px solid #1E293B; text-align:right; font-family:'Courier New',monospace;">
@@ -160,10 +163,12 @@ def build_digest_html(
         recent_items = ""
         for c in recent:
             sector = (c.get("sector") or "").replace("_", " ").title()
+            slug = c.get("slug") or ""
+            detail_url = f"{BASE_URL}/app/company/{slug}" if slug else "#"
             recent_items += f"""
             <tr>
                 <td style="padding:6px 12px; border-bottom:1px solid #1E293B;">
-                    <strong style="color:#FBBF24;">{c['name']}</strong>
+                    <a href="{detail_url}" style="color:#FBBF24; text-decoration:none; font-weight:600;">{c['name']}</a>
                     <span style="color:#64748B; font-size:12px;"> · {c.get('hq_city') or ''} · {sector} · {_fmt_money(c.get('revenue_ltm'))} rev</span>
                 </td>
             </tr>"""

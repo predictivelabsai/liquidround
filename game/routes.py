@@ -187,7 +187,7 @@ async def _stream_agent_turn(state: GameState, user_content: str):
             yield sse.event(sse.TOOL_END, {"name": name, "output": output[:2000]})
 
 
-@ar.route("/app/training")
+@ar("/app/training")
 def training_page(sess):
     from components.chat_shell import left_pane
 
@@ -255,7 +255,7 @@ def training_page(sess):
     return Html(head, body)
 
 
-@ar.route("/app/training/chat", methods=["POST"])
+@ar("/app/training/chat", methods=["POST"])
 async def training_chat(request):
     sess = request.session
     form = await request.form()
@@ -399,7 +399,7 @@ async def training_chat(request):
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 
-@ar.route("/app/training/reset", methods=["POST"])
+@ar("/app/training/reset", methods=["POST"])
 async def training_reset(request):
     request.session.pop("deal_street_state", None)
     request.session.pop("deal_street_level", None)
