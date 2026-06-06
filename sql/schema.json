@@ -1,0 +1,1949 @@
+{
+  "liquidround.active_deals": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "UUID"
+      },
+      {
+        "name": "deal_type",
+        "type": "TEXT"
+      },
+      {
+        "name": "company_name",
+        "type": "TEXT"
+      },
+      {
+        "name": "industry",
+        "type": "TEXT"
+      },
+      {
+        "name": "sector",
+        "type": "TEXT"
+      },
+      {
+        "name": "deal_size_min",
+        "type": "BIGINT"
+      },
+      {
+        "name": "deal_size_max",
+        "type": "BIGINT"
+      },
+      {
+        "name": "deal_size_currency",
+        "type": "TEXT"
+      },
+      {
+        "name": "status",
+        "type": "TEXT"
+      },
+      {
+        "name": "priority",
+        "type": "TEXT"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "updated_at",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "metadata",
+        "type": "JSONB"
+      },
+      {
+        "name": "target_count",
+        "type": "BIGINT"
+      },
+      {
+        "name": "avg_strategic_fit",
+        "type": "DOUBLE PRECISION"
+      },
+      {
+        "name": "max_valuation",
+        "type": "NUMERIC"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "liquidround.companies": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "UUID"
+      },
+      {
+        "name": "name",
+        "type": "TEXT"
+      },
+      {
+        "name": "ticker_symbol",
+        "type": "TEXT"
+      },
+      {
+        "name": "industry",
+        "type": "TEXT"
+      },
+      {
+        "name": "sector",
+        "type": "TEXT"
+      },
+      {
+        "name": "market_cap",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "revenue",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "ebitda",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "employees",
+        "type": "INTEGER"
+      },
+      {
+        "name": "founded_year",
+        "type": "INTEGER"
+      },
+      {
+        "name": "headquarters",
+        "type": "TEXT"
+      },
+      {
+        "name": "website",
+        "type": "TEXT"
+      },
+      {
+        "name": "description",
+        "type": "TEXT"
+      },
+      {
+        "name": "financial_data",
+        "type": "JSONB"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "updated_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "liquidround.deal_activities": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER"
+      },
+      {
+        "name": "deal_id",
+        "type": "UUID"
+      },
+      {
+        "name": "activity_type",
+        "type": "TEXT"
+      },
+      {
+        "name": "description",
+        "type": "TEXT"
+      },
+      {
+        "name": "performed_by",
+        "type": "TEXT"
+      },
+      {
+        "name": "metadata",
+        "type": "JSONB"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "liquidround.deal_summary": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "UUID"
+      },
+      {
+        "name": "deal_type",
+        "type": "TEXT"
+      },
+      {
+        "name": "company_name",
+        "type": "TEXT"
+      },
+      {
+        "name": "industry",
+        "type": "TEXT"
+      },
+      {
+        "name": "status",
+        "type": "TEXT"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "target_companies",
+        "type": "BIGINT"
+      },
+      {
+        "name": "valuations_count",
+        "type": "BIGINT"
+      },
+      {
+        "name": "avg_strategic_fit",
+        "type": "DOUBLE PRECISION"
+      },
+      {
+        "name": "min_valuation",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "max_valuation",
+        "type": "NUMERIC"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "liquidround.deal_targets": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER"
+      },
+      {
+        "name": "deal_id",
+        "type": "UUID"
+      },
+      {
+        "name": "company_id",
+        "type": "UUID"
+      },
+      {
+        "name": "target_type",
+        "type": "TEXT"
+      },
+      {
+        "name": "strategic_fit_score",
+        "type": "REAL"
+      },
+      {
+        "name": "valuation_low",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "valuation_high",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "valuation_currency",
+        "type": "TEXT"
+      },
+      {
+        "name": "notes",
+        "type": "TEXT"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "liquidround.deals": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "UUID"
+      },
+      {
+        "name": "deal_type",
+        "type": "TEXT"
+      },
+      {
+        "name": "company_name",
+        "type": "TEXT"
+      },
+      {
+        "name": "industry",
+        "type": "TEXT"
+      },
+      {
+        "name": "sector",
+        "type": "TEXT"
+      },
+      {
+        "name": "deal_size_min",
+        "type": "BIGINT"
+      },
+      {
+        "name": "deal_size_max",
+        "type": "BIGINT"
+      },
+      {
+        "name": "deal_size_currency",
+        "type": "TEXT"
+      },
+      {
+        "name": "status",
+        "type": "TEXT"
+      },
+      {
+        "name": "priority",
+        "type": "TEXT"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "updated_at",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "metadata",
+        "type": "JSONB"
+      },
+      {
+        "name": "user_id",
+        "type": "UUID"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "liquidround.documents": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "UUID"
+      },
+      {
+        "name": "filename",
+        "type": "TEXT"
+      },
+      {
+        "name": "file_type",
+        "type": "TEXT"
+      },
+      {
+        "name": "file_size",
+        "type": "BIGINT"
+      },
+      {
+        "name": "file_path",
+        "type": "TEXT"
+      },
+      {
+        "name": "parsed_data",
+        "type": "JSONB"
+      },
+      {
+        "name": "analysis",
+        "type": "JSONB"
+      },
+      {
+        "name": "uploaded_at",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "deal_id",
+        "type": "UUID"
+      },
+      {
+        "name": "user_id",
+        "type": "UUID"
+      }
+    ],
+    "row_count": 1,
+    "enums": {}
+  },
+  "liquidround.ipo_data": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER"
+      },
+      {
+        "name": "ticker",
+        "type": "TEXT"
+      },
+      {
+        "name": "company_name",
+        "type": "TEXT"
+      },
+      {
+        "name": "sector",
+        "type": "TEXT"
+      },
+      {
+        "name": "industry",
+        "type": "TEXT"
+      },
+      {
+        "name": "exchange",
+        "type": "TEXT"
+      },
+      {
+        "name": "ipo_date",
+        "type": "DATE"
+      },
+      {
+        "name": "ipo_price",
+        "type": "REAL"
+      },
+      {
+        "name": "current_price",
+        "type": "REAL"
+      },
+      {
+        "name": "market_cap",
+        "type": "BIGINT"
+      },
+      {
+        "name": "price_change_since_ipo",
+        "type": "REAL"
+      },
+      {
+        "name": "volume",
+        "type": "BIGINT"
+      },
+      {
+        "name": "last_updated",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "liquidround.ipo_refresh_log": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER"
+      },
+      {
+        "name": "refresh_type",
+        "type": "TEXT"
+      },
+      {
+        "name": "status",
+        "type": "TEXT"
+      },
+      {
+        "name": "records_processed",
+        "type": "INTEGER"
+      },
+      {
+        "name": "error_message",
+        "type": "TEXT"
+      },
+      {
+        "name": "started_at",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "completed_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "liquidround.market_data": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER"
+      },
+      {
+        "name": "symbol",
+        "type": "TEXT"
+      },
+      {
+        "name": "data_type",
+        "type": "TEXT"
+      },
+      {
+        "name": "data_value",
+        "type": "REAL"
+      },
+      {
+        "name": "data_text",
+        "type": "TEXT"
+      },
+      {
+        "name": "data_json",
+        "type": "JSONB"
+      },
+      {
+        "name": "source",
+        "type": "TEXT"
+      },
+      {
+        "name": "timestamp",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "liquidround.messages": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER"
+      },
+      {
+        "name": "workflow_id",
+        "type": "UUID"
+      },
+      {
+        "name": "role",
+        "type": "TEXT"
+      },
+      {
+        "name": "content",
+        "type": "TEXT"
+      },
+      {
+        "name": "timestamp",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 2,
+    "enums": {
+      "role": [
+        "assistant",
+        "user"
+      ]
+    }
+  },
+  "liquidround.password_reset_tokens": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER"
+      },
+      {
+        "name": "user_id",
+        "type": "UUID"
+      },
+      {
+        "name": "token",
+        "type": "VARCHAR(128)"
+      },
+      {
+        "name": "expires_at",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "used_at",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "liquidround.pipeline_items": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "UUID"
+      },
+      {
+        "name": "user_id",
+        "type": "UUID"
+      },
+      {
+        "name": "pipeline_type",
+        "type": "VARCHAR(10)"
+      },
+      {
+        "name": "company_name",
+        "type": "TEXT"
+      },
+      {
+        "name": "stage",
+        "type": "VARCHAR(30)"
+      },
+      {
+        "name": "score",
+        "type": "INTEGER"
+      },
+      {
+        "name": "workflow_id",
+        "type": "UUID"
+      },
+      {
+        "name": "metadata",
+        "type": "JSONB"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "updated_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "liquidround.prompt_versions": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "slug",
+        "type": "TEXT"
+      },
+      {
+        "name": "content",
+        "type": "TEXT"
+      },
+      {
+        "name": "changed_by",
+        "type": "TEXT"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 23,
+    "enums": {}
+  },
+  "liquidround.research_results": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER"
+      },
+      {
+        "name": "workflow_id",
+        "type": "UUID"
+      },
+      {
+        "name": "query",
+        "type": "TEXT"
+      },
+      {
+        "name": "exa_results",
+        "type": "JSONB"
+      },
+      {
+        "name": "tavily_results",
+        "type": "JSONB"
+      },
+      {
+        "name": "thinking_trace",
+        "type": "JSONB"
+      },
+      {
+        "name": "summary",
+        "type": "TEXT"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 1,
+    "enums": {}
+  },
+  "liquidround.scoring_results": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER"
+      },
+      {
+        "name": "workflow_id",
+        "type": "UUID"
+      },
+      {
+        "name": "buyer",
+        "type": "TEXT"
+      },
+      {
+        "name": "target",
+        "type": "TEXT"
+      },
+      {
+        "name": "composite_score",
+        "type": "INTEGER"
+      },
+      {
+        "name": "dimensions",
+        "type": "JSONB"
+      },
+      {
+        "name": "recommendation",
+        "type": "TEXT"
+      },
+      {
+        "name": "key_risks",
+        "type": "JSONB"
+      },
+      {
+        "name": "next_steps",
+        "type": "JSONB"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 1,
+    "enums": {}
+  },
+  "liquidround.users": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER"
+      },
+      {
+        "name": "user_id",
+        "type": "UUID"
+      },
+      {
+        "name": "email",
+        "type": "VARCHAR(255)"
+      },
+      {
+        "name": "password_hash",
+        "type": "VARCHAR(255)"
+      },
+      {
+        "name": "google_id",
+        "type": "VARCHAR(255)"
+      },
+      {
+        "name": "display_name",
+        "type": "VARCHAR(255)"
+      },
+      {
+        "name": "is_admin",
+        "type": "BOOLEAN"
+      },
+      {
+        "name": "is_active",
+        "type": "BOOLEAN"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "updated_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 1,
+    "enums": {}
+  },
+  "liquidround.valuations": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER"
+      },
+      {
+        "name": "deal_id",
+        "type": "UUID"
+      },
+      {
+        "name": "company_id",
+        "type": "UUID"
+      },
+      {
+        "name": "valuation_method",
+        "type": "TEXT"
+      },
+      {
+        "name": "valuation_amount",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "currency",
+        "type": "TEXT"
+      },
+      {
+        "name": "assumptions",
+        "type": "JSONB"
+      },
+      {
+        "name": "confidence_level",
+        "type": "TEXT"
+      },
+      {
+        "name": "created_by_agent",
+        "type": "TEXT"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "liquidround.workflow_results": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER"
+      },
+      {
+        "name": "workflow_id",
+        "type": "UUID"
+      },
+      {
+        "name": "agent_name",
+        "type": "TEXT"
+      },
+      {
+        "name": "status",
+        "type": "TEXT"
+      },
+      {
+        "name": "result_data",
+        "type": "JSONB"
+      },
+      {
+        "name": "execution_time",
+        "type": "REAL"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 2,
+    "enums": {
+      "status": [
+        "success"
+      ]
+    }
+  },
+  "liquidround.workflows": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "UUID"
+      },
+      {
+        "name": "deal_id",
+        "type": "UUID"
+      },
+      {
+        "name": "user_query",
+        "type": "TEXT"
+      },
+      {
+        "name": "workflow_type",
+        "type": "TEXT"
+      },
+      {
+        "name": "status",
+        "type": "TEXT"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "updated_at",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "user_id",
+        "type": "UUID"
+      },
+      {
+        "name": "conversation_title",
+        "type": "VARCHAR(200)"
+      }
+    ],
+    "row_count": 1,
+    "enums": {
+      "workflow_type": [
+        "buyer_ma"
+      ],
+      "status": [
+        "completed"
+      ]
+    }
+  },
+  "pehero.agent_invocations": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "session_id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "agent_slug",
+        "type": "TEXT"
+      },
+      {
+        "name": "input",
+        "type": "TEXT"
+      },
+      {
+        "name": "tools_used",
+        "type": "ARRAY"
+      },
+      {
+        "name": "duration_ms",
+        "type": "INTEGER"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "pehero.cap_tables": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "company_id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "as_of_date",
+        "type": "DATE"
+      },
+      {
+        "name": "holders",
+        "type": "JSONB"
+      },
+      {
+        "name": "total_shares",
+        "type": "BIGINT"
+      },
+      {
+        "name": "post_money",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "pehero.chat_messages": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "session_id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "role",
+        "type": "TEXT"
+      },
+      {
+        "name": "content",
+        "type": "TEXT"
+      },
+      {
+        "name": "tool_calls",
+        "type": "JSONB"
+      },
+      {
+        "name": "agent_slug",
+        "type": "TEXT"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 174,
+    "enums": {
+      "role": [
+        "assistant",
+        "user"
+      ]
+    }
+  },
+  "pehero.chat_sessions": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "user_id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "agent_slug",
+        "type": "TEXT"
+      },
+      {
+        "name": "title",
+        "type": "TEXT"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "updated_at",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "share_token",
+        "type": "TEXT"
+      }
+    ],
+    "row_count": 101,
+    "enums": {}
+  },
+  "pehero.companies": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "slug",
+        "type": "TEXT"
+      },
+      {
+        "name": "name",
+        "type": "TEXT"
+      },
+      {
+        "name": "hq_city",
+        "type": "TEXT"
+      },
+      {
+        "name": "hq_state",
+        "type": "TEXT"
+      },
+      {
+        "name": "country",
+        "type": "TEXT"
+      },
+      {
+        "name": "sector",
+        "type": "TEXT"
+      },
+      {
+        "name": "sub_sector",
+        "type": "TEXT"
+      },
+      {
+        "name": "website",
+        "type": "TEXT"
+      },
+      {
+        "name": "founded_year",
+        "type": "INTEGER"
+      },
+      {
+        "name": "employees",
+        "type": "INTEGER"
+      },
+      {
+        "name": "revenue_ltm",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "ebitda_ltm",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "ebitda_margin",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "growth_rate",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "ownership",
+        "type": "TEXT"
+      },
+      {
+        "name": "deal_stage",
+        "type": "TEXT"
+      },
+      {
+        "name": "deal_type",
+        "type": "TEXT"
+      },
+      {
+        "name": "enterprise_value",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "ask_multiple",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "fund_id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "description",
+        "type": "TEXT"
+      },
+      {
+        "name": "seller_intent",
+        "type": "TEXT"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 25831,
+    "enums": {
+      "country": [
+        "EE",
+        "LT",
+        "LV"
+      ],
+      "sector": [
+        "business_services",
+        "consumer",
+        "financial_services",
+        "healthcare",
+        "industrials",
+        "software"
+      ],
+      "sub_sector": [
+        "Ambulance & emergency services",
+        "Automation & robotics",
+        "Banking",
+        "Business services",
+        "Cargo handling",
+        "Computer manufacturing",
+        "Construction",
+        "Consumer",
+        "Credit & lending",
+        "Data processing & hosting",
+        "Dental clinics",
+        "Dental practice",
+        "Financial services",
+        "Freight forwarding",
+        "General",
+        "General medical practice",
+        "Health care institutions",
+        "Healthcare",
+        "Hotels",
+        "IT consulting"
+      ],
+      "deal_stage": [
+        "sourced"
+      ],
+      "deal_type": [
+        "platform"
+      ]
+    }
+  },
+  "pehero.contracts": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "company_id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "counterparty",
+        "type": "TEXT"
+      },
+      {
+        "name": "contract_type",
+        "type": "TEXT"
+      },
+      {
+        "name": "start_date",
+        "type": "DATE"
+      },
+      {
+        "name": "end_date",
+        "type": "DATE"
+      },
+      {
+        "name": "annual_value",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "auto_renew",
+        "type": "BOOLEAN"
+      },
+      {
+        "name": "change_of_control_trigger",
+        "type": "BOOLEAN"
+      },
+      {
+        "name": "termination_notice_days",
+        "type": "INTEGER"
+      },
+      {
+        "name": "exclusivity",
+        "type": "BOOLEAN"
+      },
+      {
+        "name": "status",
+        "type": "TEXT"
+      },
+      {
+        "name": "doc_path",
+        "type": "TEXT"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "pehero.data_room": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "user_id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "company_slug",
+        "type": "TEXT"
+      },
+      {
+        "name": "filename",
+        "type": "TEXT"
+      },
+      {
+        "name": "content_type",
+        "type": "TEXT"
+      },
+      {
+        "name": "size_bytes",
+        "type": "INTEGER"
+      },
+      {
+        "name": "data",
+        "type": "BYTEA"
+      },
+      {
+        "name": "uploaded_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "pehero.dd_findings": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "company_id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "agent_slug",
+        "type": "TEXT"
+      },
+      {
+        "name": "category",
+        "type": "TEXT"
+      },
+      {
+        "name": "severity",
+        "type": "TEXT"
+      },
+      {
+        "name": "summary",
+        "type": "TEXT"
+      },
+      {
+        "name": "detail",
+        "type": "TEXT"
+      },
+      {
+        "name": "source_doc",
+        "type": "TEXT"
+      },
+      {
+        "name": "source_page",
+        "type": "INTEGER"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "pehero.debt_stacks": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "company_id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "name",
+        "type": "TEXT"
+      },
+      {
+        "name": "tranches",
+        "type": "JSONB"
+      },
+      {
+        "name": "total_debt",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "total_leverage",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "dscr",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 1,
+    "enums": {}
+  },
+  "pehero.financials": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "company_id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "month",
+        "type": "DATE"
+      },
+      {
+        "name": "revenue",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "cogs",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "gross_profit",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "opex",
+        "type": "JSONB"
+      },
+      {
+        "name": "ebitda",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "adjustments",
+        "type": "JSONB"
+      },
+      {
+        "name": "adj_ebitda",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "arr",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "gross_retention",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "net_retention",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 2781708,
+    "enums": {}
+  },
+  "pehero.funds": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "slug",
+        "type": "TEXT"
+      },
+      {
+        "name": "name",
+        "type": "TEXT"
+      },
+      {
+        "name": "vintage",
+        "type": "INTEGER"
+      },
+      {
+        "name": "size_usd",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "strategy",
+        "type": "TEXT"
+      },
+      {
+        "name": "dry_powder",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "called_pct",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "invested_pct",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "net_irr",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "net_moic",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "dpi",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "pehero.investor_crm": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "name",
+        "type": "TEXT"
+      },
+      {
+        "name": "firm",
+        "type": "TEXT"
+      },
+      {
+        "name": "lp_type",
+        "type": "TEXT"
+      },
+      {
+        "name": "email",
+        "type": "TEXT"
+      },
+      {
+        "name": "commitment_size",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "stage",
+        "type": "TEXT"
+      },
+      {
+        "name": "focus",
+        "type": "TEXT"
+      },
+      {
+        "name": "geography",
+        "type": "TEXT"
+      },
+      {
+        "name": "aum",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "last_touch",
+        "type": "DATE"
+      },
+      {
+        "name": "notes",
+        "type": "TEXT"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "pehero.lbo_models": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "company_id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "name",
+        "type": "TEXT"
+      },
+      {
+        "name": "assumptions",
+        "type": "JSONB"
+      },
+      {
+        "name": "projections",
+        "type": "JSONB"
+      },
+      {
+        "name": "returns",
+        "type": "JSONB"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 36,
+    "enums": {}
+  },
+  "pehero.market_signals": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "sector",
+        "type": "TEXT"
+      },
+      {
+        "name": "sub_sector",
+        "type": "TEXT"
+      },
+      {
+        "name": "metric",
+        "type": "TEXT"
+      },
+      {
+        "name": "value",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "as_of_date",
+        "type": "DATE"
+      },
+      {
+        "name": "source",
+        "type": "TEXT"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "pehero.outreach_sequences": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "company_id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "investor_id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "sequence_type",
+        "type": "TEXT"
+      },
+      {
+        "name": "status",
+        "type": "TEXT"
+      },
+      {
+        "name": "touches",
+        "type": "JSONB"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "pehero.pipedrive_sync": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "entity_type",
+        "type": "TEXT"
+      },
+      {
+        "name": "pehero_id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "pipedrive_id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "pipedrive_type",
+        "type": "TEXT"
+      },
+      {
+        "name": "last_synced",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "sync_hash",
+        "type": "TEXT"
+      }
+    ],
+    "row_count": 863,
+    "enums": {}
+  },
+  "pehero.portfolio_kpis": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "company_id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "month",
+        "type": "DATE"
+      },
+      {
+        "name": "kpi",
+        "type": "TEXT"
+      },
+      {
+        "name": "value",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "budget",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "pehero.prompt_versions": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "slug",
+        "type": "TEXT"
+      },
+      {
+        "name": "content",
+        "type": "TEXT"
+      },
+      {
+        "name": "changed_by",
+        "type": "TEXT"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 28,
+    "enums": {}
+  },
+  "pehero.trading_comps": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "company_id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "ticker",
+        "type": "TEXT"
+      },
+      {
+        "name": "peer_name",
+        "type": "TEXT"
+      },
+      {
+        "name": "sector",
+        "type": "TEXT"
+      },
+      {
+        "name": "market_cap",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "ev",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "revenue_ltm",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "ebitda_ltm",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "ev_revenue",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "ev_ebitda",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "rev_growth",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "ebitda_margin",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "as_of_date",
+        "type": "DATE"
+      },
+      {
+        "name": "source",
+        "type": "TEXT"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "pehero.transaction_comps": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "company_id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "target_name",
+        "type": "TEXT"
+      },
+      {
+        "name": "acquirer",
+        "type": "TEXT"
+      },
+      {
+        "name": "sector",
+        "type": "TEXT"
+      },
+      {
+        "name": "sub_sector",
+        "type": "TEXT"
+      },
+      {
+        "name": "country",
+        "type": "TEXT"
+      },
+      {
+        "name": "announce_date",
+        "type": "DATE"
+      },
+      {
+        "name": "close_date",
+        "type": "DATE"
+      },
+      {
+        "name": "enterprise_value",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "revenue",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "ebitda",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "ev_revenue",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "ev_ebitda",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "deal_type",
+        "type": "TEXT"
+      },
+      {
+        "name": "source",
+        "type": "TEXT"
+      }
+    ],
+    "row_count": 0,
+    "enums": {}
+  },
+  "pehero.user_integrations": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "user_id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "provider",
+        "type": "TEXT"
+      },
+      {
+        "name": "api_token",
+        "type": "TEXT"
+      },
+      {
+        "name": "domain",
+        "type": "TEXT"
+      },
+      {
+        "name": "metadata",
+        "type": "JSONB"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "updated_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 1,
+    "enums": {}
+  },
+  "pehero.users": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "BIGINT"
+      },
+      {
+        "name": "email",
+        "type": "TEXT"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 99,
+    "enums": {}
+  }
+}

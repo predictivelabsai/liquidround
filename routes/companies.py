@@ -202,6 +202,8 @@ def companies_search(sess, name: str = "", sector: str = ""):
             cls="co-results",
         )
 
+    from routes.analytics import copilot_pane, copilot_toggle_btn
+
     body = Body(
         Div(id="left-overlay", cls="left-overlay", onclick="toggleLeftPane()"),
         left_pane(
@@ -216,13 +218,19 @@ def companies_search(sess, name: str = "", sector: str = ""):
                     Span("Companies", cls="chat-header-title"),
                     cls="chat-header-left",
                 ),
+                Div(copilot_toggle_btn(), cls="chat-header-actions"),
                 cls="chat-header",
             ),
             Div(search_bar, results, cls="companies-wrap"),
             cls="center-pane pipeline-center",
         ),
+        copilot_pane(
+            page_name="Companies",
+            page_context={"page": "Companies", "capabilities": "search, filter, browse company directory"},
+        ),
         Script(src="/chat.js"),
-        cls="lr-dark app pipeline-app",
+        Script(src="/copilot.js"),
+        cls="lr-dark app pane-closed pipeline-app",
         style="background:#0B1220;color:#E5E7EB;",
     )
 
@@ -379,7 +387,7 @@ def company_detail(slug: str, sess):
         cls="center-pane pipeline-center",
     )
 
-    # Right pane — deal brief
+    # Right pane — deal brief + download buttons
     brief_html = _deal_brief_html(co, margin_display)
 
     right = Div(
@@ -392,8 +400,26 @@ def company_detail(slug: str, sess):
             Button("✕", cls="right-close", onclick="closeRightPane()", type="button"),
             cls="right-header",
         ),
-        Div(NotStr(brief_html), cls="right-body",
-            style="padding:1rem;overflow-y:auto;"),
+        Div(
+            NotStr(brief_html),
+            Div(
+                A("⬇ CSV", href=f"/app/company/{slug}/csv",
+                  style="display:inline-block;padding:.35rem .8rem;font-size:.72rem;"
+                        "font-weight:600;border:1px solid rgba(245,158,11,.4);"
+                        "border-radius:.4rem;color:#F59E0B;text-decoration:none;"
+                        "margin-right:.5rem;transition:all .15s;",
+                ),
+                A("⬇ PDF", href=f"/app/company/{slug}/pdf",
+                  style="display:inline-block;padding:.35rem .8rem;font-size:.72rem;"
+                        "font-weight:600;border:1px solid rgba(245,158,11,.4);"
+                        "border-radius:.4rem;color:#F59E0B;text-decoration:none;"
+                        "transition:all .15s;",
+                ),
+                style="margin-top:1rem;padding-top:.8rem;border-top:1px solid rgba(255,255,255,.08);",
+            ),
+            cls="right-body",
+            style="padding:1rem;overflow-y:auto;",
+        ),
         id="right-pane", cls="right-pane open",
     )
 

@@ -2,7 +2,7 @@
 LiquidRound — AI-Powered M&A Research Platform
 Chat-first FastHTML app. Deployed with uvicorn.
 """
-import os, uuid, time, asyncio, collections, json, threading
+import os, uuid, time, asyncio, collections, json, re, threading
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -32,6 +32,7 @@ app, rt = fast_app(
         Script(src="https://cdn.tailwindcss.com"),
         Script(src="https://cdn.plot.ly/plotly-2.32.0.min.js"),
         Link(rel="stylesheet", href="/app.css"),
+        Link(rel="stylesheet", href="/pipeline.css"),
         Link(rel="icon", type="image/svg+xml", href="/favicon.svg"),
         Link(rel="icon", type="image/png", sizes="32x32", href="/favicon.png"),
         Link(rel="alternate icon", type="image/x-icon", href="/favicon.ico"),
@@ -83,6 +84,10 @@ valuation_router.to_app(app)
 # Register Deal Street training game routes (/app/training/*)
 from game.routes import ar as game_router
 game_router.to_app(app)
+
+# Register analytics routes (/app/analytics, /app/analytics/run)
+from routes.analytics import ar as analytics_router
+analytics_router.to_app(app)
 
 # ---------------------------------------------------------------------------
 # News feed routes
@@ -1141,6 +1146,241 @@ async def app_chat_sse(request):
         yield sse.event(sse.DONE, {"slug": slug, "tools": tool_calls})
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
+
+
+# ---------------------------------------------------------------------------
+# Copilot session route (for workspace pages with copilot pane)
+# ---------------------------------------------------------------------------
+@rt("/app/copilot/session")
+def copilot_session(session, page: str = "", company: str = ""):
+    """Return (or create) a per-page copilot chat session."""
+    user = session.get("user")
+    if not user or not user.get("user_id"):
+        import uuid as _uuid
+        return JSONResponse({"sid": str(_uuid.uuid4()), "messages": []})
+    uid = user["user_id"]
+    title = f"Copilot: {page}" if not company else f"Copilot: {page}: {company}"
+    try:
+        from utils.database import get_conn, db_service
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT id FROM liquidround.workflows WHERE user_id = %s AND user_query = %s "
+                "ORDER BY created_at DESC LIMIT 1",
+                (uid, title),
+            )
+            row = cur.fetchone()
+            if row:
+                sid = row[0] if isinstance(row, (list, tuple)) else row.get("id", row[0])
+                return JSONResponse({"sid": str(sid), "messages": []})
+            # Create a new copilot session
+            conv_id = db_service.create_conversation(uid, title)
+            return JSONResponse({"sid": str(conv_id), "messages": []})
+    except Exception:
+        import uuid as _uuid
+        return JSONResponse({"sid": str(_uuid.uuid4()), "messages": []})
+
+
+# ---------------------------------------------------------------------------
+# Share chat session
+# ---------------------------------------------------------------------------
+@rt("/app/share", methods=["POST"])
+async def share_session(session, request):
+    """Generate a shareable link for a chat session."""
+    form = await request.form()
+    sid = form.get("sid") or ""
+    user = session.get("user")
+    if not user or not sid:
+        return JSONResponse({"ok": False, "error": "not authenticated"}, status_code=401)
+    uid = user.get("user_id")
+    try:
+        from utils.database import get_conn
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT id, share_token FROM liquidround.workflows WHERE id = %s AND user_id = %s",
+                (sid, uid),
+            )
+            row = cur.fetchone()
+            if not row:
+                return JSONResponse({"ok": False, "error": "session not found"}, status_code=404)
+            token = row[1] if isinstance(row, (list, tuple)) else row.get("share_token")
+            if not token:
+                token = uuid.uuid4().hex
+                cur.execute(
+                    "UPDATE liquidround.workflows SET share_token = %s WHERE id = %s",
+                    (token, sid),
+                )
+                conn.commit()
+        url = f"/app/s/{token}"
+        return JSONResponse({"ok": True, "token": token, "url": url})
+    except Exception as e:
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
+
+
+@rt("/app/s/{token}")
+def shared_chat(token: str):
+    """View a shared chat session (read-only)."""
+    from utils.database import get_conn, db_service
+    from components.chat_shell import left_pane, center_pane, right_pane
+    try:
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT id, conversation_title FROM liquidround.workflows WHERE share_token = %s",
+                (token,),
+            )
+            row = cur.fetchone()
+        if not row:
+            return Title("Not found"), Div(
+                P("This shared chat link is invalid or has expired.",
+                  style="text-align:center;padding:4rem;color:var(--ink-muted);"),
+            )
+        wf_id = row[0] if isinstance(row, (list, tuple)) else row.get("id")
+        messages = db_service.get_messages(str(wf_id)) or []
+        msg_list = [{"role": m["role"], "content": m["content"]} for m in messages]
+    except Exception:
+        msg_list = []
+    return (
+        Title("Shared Chat · LiquidRound"),
+        Div(
+            left_pane(user_email=None, sessions=[], current_sid=""),
+            center_pane(messages=msg_list, current_agent_slug=None, current_role="buyer"),
+            right_pane(),
+            cls="app pane-closed",
+        ),
+        Script(src="/chat.js"),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Company card export (CSV + PDF)
+# ---------------------------------------------------------------------------
+@rt("/app/company/{slug}/csv")
+def company_csv(slug: str):
+    """Download company data as CSV."""
+    import csv as _csv
+    import io
+    db_schema = os.getenv("COMPANY_DB_SCHEMA", "pehero")
+    from utils.database import get_conn
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(f"SELECT * FROM {db_schema}.companies WHERE slug = %s", (slug,))
+        cols = [desc[0] for desc in cur.description]
+        row = cur.fetchone()
+    if not row:
+        return Response("Not found", status_code=404)
+    data = dict(zip(cols, row))
+    buf = io.StringIO()
+    writer = _csv.DictWriter(buf, fieldnames=cols)
+    writer.writeheader()
+    writer.writerow(data)
+    content = buf.getvalue()
+    safe_slug = re.sub(r"[^\w-]", "", slug)[:40] or "company"
+    return Response(
+        content=content.encode(),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="liquidround-{safe_slug}.csv"'},
+    )
+
+
+@rt("/app/company/{slug}/pdf")
+def company_pdf(slug: str):
+    """Download company card as PDF."""
+    db_schema = os.getenv("COMPANY_DB_SCHEMA", "pehero")
+    from utils.database import get_conn
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(f"SELECT * FROM {db_schema}.companies WHERE slug = %s", (slug,))
+        cols = [desc[0] for desc in cur.description]
+        row = cur.fetchone()
+    if not row:
+        return Response("Not found", status_code=404)
+    co = dict(zip(cols, row))
+
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.units import mm
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table as RLTable, TableStyle
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.colors import HexColor
+    import io
+
+    buf = io.BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=A4, topMargin=20*mm, bottomMargin=15*mm,
+                            leftMargin=20*mm, rightMargin=20*mm)
+    styles = getSampleStyleSheet()
+    navy = HexColor("#0B1220")
+    amber = HexColor("#F59E0B")
+
+    title_style = ParagraphStyle("LRTitle", parent=styles["Heading1"],
+                                  textColor=navy, fontSize=18, spaceAfter=6)
+    sub_style = ParagraphStyle("LRSub", parent=styles["Normal"],
+                                textColor=HexColor("#64748B"), fontSize=9)
+    kv_style = ParagraphStyle("LRKV", parent=styles["Normal"], fontSize=10, leading=14)
+
+    story = []
+    name = co.get("name", slug)
+    story.append(Paragraph(name, title_style))
+    sector = (co.get("sector") or "").replace("_", " ").title()
+    sub_sector = (co.get("sub_sector") or "").replace("_", " ").title()
+    story.append(Paragraph(f"{sector} · {sub_sector} · {co.get('deal_stage', '')}", sub_style))
+    story.append(Spacer(1, 8*mm))
+
+    def _fmt(v):
+        if v is None:
+            return "—"
+        try:
+            n = float(v)
+            if abs(n) >= 1e9:
+                return f"€{n/1e9:.1f}B"
+            if abs(n) >= 1e6:
+                return f"€{n/1e6:.1f}M"
+            if abs(n) >= 1e3:
+                return f"€{n/1e3:.0f}K"
+            return f"{n:,.0f}"
+        except (ValueError, TypeError):
+            return str(v)
+
+    kv_data = [
+        ["HQ", f"{co.get('hq_city', '—')}, {co.get('country', '—')}"],
+        ["Founded", str(co.get("founded_year") or "—")],
+        ["Employees", _fmt(co.get("employees"))],
+        ["Revenue LTM", _fmt(co.get("revenue_ltm"))],
+        ["EBITDA LTM", _fmt(co.get("ebitda_ltm"))],
+        ["Enterprise Value", _fmt(co.get("enterprise_value"))],
+        ["Growth Rate", f"{float(co['growth_rate']):+.1f}%" if co.get("growth_rate") else "—"],
+        ["Ownership", (co.get("ownership") or "—").replace("_", " ").title()],
+    ]
+    table = RLTable(kv_data, colWidths=[120, 300])
+    table.setStyle(TableStyle([
+        ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 10),
+        ("TEXTCOLOR", (0, 0), (0, -1), HexColor("#64748B")),
+        ("TEXTCOLOR", (1, 0), (1, -1), navy),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, -1), 4),
+        ("LINEBELOW", (0, 0), (-1, -1), 0.5, HexColor("#E5E7EB")),
+    ]))
+    story.append(table)
+    story.append(Spacer(1, 6*mm))
+
+    desc = co.get("description") or co.get("business_description") or ""
+    if desc:
+        story.append(Paragraph("Description", ParagraphStyle("H3", parent=styles["Heading3"],
+                                                              textColor=HexColor("#64748B"), fontSize=11)))
+        story.append(Paragraph(desc, kv_style))
+
+    story.append(Spacer(1, 10*mm))
+    story.append(Paragraph("Generated by LiquidRound · Predictive Labs Ltd", sub_style))
+
+    doc.build(story)
+    buf.seek(0)
+    safe = re.sub(r"[^\w-]", "", slug)[:40] or "company"
+    return Response(
+        content=buf.read(),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="liquidround-{safe}.pdf"'},
+    )
 
 
 @rt("/settings/save", methods=["POST"])

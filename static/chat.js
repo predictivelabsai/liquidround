@@ -580,4 +580,44 @@
     };
 
     window.sendMessage = sendMessage;
+
+    // ── Copy / share chat ──────────────────────────────────────────
+    window.copyChat = () => {
+        const msgs = document.querySelectorAll(".msg");
+        const lines = [];
+        msgs.forEach(m => {
+            const role = m.classList.contains("msg-user") ? "You" : "LiquidRound";
+            const bubble = m.querySelector(".msg-bubble");
+            if (bubble) lines.push(`${role}: ${bubble.textContent.trim()}`);
+        });
+        const text = lines.join("\n\n");
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.getElementById("copy-chat-btn");
+            if (btn) { btn.textContent = "Copied!"; setTimeout(() => { btn.textContent = "Copy"; }, 1500); }
+        });
+    };
+    window.shareChat = async () => {
+        const btn = document.getElementById("share-chat-btn");
+        if (!currentSessionId) {
+            if (btn) { btn.textContent = "No session"; setTimeout(() => { btn.textContent = "Share"; }, 1500); }
+            return;
+        }
+        try {
+            const r = await fetch("/app/share", {
+                method: "POST",
+                body: new URLSearchParams({ sid: currentSessionId }),
+            });
+            const data = await r.json();
+            if (data.ok && data.url) {
+                const url = window.location.origin + data.url;
+                await navigator.clipboard.writeText(url);
+                if (btn) { btn.textContent = "Link copied!"; setTimeout(() => { btn.textContent = "Share"; }, 1500); }
+            } else {
+                if (btn) { btn.textContent = "Error"; setTimeout(() => { btn.textContent = "Share"; }, 1500); }
+            }
+        } catch (e) {
+            console.error("share failed", e);
+            if (btn) { btn.textContent = "Error"; setTimeout(() => { btn.textContent = "Share"; }, 1500); }
+        }
+    };
 })();
