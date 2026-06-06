@@ -73,6 +73,10 @@ pipeline_router.to_app(app)
 from routes.companies import ar as companies_router
 companies_router.to_app(app)
 
+# Register digest routes (daily deal digest + email)
+from routes.digest import ar as digest_router
+digest_router.to_app(app)
+
 # Register memo → PDF preview routes (/app/memo-pdf/*)
 from chat_memo_pdf import ar as memo_pdf_router
 memo_pdf_router.to_app(app)
@@ -728,6 +732,12 @@ def _nav_section(session):
                         _nav_page_link("Documents", "/page/documents"),
                         _nav_page_link("Deal History", "/page/deals"),
                         _nav_page_link("M&A Tools", "/page/tools"),
+                        A("Instructions",
+                          href="/app/instructions",
+                          cls="text-left text-xs text-gray-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-1.5 rounded transition-colors w-full block"),
+                        A("Daily Digest",
+                          href="/app/digest",
+                          cls="text-left text-xs text-gray-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-1.5 rounded transition-colors w-full block"),
                         cls="pl-2 border-l-2 border-gray-200 ml-3 mb-2",
                     ),
                     cls="mb-1",

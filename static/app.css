@@ -602,6 +602,133 @@ html, body {
 .copilot-expand-btn:hover { border-color: var(--accent); color: var(--accent); }
 .app.pane-closed .copilot-expand-btn { display: inline-block; }
 
+/* ───── Instructions page ───── */
+:root { --accent-deep: #D97706; }
+
+.instr-list { padding: 1rem 1.2rem; max-width: 820px; margin: 0 auto; width: 100%; }
+.instr-intro { color: var(--ink-muted); font-size: .82rem; margin-bottom: 1rem; }
+.instr-link { text-decoration: none; display: block; margin-bottom: .4rem; }
+.instr-row {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .75rem .9rem; background: var(--bg-elev); border: 1px solid var(--line);
+    border-radius: .45rem; transition: all .15s;
+}
+.instr-row:hover { border-color: var(--accent); }
+.instr-icon { color: var(--accent); font-size: 1.3rem; width: 1.5rem; text-align: center; }
+.instr-name { color: var(--ink); font-size: .88rem; font-weight: 600; }
+.instr-sub { color: var(--ink-muted); font-size: .72rem; margin-top: .15rem; }
+.instr-size { margin-left: auto; color: var(--ink-dim); font-size: .7rem; font-family: 'JetBrains Mono', monospace; }
+
+.instr-version-badge {
+    padding: .15rem .45rem; font-size: .62rem; font-family: 'JetBrains Mono', monospace;
+    background: var(--accent-dim); color: var(--accent-deep); border-radius: .3rem;
+    margin-left: .3rem;
+}
+
+.instr-edit { padding: 1.25rem 1.5rem; max-width: 1000px; margin: 0 auto; width: 100%; }
+.instr-sub-big { color: var(--ink-muted); font-size: .88rem; margin-bottom: .6rem; }
+
+.instr-tab-bar {
+    display: flex; gap: .25rem; margin-bottom: .75rem;
+    border-bottom: 2px solid var(--line);
+}
+.instr-tab {
+    padding: .5rem 1rem; font-size: .78rem; font-weight: 500;
+    background: none; border: none; border-bottom: 2px solid transparent;
+    color: var(--ink-muted); cursor: pointer; margin-bottom: -2px;
+    transition: all .15s;
+}
+.instr-tab:hover { color: var(--ink); }
+.instr-tab.active { color: var(--accent-deep); border-bottom-color: var(--accent); }
+
+.instr-pane { min-height: 450px; }
+
+#instr-editor-pane .ql-toolbar {
+    background: var(--bg-elev); border: 1px solid var(--line);
+    border-radius: .5rem .5rem 0 0; border-bottom: none;
+}
+#instr-editor-pane .ql-container {
+    border: 1px solid var(--line); border-radius: 0 0 .5rem .5rem;
+    background: var(--bg-elev); font-size: .82rem; min-height: 420px;
+}
+#instr-editor-pane .ql-editor {
+    min-height: 420px; color: var(--ink); line-height: 1.7;
+    font-family: 'Inter', sans-serif; padding: 1rem 1.2rem;
+}
+#instr-editor-pane .ql-editor h1 { font-size: 1.3rem; color: var(--ink); margin: .8rem 0 .4rem; }
+#instr-editor-pane .ql-editor h2 { font-size: 1.1rem; color: var(--ink); margin: .7rem 0 .35rem; }
+#instr-editor-pane .ql-editor h3 { font-size: .95rem; color: var(--ink); margin: .6rem 0 .3rem; }
+#instr-editor-pane .ql-editor code,
+#instr-editor-pane .ql-editor pre {
+    font-family: 'JetBrains Mono', monospace; font-size: .76rem;
+    background: var(--bg); border-radius: .25rem; padding: .1rem .3rem;
+}
+#instr-editor-pane .ql-editor pre {
+    padding: .6rem .8rem; margin: .5rem 0;
+    border-left: 3px solid var(--accent);
+}
+#instr-editor-pane .ql-editor.ql-blank::before { color: var(--ink-dim); }
+
+.instr-textarea {
+    width: 100%; padding: 1rem; background: var(--bg-elev); border: 1px solid var(--line);
+    border-radius: .5rem; color: var(--ink); font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem; line-height: 1.6; resize: vertical; min-height: 450px;
+}
+.instr-textarea:focus { outline: none; border-color: var(--accent); }
+
+.instr-actions { display: flex; gap: .5rem; margin-top: .75rem; align-items: center; }
+.instr-save { padding: .5rem 1.2rem; }
+.save-status { font-size: .78rem; }
+.save-status.saving { color: var(--ink-muted); }
+.save-status.saved { color: var(--accent-deep); }
+.save-status.error { color: var(--red); }
+
+.version-loading, .version-empty { padding: 1.5rem; color: var(--ink-dim); font-size: .82rem; }
+.version-error { padding: 1.5rem; color: var(--red); font-size: .82rem; }
+
+.version-list { display: flex; flex-direction: column; gap: .5rem; }
+.version-item {
+    background: var(--bg-elev); border: 1px solid var(--line); border-radius: .45rem;
+    padding: .75rem .9rem; transition: border-color .15s;
+}
+.version-item:hover { border-color: var(--accent); }
+.version-item-head {
+    display: flex; align-items: center; gap: .5rem; margin-bottom: .35rem;
+}
+.version-num {
+    font-family: 'JetBrains Mono', monospace; font-size: .72rem; font-weight: 600;
+    color: var(--accent-deep); background: var(--accent-dim);
+    padding: .1rem .4rem; border-radius: .25rem;
+}
+.version-date { font-size: .7rem; color: var(--ink-dim); font-family: 'JetBrains Mono', monospace; }
+.version-by { font-size: .68rem; color: var(--ink-muted); margin-left: auto; }
+.version-preview {
+    font-size: .72rem; color: var(--ink-muted); line-height: 1.4;
+    max-height: 2.8em; overflow: hidden; margin-bottom: .4rem;
+    font-family: 'JetBrains Mono', monospace;
+}
+.version-item-actions { display: flex; gap: .35rem; }
+.version-btn {
+    padding: .25rem .55rem; font-size: .68rem; background: transparent;
+    border: 1px solid var(--line); border-radius: .3rem; color: var(--ink-muted);
+    cursor: pointer; transition: all .15s;
+}
+.version-btn:hover { border-color: var(--accent); color: var(--accent); }
+.version-btn-revert { border-color: var(--accent); color: var(--accent-deep); }
+.version-btn-revert:hover { background: var(--accent); color: var(--bg); }
+
+/* Quill toolbar SVG icons (dark mode) */
+#instr-editor-pane .ql-toolbar .ql-stroke { stroke: var(--ink-muted); }
+#instr-editor-pane .ql-toolbar .ql-fill { fill: var(--ink-muted); }
+#instr-editor-pane .ql-toolbar .ql-picker-label { color: var(--ink-muted); }
+#instr-editor-pane .ql-toolbar button:hover .ql-stroke { stroke: var(--accent); }
+#instr-editor-pane .ql-toolbar button:hover .ql-fill { fill: var(--accent); }
+#instr-editor-pane .ql-toolbar .ql-active .ql-stroke { stroke: var(--accent); }
+#instr-editor-pane .ql-toolbar .ql-active .ql-fill { fill: var(--accent); }
+#instr-editor-pane .ql-toolbar .ql-picker-options {
+    background: var(--bg-raise); border-color: var(--line);
+}
+
 /* ───── FastHTML details markers (legacy routes) ───── */
 details > summary { list-style: none; }
 details > summary::marker { display: none; }

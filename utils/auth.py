@@ -138,6 +138,64 @@ def create_password_reset_token(email: str) -> Optional[str]:
     return token
 
 
+def send_password_reset_email(email: str, token: str, base_url: str) -> dict:
+    """Send a password reset link via Postmark."""
+    import requests as _req
+
+    api_token = os.getenv("POSTMARK_API_TOKEN")
+    if not api_token:
+        logger.error("POSTMARK_API_TOKEN not set — cannot send reset email")
+        return {"ok": False, "error": "POSTMARK_API_TOKEN not set"}
+
+    from_email = os.getenv("FROM_EMAIL", "info@liquidround.com")
+    reset_link = f"{base_url}/reset?token={token}"
+
+    html = f"""
+    <div style="font-family: 'Inter', Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
+      <div style="text-align: center; margin-bottom: 32px;">
+        <div style="display: inline-block; width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #2563EB, #60A5FA); color: #fff; font-weight: 800; font-size: 18px; line-height: 48px;">LR</div>
+        <p style="font-size: 18px; font-weight: 700; color: #1E293B; margin: 8px 0 0;">LiquidRound</p>
+      </div>
+      <h2 style="font-size: 20px; font-weight: 600; color: #1E293B; margin-bottom: 12px;">Reset your password</h2>
+      <p style="color: #475569; font-size: 14px; line-height: 1.6;">
+        We received a request to reset your password. Click the button below to choose a new one. This link expires in 1 hour.
+      </p>
+      <div style="text-align: center; margin: 28px 0;">
+        <a href="{reset_link}" style="display: inline-block; background: #2563EB; color: #ffffff; padding: 12px 32px; border-radius: 8px; font-weight: 600; font-size: 14px; text-decoration: none;">Reset Password</a>
+      </div>
+      <p style="color: #94A3B8; font-size: 12px; line-height: 1.5;">
+        If you didn't request this, you can safely ignore this email. Your password won't be changed.
+      </p>
+      <hr style="border: none; border-top: 1px solid #E2E8F0; margin: 24px 0;">
+      <p style="color: #94A3B8; font-size: 11px;">Predictive Labs Ltd &middot; LiquidRound</p>
+    </div>
+    """
+
+    resp = _req.post(
+        "https://api.postmarkapp.com/email",
+        headers={
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "X-Postmark-Server-Token": api_token,
+        },
+        json={
+            "From": from_email,
+            "To": email,
+            "Subject": "Reset your LiquidRound password",
+            "HtmlBody": html,
+            "MessageStream": "outbound",
+        },
+        timeout=15,
+    )
+
+    if resp.status_code == 200:
+        logger.info(f"Password reset email sent to {email}")
+        return {"ok": True}
+    else:
+        logger.error(f"Postmark error: {resp.status_code} {resp.text}")
+        return {"ok": False, "error": resp.text}
+
+
 def verify_and_consume_reset_token(token: str) -> Optional[Dict]:
     with get_conn() as conn:
         cur = conn.cursor(cursor_factory=RealDictCursor)

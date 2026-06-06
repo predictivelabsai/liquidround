@@ -184,10 +184,14 @@ def signin(session, email: str = "", password: str = "", error: str = "", msg: s
 
 
 @ar("/forgot")
-def forgot(session, email: str = "", error: str = "", msg: str = ""):
+def forgot(request, session, email: str = "", error: str = "", msg: str = ""):
     if email:
-        from utils.auth import create_password_reset_token
-        create_password_reset_token(email)
+        from utils.auth import create_password_reset_token, send_password_reset_email
+        token = create_password_reset_token(email)
+        if token:
+            scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
+            host = request.headers.get("host", request.url.netloc)
+            send_password_reset_email(email, token, f"{scheme}://{host}")
         return RedirectResponse("/forgot?msg=If+that+email+is+registered+you+will+receive+a+reset+link", status_code=303)
 
     if session.get("user"):
