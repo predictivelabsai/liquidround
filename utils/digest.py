@@ -463,6 +463,33 @@ def _inline_md(text: str) -> str:
     return text
 
 
+# ── Digest cache ─────────────────────────────────────────────────────
+
+_CACHE_PATH = os.path.join(os.path.dirname(__file__), "..", ".digest_cache.json")
+
+
+def cache_digest(digest: dict, html: str) -> None:
+    """Persist the latest digest + rendered HTML to a JSON file."""
+    import logging
+    log = logging.getLogger(__name__)
+    try:
+        payload = {"digest": digest, "html": html, "cached_at": date.today().isoformat()}
+        with open(_CACHE_PATH, "w") as f:
+            json.dump(payload, f, default=str)
+        log.info("Digest cached to %s", _CACHE_PATH)
+    except Exception:
+        log.exception("Failed to cache digest")
+
+
+def get_cached_digest() -> dict | None:
+    """Load the cached digest, or None if unavailable."""
+    try:
+        with open(_CACHE_PATH) as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+
+
 # ── Email sending ─────────────────────────────────────────────────────
 
 
@@ -482,6 +509,7 @@ def send_digest_to_all() -> dict:
     log.info(f"Daily digest: building for {len(recipients)} recipient(s)")
     digest = build_digest(n_companies=10)
     html = render_email_html(digest)
+    cache_digest(digest, html)
 
     results = []
     sent = 0

@@ -211,3 +211,4 @@ screenshots/
 
 # Local Playwright MCP workspace
 .playwright-mcp/
+.digest_cache.json
