@@ -466,6 +466,38 @@ def _inline_md(text: str) -> str:
 # ── Email sending ─────────────────────────────────────────────────────
 
 
+def send_digest_to_all() -> dict:
+    """Build the digest once, then send to every opted-in user.
+    Returns summary with counts and per-recipient results."""
+    import logging
+    log = logging.getLogger(__name__)
+
+    from utils.preferences import get_digest_recipients
+
+    recipients = get_digest_recipients()
+    if not recipients:
+        log.info("Daily digest: no opted-in recipients, skipping")
+        return {"ok": True, "sent": 0, "skipped": 0, "recipients": []}
+
+    log.info(f"Daily digest: building for {len(recipients)} recipient(s)")
+    digest = build_digest(n_companies=10)
+    html = render_email_html(digest)
+
+    results = []
+    sent = 0
+    for r in recipients:
+        email = r["email"]
+        res = send_digest_email(html, to_email=email)
+        results.append({"email": email, **res})
+        if res.get("ok"):
+            sent += 1
+        else:
+            log.warning(f"Digest send failed for {email}: {res.get('error')}")
+
+    log.info(f"Daily digest: sent {sent}/{len(recipients)}")
+    return {"ok": True, "sent": sent, "total": len(recipients), "results": results}
+
+
 def send_digest_email(html: str, to_email: Optional[str] = None,
                       subject: Optional[str] = None) -> dict:
     """Send the digest via Postmark API. Defaults to TO_TEST_EMAIL."""

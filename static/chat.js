@@ -22,12 +22,12 @@
         const p = new URLSearchParams(window.location.search);
         return p.get("sid") || "";
     }
-    function setSid(sid) {
+    window.setSid = function(sid) {
         currentSessionId = sid;
         const u = new URL(window.location);
         u.searchParams.set("sid", sid);
         history.replaceState(null, "", u);
-    }
+    };
 
     /* ── Message rendering ───────────────────────────────────────── */
 

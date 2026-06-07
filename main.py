@@ -24,6 +24,12 @@ _news_t.start()
 _news_t.join(timeout=8)
 
 # ---------------------------------------------------------------------------
+# In-process scheduler — config via .env, no external cron
+# ---------------------------------------------------------------------------
+from utils.scheduler import start as _start_scheduler
+_start_scheduler()
+
+# ---------------------------------------------------------------------------
 # App setup — NO auth beforeware (login is optional)
 # ---------------------------------------------------------------------------
 app, rt = fast_app(
@@ -607,7 +613,7 @@ def _nav_section(session):
         auth_section = Div(
             Div(
                 Span(user.get("display_name", user.get("email","?"))[0].upper(), cls="w-7 h-7 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold"),
-                Span(user.get("display_name", user.get("email","")), cls="text-xs text-gray-700 truncate"),
+                A(user.get("display_name", user.get("email","")), href="/profile", cls="text-xs text-gray-700 truncate hover:text-blue-600"),
                 cls="flex items-center gap-2",
             ),
             A("Sign out", href="/logout", cls="text-xs text-gray-400 hover:text-red-500"),
@@ -1087,7 +1093,7 @@ async def app_config(session, request):
 
 
 @rt("/app/chat", methods=["POST"])
-async def app_chat_sse(request):
+async def app_chat_sse(request, session):
     """SSE streaming chat — routes to one of the 22 ECM Squad specialists.
 
     Event stream format (pehero-compatible):
@@ -1096,6 +1102,7 @@ async def app_chat_sse(request):
       event: tool_start   → {name, args}
       event: tool_end     → {name, output}
       event: artifact_show→ {kind, title, ...}
+      event: session      → {sid}         — new conversation ID
       event: done         → {slug, tools}
       event: error        → {message}
     """
@@ -1112,11 +1119,35 @@ async def app_chat_sse(request):
     if not user_msg:
         return Response("empty message", status_code=400)
 
+    # Persist user message & create conversation if needed
+    user = session.get("user")
+    conv_id = session.get("conversation_id") if user else None
+    new_conv = False
+    if user and not conv_id:
+        try:
+            from utils.database import db_service
+            conv_id = db_service.create_conversation(user["user_id"], user_msg[:200])
+            session["conversation_id"] = conv_id
+            new_conv = True
+        except Exception:
+            conv_id = None
+    if conv_id:
+        try:
+            from utils.database import db_service
+            db_service.add_message(conv_id, "user", user_msg)
+            db_service.update_conversation_timestamp(conv_id)
+        except Exception:
+            pass
+
     slug = route_slug(user_msg)
     spec = by_slug(slug)
     stripped = strip_prefix(user_msg)
 
     async def event_stream():
+        # Push conversation ID to client so Share button works
+        if new_conv and conv_id:
+            yield sse.event(sse.SESSION, {"sid": str(conv_id)})
+
         yield sse.event(sse.AGENT_ROUTE, {
             "slug": slug,
             "agent": spec.name if spec else slug,
@@ -1124,6 +1155,7 @@ async def app_chat_sse(request):
         })
 
         tool_calls = 0
+        accumulated = ""
         try:
             agent = cached_agent(slug)
         except Exception as e:  # noqa: BLE001
@@ -1140,6 +1172,7 @@ async def app_chat_sse(request):
                         chunk = ev["data"].get("chunk")
                         text = getattr(chunk, "content", None) if chunk else None
                         if isinstance(text, str) and text:
+                            accumulated += text
                             yield sse.event(sse.TOKEN, {"text": text})
                     elif kind == "on_tool_start":
                         tool_calls += 1
@@ -1160,14 +1193,25 @@ async def app_chat_sse(request):
                             except Exception:
                                 pass
             except Exception as e:  # noqa: BLE001
+                accumulated = f"Error: {e}"
                 yield sse.event(sse.ERROR, {"message": str(e)})
         else:
             # Simple-LLM callable fallback
             try:
                 text = agent(stripped) if callable(agent) else str(agent)
+                accumulated = text
                 yield sse.event(sse.TOKEN, {"text": text})
             except Exception as e:  # noqa: BLE001
+                accumulated = f"Error: {e}"
                 yield sse.event(sse.ERROR, {"message": str(e)})
+
+        # Persist assistant response
+        if conv_id and accumulated:
+            try:
+                from utils.database import db_service as _dbs
+                _dbs.add_message(conv_id, "assistant", accumulated[:10000])
+            except Exception:
+                pass
 
         yield sse.event(sse.DONE, {"slug": slug, "tools": tool_calls})
 
@@ -1246,9 +1290,9 @@ async def share_session(session, request):
 
 @rt("/app/s/{token}")
 def shared_chat(token: str):
-    """View a shared chat session (read-only)."""
+    """View a shared chat session (read-only, no auth required)."""
     from utils.database import get_conn, db_service
-    from components.chat_shell import left_pane, center_pane, right_pane
+    from components.chat_shell import center_pane
     try:
         with get_conn() as conn:
             cur = conn.cursor()
@@ -1263,19 +1307,34 @@ def shared_chat(token: str):
                   style="text-align:center;padding:4rem;color:var(--ink-muted);"),
             )
         wf_id = row[0] if isinstance(row, (list, tuple)) else row.get("id")
+        title = row[1] if isinstance(row, (list, tuple)) else row.get("conversation_title", "")
         messages = db_service.get_messages(str(wf_id)) or []
         msg_list = [{"role": m["role"], "content": m["content"]} for m in messages]
     except Exception:
         msg_list = []
+        title = ""
     return (
-        Title("Shared Chat · LiquidRound"),
+        Title(f"Shared: {title or 'Chat'} · LiquidRound"),
         Div(
-            left_pane(user_email=None, sessions=[], current_sid=""),
-            center_pane(messages=msg_list, current_agent_slug=None, current_role="buyer"),
-            right_pane(),
-            cls="app pane-closed",
+            center_pane(messages=msg_list, current_agent_slug=None,
+                        current_role="buyer", readonly=True),
+            cls="app shared-view",
         ),
-        Script(src="/chat.js"),
+        Script("""
+            window.copyChat = function() {
+                var msgs = document.querySelectorAll(".msg");
+                var lines = [];
+                msgs.forEach(function(m) {
+                    var role = m.classList.contains("msg-user") ? "You" : "LiquidRound";
+                    var bubble = m.querySelector(".msg-bubble");
+                    if (bubble) lines.push(role + ": " + bubble.textContent.trim());
+                });
+                navigator.clipboard.writeText(lines.join("\\n\\n")).then(function() {
+                    var btn = document.getElementById("copy-chat-btn");
+                    if (btn) { btn.textContent = "Copied!"; setTimeout(function() { btn.textContent = "Copy"; }, 1500); }
+                });
+            };
+        """),
     )
 
 
@@ -1665,11 +1724,13 @@ async def chat(session, msg: str = ""):
     # Persist user message (logged-in users only)
     user = session.get("user")
     conv_id = session.get("conversation_id") if user else None
+    new_conv = False
     if user and not conv_id:
         try:
             from utils.database import db_service
             conv_id = db_service.create_conversation(user["user_id"], msg[:200])
             session["conversation_id"] = conv_id
+            new_conv = True
         except Exception:
             conv_id = None
     if conv_id:
@@ -1720,6 +1781,10 @@ async def chat(session, msg: str = ""):
                 f"document.getElementById('right-pane').classList.remove('translate-x-full');"
                 f"htmx.ajax('GET', '/doc/panel?fn={fn}', '#canvas-content');"
             ))
+
+    # Push conversation_id to JS so Share button works on new sessions
+    if new_conv and conv_id:
+        parts.append(Script(f"if(typeof setSid==='function')setSid('{conv_id}');"))
 
     # Refresh conversation list in nav (OOB)
     if conv_id:

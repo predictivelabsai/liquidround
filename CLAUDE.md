@@ -93,6 +93,9 @@ DEFAULT_PROVIDER=xai         # xai | openai — drives utils/llm_factory.create_
 DEFAULT_MODEL=grok-3-mini-fast
 DEFAULT_TEMPERATURE=0.7
 PORT=5007
+DIGEST_FREQUENCY=daily       # daily | weekly | hourly | off
+DIGEST_HOUR_UTC=7            # 0-23, fire hour for daily/weekly
+DIGEST_WEEKDAY=1             # 0=Mon…6=Sun, only used when weekly
 ```
 
 At least one of `XAI_API_KEY` or `OPENAI_API_KEY` must be set or `utils/config.Config` raises at import time.

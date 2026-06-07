@@ -181,7 +181,7 @@ class DatabaseService:
             cur = conn.cursor()
             cur.execute("""
                 INSERT INTO liquidround.workflows (id, user_id, user_query, workflow_type, status, conversation_title)
-                VALUES (%s, %s, %s, 'conversation', 'active', %s)
+                VALUES (%s, %s, %s, 'conversation', 'completed', %s)
             """, (conv_id, user_id, title[:200], title[:200]))
         return conv_id
 

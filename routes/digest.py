@@ -103,3 +103,12 @@ async def digest_send():
     html = render_email_html(digest)
     result = send_digest_email(html)
     return JSONResponse(result)
+
+
+@ar("/app/digest/send-all", methods=["POST"])
+async def digest_send_all():
+    """Build digest once, send to all opted-in users."""
+    from utils.digest import send_digest_to_all
+
+    result = send_digest_to_all()
+    return JSONResponse(result)

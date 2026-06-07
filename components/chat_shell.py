@@ -334,7 +334,8 @@ def sample_cards(current_agent_slug: str | None = None):
 
 def center_pane(*, messages: list[dict] | None = None,
                 current_agent_slug: str | None = None,
-                current_role: str = "buyer"):
+                current_role: str = "buyer",
+                readonly: bool = False):
     messages = messages or []
     has_messages = bool(messages)
     bubbles = [message_bubble(m["role"], m["content"], m.get("agent_slug")) for m in messages]
@@ -344,34 +345,43 @@ def center_pane(*, messages: list[dict] | None = None,
     prompts_lookup = {a.slug: list(a.example_prompts[:6]) for a in AGENTS}
     names_lookup = {a.slug: a.name for a in AGENTS}
 
-    return Div(
+    header_actions = [
+        Button("Copy", id="copy-chat-btn", cls="chat-action-btn",
+               onclick="copyChat()", type="button"),
+    ]
+    if not readonly:
+        header_actions.append(
+            Button("Share", id="share-chat-btn", cls="chat-action-btn",
+                   onclick="shareChat()", type="button"),
+        )
+        header_actions += [
+            Button("News", id="news-btn", cls="news-toggle-btn",
+                   onclick="toggleNewsPane()", type="button"),
+            Button("Artifact", id="artifact-btn", cls="artifact-toggle-btn",
+                   onclick="toggleArtifactPane()", type="button"),
+        ]
+
+    children = [
         Div(
             Div(
                 Button("☰", cls="mobile-menu-btn", onclick="toggleLeftPane()", type="button"),
                 Span("LiquidRound", cls="chat-header-title"),
                 Span("·", cls="chat-header-dot"),
                 Span(
-                    AGENTS_BY_SLUG[current_agent_slug].name if current_agent_slug and current_agent_slug in AGENTS_BY_SLUG else "Auto-routed",
+                    AGENTS_BY_SLUG[current_agent_slug].name if current_agent_slug and current_agent_slug in AGENTS_BY_SLUG else "Shared" if readonly else "Auto-routed",
                     cls="chat-header-agent", id="current-agent-label",
                 ),
                 cls="chat-header-left",
             ),
-            Div(
-                Button("Copy", id="copy-chat-btn", cls="chat-action-btn",
-                       onclick="copyChat()", type="button"),
-                Button("Share", id="share-chat-btn", cls="chat-action-btn",
-                       onclick="shareChat()", type="button"),
-                Button("News", id="news-btn", cls="news-toggle-btn",
-                       onclick="toggleNewsPane()", type="button"),
-                Button("Artifact", id="artifact-btn", cls="artifact-toggle-btn",
-                       onclick="toggleArtifactPane()", type="button"),
-                cls="chat-header-actions",
-            ),
+            Div(*header_actions, cls="chat-header-actions"),
             cls="chat-header",
         ),
         Div(*bubbles, id="messages", cls="messages"),
-        welcome_hero(current_role) if not has_messages else Div(id="welcome-hero", style="display:none"),
-        Form(
+    ]
+
+    if not readonly:
+        children.append(welcome_hero(current_role) if not has_messages else Div(id="welcome-hero", style="display:none"))
+        children.append(Form(
             Textarea(
                 id="chat-input", name="msg",
                 cls="chat-textarea",
@@ -384,13 +394,12 @@ def center_pane(*, messages: list[dict] | None = None,
             id="chat-form",
             cls="chat-form",
             onsubmit="sendMessage(event)",
-        ),
-        sample_cards(current_agent_slug),
-        # JSON blobs the client reads to refresh sample cards per-agent
-        NotStr(f'<script id="agent-prompts-data" type="application/json">{json.dumps(prompts_lookup)}</script>'),
-        NotStr(f'<script id="agent-names-data" type="application/json">{json.dumps(names_lookup)}</script>'),
-        cls="center-pane",
-    )
+        ))
+        children.append(sample_cards(current_agent_slug))
+        children.append(NotStr(f'<script id="agent-prompts-data" type="application/json">{json.dumps(prompts_lookup)}</script>'))
+        children.append(NotStr(f'<script id="agent-names-data" type="application/json">{json.dumps(names_lookup)}</script>'))
+
+    return Div(*children, cls="center-pane")
 
 
 # ───── Right pane ────────────────────────────────────────────────────

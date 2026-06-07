@@ -245,31 +245,330 @@ def reset(session, token: str = "", password: str = "", confirm_password: str = 
 
 
 @ar("/profile")
-def profile(session):
+def profile(session, msg: str = "", error: str = ""):
     user = session.get("user")
     if not user:
         return RedirectResponse("/signin")
-    from components.layout import Shell
-    return Shell(
-        H1("Profile", cls="text-2xl font-bold text-gray-800 mb-6"),
+
+    from utils.preferences import get_preferences
+    prefs = get_preferences(user["user_id"]) or {}
+
+    return _profile_page(user, prefs, msg=msg, error=error)
+
+
+# ---------------------------------------------------------------------------
+# Profile page builder
+# ---------------------------------------------------------------------------
+SECTORS = [
+    "Technology", "Healthcare", "Financial Services", "Industrials",
+    "Energy / Cleantech", "Consumer / Retail", "Real Estate",
+    "Media / Entertainment", "Business Services", "Education / EdTech",
+]
+GEOGRAPHIES = [
+    "UK & Ireland", "Nordics", "DACH", "Benelux", "Baltics",
+    "Southern Europe", "CEE", "North America", "Rest of World",
+]
+DEAL_TYPES = [
+    "Acquisition", "Divestiture", "Merger", "IPO / Listing",
+    "Growth Equity", "Secondary / Buyout", "Recapitalization",
+]
+CURRENCIES = [("EUR", "EUR €"), ("GBP", "GBP £"), ("USD", "USD $")]
+LANGUAGES = [
+    ("en", "English"), ("de", "Deutsch"), ("fr", "Français"),
+    ("es", "Español"), ("et", "Eesti"), ("lv", "Latviešu"),
+    ("lt", "Lietuvių"), ("pl", "Polski"), ("sv", "Svenska"),
+]
+
+
+def _profile_page(user, prefs, msg="", error=""):
+    uid = user["user_id"]
+    email = user.get("email", "")
+    name = user.get("display_name", "")
+
+    def _pill_checks(name, options, selected):
+        selected = selected or []
+        return Div(
+            *[Label(
+                Input(type="checkbox", name=name, value=opt, checked=(opt in selected), cls="hidden peer"),
+                Span(opt, cls="inline-block px-3 py-1.5 text-xs rounded-full border border-gray-300 cursor-pointer peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 transition-colors"),
+            ) for opt in options],
+            cls="flex flex-wrap gap-2",
+        )
+
+    def _toggle(name, label, checked=True):
+        return Label(
+            Div(
+                Input(type="checkbox", name=name, value="1", checked=checked, cls="sr-only peer"),
+                Div(cls="w-9 h-5 bg-gray-300 rounded-full peer-checked:bg-blue-600 transition-colors relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:bg-white after:rounded-full after:transition-transform peer-checked:after:translate-x-4"),
+                cls="relative",
+            ),
+            Span(label, cls="text-sm text-gray-700"),
+            cls="flex items-center gap-3 cursor-pointer",
+        )
+
+    def _section(title, *children):
+        return Div(
+            H3(title, cls="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b border-gray-200"),
+            *children,
+            cls="bg-white rounded-xl border border-gray-200 p-5 mb-4",
+        )
+
+    def _field(label_text, inp):
+        return Div(Label(label_text, cls="text-xs font-medium text-gray-500 mb-1 block"), inp)
+
+    def _inp(name, value="", placeholder="", **kw):
+        return Input(type="text", name=name, value=value or "", placeholder=placeholder,
+                     cls="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none", **kw)
+
+    def _num(name, value=None, placeholder=""):
+        return Input(type="number", name=name, value=str(value) if value else "", placeholder=placeholder,
+                     cls="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none")
+
+    def _select(name, options, selected=""):
+        return Select(
+            *[Option(lbl, value=val, selected=(val == selected)) for val, lbl in options],
+            name=name, cls="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none",
+        )
+
+    account = _section("Account",
         Div(
+            Div(user.get("display_name", "U")[0].upper(),
+                cls="w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-lg font-bold"),
+            Div(P(name, cls="text-sm font-semibold text-gray-800"), P(email, cls="text-xs text-gray-500")),
+            cls="flex items-center gap-3 mb-4",
+        ),
+        Form(
             Div(
-                Div(user.get("display_name", "U")[0].upper(), cls="w-16 h-16 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-2xl font-bold"),
+                _field("Display Name", _inp("display_name", name, "Your name")),
+                _field("Email", Input(type="email", value=email, disabled=True, cls="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-500")),
+                cls="grid grid-cols-2 gap-3",
+            ),
+            Div(
+                _field("Company", _inp("company_name", prefs.get("company_name", ""), "Firm name")),
+                _field("Job Title", _inp("job_title", prefs.get("job_title", ""), "e.g. Managing Director")),
+                cls="grid grid-cols-2 gap-3 mt-3",
+            ),
+            Div(
+                _field("Phone", _inp("phone", prefs.get("phone", ""), "+44 ...")),
+                _field("Country", _inp("country", prefs.get("country", ""), "e.g. UK")),
+                _field("City", _inp("city", prefs.get("city", ""), "e.g. London")),
+                cls="grid grid-cols-3 gap-3 mt-3",
+            ),
+            Div(
+                _field("Currency", _select("currency", CURRENCIES, prefs.get("currency", "EUR"))),
+                _field("Language", _select("language", LANGUAGES, prefs.get("language", "en"))),
+                cls="grid grid-cols-2 gap-3 mt-3",
+            ),
+            Div(
+                Button("Save Account", type="submit",
+                       cls="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"),
+                Span(id="account-status", cls="text-xs ml-3"),
+                cls="flex items-center mt-4",
+            ),
+            id="account-form", hx_post="/profile/account", hx_target="#account-status", hx_swap="innerHTML",
+        ),
+        Div(
+            H4("Change Password", cls="text-xs font-semibold text-gray-700 mb-2 mt-4 pt-3 border-t border-gray-100"),
+            Form(
                 Div(
-                    P(user.get("display_name", ""), cls="text-lg font-semibold text-gray-800"),
-                    P(user.get("email", ""), cls="text-sm text-gray-500"),
-                    cls="ml-4",
+                    Input(type="password", name="current_password", placeholder="Current password",
+                          cls="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"),
+                    Input(type="password", name="new_password", placeholder="New password (min 8)", minlength="8",
+                          cls="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"),
+                    cls="grid grid-cols-2 gap-3",
                 ),
-                cls="flex items-center mb-6",
+                Div(
+                    Button("Update Password", type="submit",
+                           cls="bg-gray-700 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-gray-800 transition-colors"),
+                    Span(id="pw-status", cls="text-xs ml-3"),
+                    cls="flex items-center mt-3",
+                ),
+                id="pw-form", hx_post="/profile/password", hx_target="#pw-status", hx_swap="innerHTML",
             ),
-            Div(
-                Div(P("User ID", cls="text-xs text-gray-500"), P(user.get("user_id", ""), cls="text-sm font-mono text-gray-700")),
-                cls="bg-gray-50 rounded-lg p-4 mb-4",
-            ),
-            A("Sign Out", href="/logout", cls="text-sm text-red-600 hover:underline"),
-            cls="bg-white rounded-lg p-6 border border-gray-200 max-w-lg",
         ),
     )
+
+    deal_prefs = _section("Deal Preferences",
+        Form(
+            Div(
+                _field("Deal Size Min (EUR)", _num("deal_size_min", prefs.get("deal_size_min_eur"), "e.g. 1000000")),
+                _field("Deal Size Max (EUR)", _num("deal_size_max", prefs.get("deal_size_max_eur"), "e.g. 50000000")),
+                cls="grid grid-cols-2 gap-3",
+            ),
+            Div(
+                P("Preferred Sectors", cls="text-xs font-medium text-gray-500 mt-4 mb-2"),
+                _pill_checks("sectors", SECTORS, prefs.get("preferred_sectors")),
+            ),
+            Div(
+                P("Preferred Geographies", cls="text-xs font-medium text-gray-500 mt-4 mb-2"),
+                _pill_checks("geographies", GEOGRAPHIES, prefs.get("preferred_geographies")),
+            ),
+            Div(
+                P("Deal Types", cls="text-xs font-medium text-gray-500 mt-4 mb-2"),
+                _pill_checks("deal_types", DEAL_TYPES, prefs.get("preferred_deal_types")),
+            ),
+            Div(
+                _field("Target Revenue Min (EUR)", _num("rev_min", prefs.get("target_revenue_min_eur"), "e.g. 500000")),
+                _field("Target Revenue Max (EUR)", _num("rev_max", prefs.get("target_revenue_max_eur"), "e.g. 20000000")),
+                cls="grid grid-cols-2 gap-3 mt-4",
+            ),
+            Div(
+                _field("Target EBITDA Min (EUR)", _num("ebitda_min", prefs.get("target_ebitda_min_eur"), "e.g. 100000")),
+                _field("Target EBITDA Max (EUR)", _num("ebitda_max", prefs.get("target_ebitda_max_eur"), "e.g. 5000000")),
+                cls="grid grid-cols-2 gap-3 mt-3",
+            ),
+            Div(
+                Button("Save Deal Preferences", type="submit",
+                       cls="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"),
+                Span(id="deal-status", cls="text-xs ml-3"),
+                cls="flex items-center mt-4",
+            ),
+            id="deal-form", hx_post="/profile/deals", hx_target="#deal-status", hx_swap="innerHTML",
+        ),
+    )
+
+    notifs = _section("Notifications",
+        Form(
+            Div(
+                _toggle("notify_new_deals", "New deals matching my criteria", prefs.get("notify_new_deals", True)),
+                _toggle("notify_price_changes", "Valuation changes on tracked companies", prefs.get("notify_price_changes", True)),
+                _toggle("notify_weekly_digest", "Weekly market digest email", prefs.get("notify_weekly_digest", True)),
+                cls="flex flex-col gap-4",
+            ),
+            Div(
+                Button("Save Notifications", type="submit",
+                       cls="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"),
+                Span(id="notif-status", cls="text-xs ml-3"),
+                cls="flex items-center mt-4",
+            ),
+            id="notif-form", hx_post="/profile/notifications", hx_target="#notif-status", hx_swap="innerHTML",
+        ),
+    )
+
+    return (
+        Title("Profile & Preferences — LiquidRound"),
+        Script(src="https://cdn.tailwindcss.com"),
+        Style("html, body { background: #F9FAFB !important; }"),
+        Main(
+            Div(
+                Div(
+                    A("← Back to app", href="/app", cls="text-xs text-blue-600 hover:underline"),
+                    H1("Profile & Preferences", cls="text-xl font-bold text-gray-800 mt-2"),
+                    P("Manage your account, deal criteria, and notification settings.", cls="text-sm text-gray-500 mt-1 mb-5"),
+                    cls="mb-2",
+                ),
+                *(([_success_msg(msg)] if msg else []) + ([_error_msg(error)] if error else [])),
+                account,
+                deal_prefs,
+                notifs,
+                Div(
+                    A("Sign Out", href="/logout", cls="text-sm text-red-500 hover:underline"),
+                    cls="text-center py-4",
+                ),
+                cls="max-w-2xl mx-auto w-full px-4 py-8",
+            ),
+            cls="bg-gray-50 min-h-screen",
+        ),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Profile POST endpoints (HTMX)
+# ---------------------------------------------------------------------------
+@ar("/profile/account")
+def profile_account(session, display_name: str = "", company_name: str = "",
+                    job_title: str = "", phone: str = "", country: str = "",
+                    city: str = "", currency: str = "EUR", language: str = "en"):
+    user = session.get("user")
+    if not user:
+        return Span("Not signed in", cls="text-red-600")
+    uid = user["user_id"]
+
+    if display_name and display_name != user.get("display_name"):
+        from utils.auth import get_conn
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute("UPDATE liquidround.users SET display_name = %s, updated_at = NOW() WHERE user_id = %s",
+                        (display_name, uid))
+        session["user"]["display_name"] = display_name
+
+    from utils.preferences import upsert_account
+    ok = upsert_account(uid, company_name=company_name, job_title=job_title,
+                        phone=phone, country=country, city=city,
+                        currency=currency, language=language)
+    if ok:
+        return Span("Saved ✓", cls="text-green-600")
+    return Span("Error saving", cls="text-red-600")
+
+
+@ar("/profile/password")
+def profile_password(session, current_password: str = "", new_password: str = ""):
+    user = session.get("user")
+    if not user:
+        return Span("Not signed in", cls="text-red-600")
+    if not current_password or not new_password:
+        return Span("Both fields required", cls="text-red-600")
+    if len(new_password) < 8:
+        return Span("Min 8 characters", cls="text-red-600")
+
+    from utils.auth import authenticate, update_password
+    authed = authenticate(user["email"], current_password)
+    if not authed:
+        return Span("Current password incorrect", cls="text-red-600")
+    update_password(user["user_id"], new_password)
+    return Span("Password updated ✓", cls="text-green-600")
+
+
+@ar("/profile/deals")
+async def profile_deals(request, session):
+    user = session.get("user")
+    if not user:
+        return Span("Not signed in", cls="text-red-600")
+
+    form = await request.form()
+
+    def _float(key):
+        v = form.get(key, "")
+        try:
+            return float(v) if v else None
+        except ValueError:
+            return None
+
+    from utils.preferences import upsert_deal_prefs
+    ok = upsert_deal_prefs(
+        user["user_id"],
+        deal_size_min=_float("deal_size_min"),
+        deal_size_max=_float("deal_size_max"),
+        sectors=form.getlist("sectors"),
+        geographies=form.getlist("geographies"),
+        deal_types=form.getlist("deal_types"),
+        rev_min=_float("rev_min"),
+        rev_max=_float("rev_max"),
+        ebitda_min=_float("ebitda_min"),
+        ebitda_max=_float("ebitda_max"),
+    )
+    if ok:
+        return Span("Saved ✓", cls="text-green-600")
+    return Span("Error saving", cls="text-red-600")
+
+
+@ar("/profile/notifications")
+async def profile_notifications(request, session):
+    user = session.get("user")
+    if not user:
+        return Span("Not signed in", cls="text-red-600")
+
+    form = await request.form()
+    from utils.preferences import upsert_notifications
+    ok = upsert_notifications(
+        user["user_id"],
+        notify_new_deals="notify_new_deals" in form,
+        notify_price_changes="notify_price_changes" in form,
+        notify_weekly_digest="notify_weekly_digest" in form,
+    )
+    if ok:
+        return Span("Saved ✓", cls="text-green-600")
+    return Span("Error saving", cls="text-red-600")
 
 
 @ar("/logout")

@@ -37,6 +37,7 @@ html, body {
     transition: padding-right .3s ease;
 }
 .app.pane-closed { padding-right: 0; }
+.app.shared-view { grid-template-columns: 1fr; padding-right: 0; }
 
 /* ───── Left pane ───── */
 .left-pane {
