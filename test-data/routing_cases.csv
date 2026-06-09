@@ -1,0 +1,26 @@
+input_text,expected_slug,expected_category,notes
+triage: Baltic vet chain EUR 4M EBITDA,deal_triage,sourcing,explicit prefix
+dcf: Grigeo at 9% WACC,dcf_valuer,underwriting,explicit prefix
+memo: draft IC memo for InMedica,ic_memo_writer,capital,explicit prefix
+ipo: Ignitis readiness assessment,ipo_readiness,capital,explicit prefix
+comps: Grigeo vs Nordic paper peers,comps_finder,underwriting,explicit prefix
+scan: Baltic healthcare targets,target_scanner,sourcing,explicit prefix
+teaser: investment teaser for dairy company,teaser_designer,capital,explicit prefix
+vdr: audit data room documents,vdr_auditor,diligence,explicit prefix
+research: Baltic M&A trends,research_analyst,portfolio,explicit prefix
+multi: European paper sector multiples,multiples_valuer,underwriting,explicit prefix
+ltm: last twelve months financials,ltm_normalizer,underwriting,explicit prefix
+synergy: operational synergies analysis,synergy_analyst,underwriting,explicit prefix
+legal: regulatory considerations,legal_reviewer,diligence,explicit prefix
+esg: environmental assessment,esg_reviewer,diligence,explicit prefix
+ops: operational due diligence,operational_dd,diligence,explicit prefix
+bid: competitive bid process,bid_strategist,capital,explicit prefix
+abstract: summarize key terms,contract_abstractor,diligence,explicit prefix
+intent: draft letter of intent,seller_intent,sourcing,explicit prefix
+What is Grigeo worth?,dcf_valuer,underwriting,free-form valuation
+Find me acquisition targets in Baltic pharma,target_scanner,sourcing,free-form target search
+How does InMedica compare to peers?,comps_finder,underwriting,free-form comparison
+Draft a teaser for selling our company,teaser_designer,capital,free-form seller doc
+Is this company ready for an IPO?,ipo_readiness,capital,free-form IPO question
+Review the data room documents,vdr_auditor,diligence,free-form diligence
+What are the ESG risks?,esg_reviewer,diligence,free-form ESG

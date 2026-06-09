@@ -1,0 +1,21 @@
+ticker,name,country,sector,market_cap_eur_m,ebitda_eur_m,revenue_eur_m,yoy_growth_pct,deal_type
+GRG1L.VS,Grigeo AB,Lithuania,Paper & Packaging,180,28,210,8.5,buyer
+INC1L.VS,Invalda INVL,Lithuania,Investment Management,320,45,95,12.3,buyer
+SAB1L.VS,Šiaulių Bankas,Lithuania,Banking,650,120,280,15.1,seller
+APG1L.VS,Apranga Group,Lithuania,Retail,85,12,240,3.2,buyer
+GRD1L.VS,Grigiškės,Lithuania,Paper & Packaging,45,7,65,5.8,buyer
+TEL1L.VS,Telia Lietuva,Lithuania,Telecom,890,180,420,4.5,seller
+LNR1L.VS,Linas Agro Group,Lithuania,Agriculture,280,35,1200,18.2,buyer
+IGN1L.VS,Ignitis Group,Lithuania,Energy,2800,450,1800,22.5,ipo
+VLN1L.VS,Vilniaus Baldai,Lithuania,Furniture,25,4,32,6.1,buyer
+PTR1L.VS,Pieno Žvaigždės,Lithuania,Dairy,95,14,280,7.3,buyer
+TKM1T.TL,Tallinna Kaubamaja,Estonia,Retail,210,30,680,5.4,buyer
+TSM1T.TL,Tallink Grupp,Estonia,Transport,480,65,950,12.8,seller
+HAE1T.TL,Harju Elekter,Estonia,Electronics,120,15,180,9.7,buyer
+EEG1T.TL,Enefit Green,Estonia,Energy,1500,180,320,25.3,ipo
+SFG1T.TL,Silvano Fashion Group,Estonia,Retail,35,5,85,2.1,buyer
+OEG1R.RG,Olainfarm,Latvia,Pharma,280,40,180,11.5,buyer
+SAF1R.RG,SAF Tehnika,Latvia,Technology,18,3,22,14.2,buyer
+GRD1R.RG,Grindeks,Latvia,Pharma,190,25,140,8.9,buyer
+BAL1R.RG,Latvijas Balzams,Latvia,Beverages,65,10,95,4.7,buyer
+DPK1R.RG,DelfinGroup,Latvia,Finance,45,8,35,28.5,ipo

@@ -1,0 +1,385 @@
+{
+  "summary": {
+    "target": "https://liquidround.com",
+    "timestamp": "2026-06-09T123606",
+    "total": 74,
+    "passed": 74,
+    "failed": 0,
+    "pass_rate_pct": 100.0
+  },
+  "results": [
+    {
+      "id": "T01",
+      "name": "Landing: page loads",
+      "result": "PASS"
+    },
+    {
+      "id": "T02",
+      "name": "Landing: title contains LiquidRound",
+      "result": "PASS"
+    },
+    {
+      "id": "T03",
+      "name": "Landing: version badge visible",
+      "result": "PASS",
+      "actual": "v0.2.0"
+    },
+    {
+      "id": "T04",
+      "name": "Landing: nav bar visible",
+      "result": "PASS"
+    },
+    {
+      "id": "T05",
+      "name": "Landing: Platform nav link",
+      "result": "PASS"
+    },
+    {
+      "id": "T06",
+      "name": "Landing: ECM Squad nav link",
+      "result": "PASS"
+    },
+    {
+      "id": "T07",
+      "name": "Landing: How it works nav link",
+      "result": "PASS"
+    },
+    {
+      "id": "T08",
+      "name": "Landing: Pricing nav link",
+      "result": "PASS"
+    },
+    {
+      "id": "T09",
+      "name": "Landing: Sign in -> /signin",
+      "result": "PASS"
+    },
+    {
+      "id": "T10",
+      "name": "Landing: hero H1 present",
+      "result": "PASS"
+    },
+    {
+      "id": "T11",
+      "name": "Landing: hero mentions ECM",
+      "result": "PASS"
+    },
+    {
+      "id": "T12",
+      "name": "Landing: Buyer-Led CTA -> /signin?role=buyer",
+      "result": "PASS"
+    },
+    {
+      "id": "T13",
+      "name": "Landing: Seller-Led CTA -> /signin?role=seller",
+      "result": "PASS"
+    },
+    {
+      "id": "T14",
+      "name": "Landing: demo GIF element exists",
+      "result": "PASS"
+    },
+    {
+      "id": "T15",
+      "name": "Landing: GIF loaded",
+      "result": "PASS"
+    },
+    {
+      "id": "T16",
+      "name": "Landing: stats 22 agents",
+      "result": "PASS"
+    },
+    {
+      "id": "T17",
+      "name": "Landing: stats 2 sides",
+      "result": "PASS"
+    },
+    {
+      "id": "T18",
+      "name": "Landing: 5 agent categories",
+      "result": "PASS"
+    },
+    {
+      "id": "T19",
+      "name": "Landing: footer copyright",
+      "result": "PASS"
+    },
+    {
+      "id": "T20",
+      "name": "Landing: page scrollable",
+      "result": "PASS"
+    },
+    {
+      "id": "T21",
+      "name": "Landing mobile: page loads",
+      "result": "PASS"
+    },
+    {
+      "id": "T22",
+      "name": "Landing mobile: logo visible",
+      "result": "PASS"
+    },
+    {
+      "id": "T23",
+      "name": "Landing mobile: sign in visible",
+      "result": "PASS"
+    },
+    {
+      "id": "T24",
+      "name": "Landing mobile: desktop links hidden",
+      "result": "PASS"
+    },
+    {
+      "id": "T25",
+      "name": "Landing mobile: hero fits width",
+      "result": "PASS"
+    },
+    {
+      "id": "T26",
+      "name": "Landing mobile: GIF visible",
+      "result": "PASS"
+    },
+    {
+      "id": "T27",
+      "name": "Landing mobile: footer present",
+      "result": "PASS"
+    },
+    {
+      "id": "T28",
+      "name": "Landing mobile: no horizontal overflow",
+      "result": "PASS"
+    },
+    {
+      "id": "T29",
+      "name": "Landing mobile: Buyer-Led CTA visible",
+      "result": "PASS"
+    },
+    {
+      "id": "T30",
+      "name": "Landing mobile: Seller-Led CTA visible",
+      "result": "PASS"
+    },
+    {
+      "id": "T31",
+      "name": "Sign-in: page loads",
+      "result": "PASS"
+    },
+    {
+      "id": "T32",
+      "name": "Sign-in: email field",
+      "result": "PASS"
+    },
+    {
+      "id": "T33",
+      "name": "Sign-in: password field",
+      "result": "PASS"
+    },
+    {
+      "id": "T34",
+      "name": "Sign-in: forgot password link",
+      "result": "PASS"
+    },
+    {
+      "id": "T35",
+      "name": "Sign-in: register option",
+      "result": "PASS"
+    },
+    {
+      "id": "T36",
+      "name": "Sign-in: Google OAuth button",
+      "result": "PASS"
+    },
+    {
+      "id": "T37",
+      "name": "Sign-in: submit button",
+      "result": "PASS"
+    },
+    {
+      "id": "T38",
+      "name": "Nav: Platform page loads",
+      "result": "PASS"
+    },
+    {
+      "id": "T39",
+      "name": "Nav: Agents page 22 agents",
+      "result": "PASS"
+    },
+    {
+      "id": "T41",
+      "name": "Nav: How it works page",
+      "result": "PASS"
+    },
+    {
+      "id": "T42",
+      "name": "Nav: Pricing page",
+      "result": "PASS"
+    },
+    {
+      "id": "T40",
+      "name": "Nav: agent detail link exists",
+      "result": "PASS"
+    },
+    {
+      "id": "T69",
+      "name": "Nav: agent detail page",
+      "result": "PASS"
+    },
+    {
+      "id": "T70",
+      "name": "Nav: back link to /agents",
+      "result": "PASS"
+    },
+    {
+      "id": "T43",
+      "name": "App: page loads",
+      "result": "PASS"
+    },
+    {
+      "id": "T44",
+      "name": "App: CSS grid layout",
+      "result": "PASS"
+    },
+    {
+      "id": "T45",
+      "name": "App: left pane 300px",
+      "result": "PASS"
+    },
+    {
+      "id": "T46",
+      "name": "App: Sessions section",
+      "result": "PASS"
+    },
+    {
+      "id": "T47",
+      "name": "App: 5 agent categories",
+      "result": "PASS"
+    },
+    {
+      "id": "T48",
+      "name": "App: Workspace section",
+      "result": "PASS"
+    },
+    {
+      "id": "T49",
+      "name": "App: 9 workspace links",
+      "result": "PASS"
+    },
+    {
+      "id": "T50",
+      "name": "App: Settings + Profile link",
+      "result": "PASS"
+    },
+    {
+      "id": "T51",
+      "name": "App: version badge",
+      "result": "PASS",
+      "actual": "v0.2.0"
+    },
+    {
+      "id": "T52",
+      "name": "App: Auto-routed label",
+      "result": "PASS"
+    },
+    {
+      "id": "T53",
+      "name": "App: Copy button",
+      "result": "PASS"
+    },
+    {
+      "id": "T54",
+      "name": "App: Share button",
+      "result": "PASS"
+    },
+    {
+      "id": "T55",
+      "name": "App: welcome hero",
+      "result": "PASS"
+    },
+    {
+      "id": "T56",
+      "name": "App: sample cards",
+      "result": "PASS"
+    },
+    {
+      "id": "T57",
+      "name": "App: chat input",
+      "result": "PASS"
+    },
+    {
+      "id": "T58",
+      "name": "App: send button",
+      "result": "PASS"
+    },
+    {
+      "id": "T59",
+      "name": "App: hamburger hidden on desktop",
+      "result": "PASS"
+    },
+    {
+      "id": "T60",
+      "name": "App: dark background",
+      "result": "PASS"
+    },
+    {
+      "id": "T67",
+      "name": "Assets: app.css loaded",
+      "result": "PASS"
+    },
+    {
+      "id": "T68",
+      "name": "Assets: favicon present",
+      "result": "PASS"
+    },
+    {
+      "id": "T62",
+      "name": "App mobile: hamburger visible",
+      "result": "PASS"
+    },
+    {
+      "id": "T63",
+      "name": "App mobile: chat input visible",
+      "result": "PASS"
+    },
+    {
+      "id": "T64",
+      "name": "App mobile: welcome hero",
+      "result": "PASS"
+    },
+    {
+      "id": "T65",
+      "name": "App mobile: no overflow",
+      "result": "PASS"
+    },
+    {
+      "id": "T66",
+      "name": "App mobile: dark background",
+      "result": "PASS"
+    },
+    {
+      "id": "T71",
+      "name": "Sign-in: ?role=buyer works",
+      "result": "PASS"
+    },
+    {
+      "id": "T72",
+      "name": "Sign-in mobile: form fits",
+      "result": "PASS"
+    },
+    {
+      "id": "T73",
+      "name": "Sign-in mobile: no overflow",
+      "result": "PASS"
+    },
+    {
+      "id": "T74",
+      "name": "Sign-in mobile: fields visible",
+      "result": "PASS"
+    },
+    {
+      "id": "T75",
+      "name": "Console: zero errors",
+      "result": "PASS",
+      "actual": 0
+    }
+  ]
+}

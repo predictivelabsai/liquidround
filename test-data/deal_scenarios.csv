@@ -1,0 +1,21 @@
+scenario_id,role,command_prefix,prompt,expected_agent,expected_output_contains
+DS01,buyer,triage,triage: Baltic vet chain EUR 4M EBITDA 25% growth,deal_triage,EBITDA
+DS02,buyer,dcf,dcf: Grigeo at 9% WACC 2.5% terminal growth,dcf_valuer,WACC
+DS03,buyer,memo,memo: draft the IC memo for InMedica,ic_memo_writer,Investment Committee
+DS04,seller,ipo,ipo: Ignitis Group readiness assessment for Nasdaq Baltic,ipo_readiness,readiness
+DS05,buyer,comps,comps: Grigeo vs Nordic paper peers,comps_finder,peer
+DS06,buyer,scan,scan: Baltic healthcare sector M&A targets under EUR 50M,target_scanner,healthcare
+DS07,buyer,profile,profile: GRG1L.VS,company_profiler,Grigeo
+DS08,buyer,score,score buyer:Invalda target:Grigeo,match_scorer,score
+DS09,seller,teaser,teaser: prepare investment teaser for Pieno Žvaigždės dairy,teaser_designer,teaser
+DS10,buyer,vdr,vdr: audit the data room for Lietuvos Veterinarija,vdr_auditor,data room
+DS11,buyer,research,research: Baltic healthcare consolidation trends,research_analyst,Baltic
+DS12,buyer,multi,multi: Grigeo multiples analysis vs European paper sector,multiples_valuer,multiple
+DS13,buyer,ltm,ltm: Šiaulių Bankas last twelve months financials,ltm_normalizer,revenue
+DS14,buyer,synergy,synergy: Grigeo acquiring Grigiškės operational synergies,synergy_analyst,synergy
+DS15,buyer,legal,legal: key regulatory considerations for Baltic pharma M&A,legal_reviewer,regulatory
+DS16,buyer,esg,esg: ESG assessment of Enefit Green for acquisition,esg_reviewer,ESG
+DS17,buyer,ops,ops: operational due diligence on Tallinna Kaubamaja retail,operational_dd,operational
+DS18,seller,bid,bid: structure a competitive bid process for Telia Lietuva,bid_strategist,bid
+DS19,buyer,abstract,abstract: summarize the key terms from Olainfarm SPA,contract_abstractor,terms
+DS20,buyer,intent,intent: draft letter of intent for Harju Elekter acquisition,seller_intent,intent

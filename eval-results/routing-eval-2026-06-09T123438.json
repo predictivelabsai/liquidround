@@ -1,0 +1,213 @@
+{
+  "summary": {
+    "timestamp": "2026-06-09T123438",
+    "total": 25,
+    "passed": 24,
+    "failed": 1,
+    "accuracy_pct": 96.0,
+    "prefix_accuracy_pct": 100.0,
+    "freeform_accuracy_pct": 85.7
+  },
+  "results": [
+    {
+      "input": "triage: Baltic vet chain EUR 4M EBITDA",
+      "expected_slug": "deal_triage",
+      "actual_slug": "deal_triage",
+      "expected_category": "sourcing",
+      "notes": "explicit prefix",
+      "result": "PASS"
+    },
+    {
+      "input": "dcf: Grigeo at 9% WACC",
+      "expected_slug": "dcf_valuer",
+      "actual_slug": "dcf_valuer",
+      "expected_category": "underwriting",
+      "notes": "explicit prefix",
+      "result": "PASS"
+    },
+    {
+      "input": "memo: draft IC memo for InMedica",
+      "expected_slug": "ic_memo_writer",
+      "actual_slug": "ic_memo_writer",
+      "expected_category": "capital",
+      "notes": "explicit prefix",
+      "result": "PASS"
+    },
+    {
+      "input": "ipo: Ignitis readiness assessment",
+      "expected_slug": "ipo_readiness",
+      "actual_slug": "ipo_readiness",
+      "expected_category": "capital",
+      "notes": "explicit prefix",
+      "result": "PASS"
+    },
+    {
+      "input": "comps: Grigeo vs Nordic paper peers",
+      "expected_slug": "comps_finder",
+      "actual_slug": "comps_finder",
+      "expected_category": "underwriting",
+      "notes": "explicit prefix",
+      "result": "PASS"
+    },
+    {
+      "input": "scan: Baltic healthcare targets",
+      "expected_slug": "target_scanner",
+      "actual_slug": "target_scanner",
+      "expected_category": "sourcing",
+      "notes": "explicit prefix",
+      "result": "PASS"
+    },
+    {
+      "input": "teaser: investment teaser for dairy company",
+      "expected_slug": "teaser_designer",
+      "actual_slug": "teaser_designer",
+      "expected_category": "capital",
+      "notes": "explicit prefix",
+      "result": "PASS"
+    },
+    {
+      "input": "vdr: audit data room documents",
+      "expected_slug": "vdr_auditor",
+      "actual_slug": "vdr_auditor",
+      "expected_category": "diligence",
+      "notes": "explicit prefix",
+      "result": "PASS"
+    },
+    {
+      "input": "research: Baltic M&A trends",
+      "expected_slug": "research_analyst",
+      "actual_slug": "research_analyst",
+      "expected_category": "portfolio",
+      "notes": "explicit prefix",
+      "result": "PASS"
+    },
+    {
+      "input": "multi: European paper sector multiples",
+      "expected_slug": "multiples_valuer",
+      "actual_slug": "multiples_valuer",
+      "expected_category": "underwriting",
+      "notes": "explicit prefix",
+      "result": "PASS"
+    },
+    {
+      "input": "ltm: last twelve months financials",
+      "expected_slug": "ltm_normalizer",
+      "actual_slug": "ltm_normalizer",
+      "expected_category": "underwriting",
+      "notes": "explicit prefix",
+      "result": "PASS"
+    },
+    {
+      "input": "synergy: operational synergies analysis",
+      "expected_slug": "synergy_analyst",
+      "actual_slug": "synergy_analyst",
+      "expected_category": "underwriting",
+      "notes": "explicit prefix",
+      "result": "PASS"
+    },
+    {
+      "input": "legal: regulatory considerations",
+      "expected_slug": "legal_reviewer",
+      "actual_slug": "legal_reviewer",
+      "expected_category": "diligence",
+      "notes": "explicit prefix",
+      "result": "PASS"
+    },
+    {
+      "input": "esg: environmental assessment",
+      "expected_slug": "esg_reviewer",
+      "actual_slug": "esg_reviewer",
+      "expected_category": "diligence",
+      "notes": "explicit prefix",
+      "result": "PASS"
+    },
+    {
+      "input": "ops: operational due diligence",
+      "expected_slug": "operational_dd",
+      "actual_slug": "operational_dd",
+      "expected_category": "diligence",
+      "notes": "explicit prefix",
+      "result": "PASS"
+    },
+    {
+      "input": "bid: competitive bid process",
+      "expected_slug": "bid_strategist",
+      "actual_slug": "bid_strategist",
+      "expected_category": "capital",
+      "notes": "explicit prefix",
+      "result": "PASS"
+    },
+    {
+      "input": "abstract: summarize key terms",
+      "expected_slug": "contract_abstractor",
+      "actual_slug": "contract_abstractor",
+      "expected_category": "diligence",
+      "notes": "explicit prefix",
+      "result": "PASS"
+    },
+    {
+      "input": "intent: draft letter of intent",
+      "expected_slug": "seller_intent",
+      "actual_slug": "seller_intent",
+      "expected_category": "sourcing",
+      "notes": "explicit prefix",
+      "result": "PASS"
+    },
+    {
+      "input": "What is Grigeo worth?",
+      "expected_slug": "dcf_valuer",
+      "actual_slug": "dcf_valuer",
+      "expected_category": "underwriting",
+      "notes": "free-form valuation",
+      "result": "PASS"
+    },
+    {
+      "input": "Find me acquisition targets in Baltic pharma",
+      "expected_slug": "target_scanner",
+      "actual_slug": "target_scanner",
+      "expected_category": "sourcing",
+      "notes": "free-form target search",
+      "result": "PASS"
+    },
+    {
+      "input": "How does InMedica compare to peers?",
+      "expected_slug": "comps_finder",
+      "actual_slug": "comps_finder",
+      "expected_category": "underwriting",
+      "notes": "free-form comparison",
+      "result": "PASS"
+    },
+    {
+      "input": "Draft a teaser for selling our company",
+      "expected_slug": "teaser_designer",
+      "actual_slug": "teaser_designer",
+      "expected_category": "capital",
+      "notes": "free-form seller doc",
+      "result": "PASS"
+    },
+    {
+      "input": "Is this company ready for an IPO?",
+      "expected_slug": "ipo_readiness",
+      "actual_slug": "ipo_readiness",
+      "expected_category": "capital",
+      "notes": "free-form IPO question",
+      "result": "PASS"
+    },
+    {
+      "input": "Review the data room documents",
+      "expected_slug": "vdr_auditor",
+      "actual_slug": "vdr_auditor",
+      "expected_category": "diligence",
+      "notes": "free-form diligence",
+      "result": "PASS"
+    },
+    {
+      "input": "What are the ESG risks?",
+      "expected_slug": "esg_reviewer",
+      "actual_slug": "vdr_auditor",
+      "expected_category": "diligence",
+      "notes": "free-form ESG",
+      "result": "FAIL"
+    }
+  ]
+}
