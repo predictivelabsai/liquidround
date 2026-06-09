@@ -275,6 +275,38 @@ python -m scripts.daily_deals --all               # send to all opted-in users
 3. Check `POSTMARK_API_TOKEN` is set and valid.
 4. Run `--dry-run` to verify content generation works.
 
+## CI/CD (Coolify)
+
+Deployment is automated via GitHub Actions + Coolify webhook.
+
+**Pipeline:** push to `main` -> GitHub Actions (`.github/workflows/deploy.yml`) -> Coolify webhook -> Docker build from `Dockerfile` -> deploy.
+
+**GitHub repo:** `predictivelabsai/liquidround` (origin)
+
+**Required GitHub secrets:**
+- `COOLIFY_WEBHOOK_URL` — the Coolify deployment webhook endpoint
+- `COOLIFY_TOKEN` — bearer token for authentication
+
+**Deploy workflow (`deploy.yml`):**
+```yaml
+on:
+  push:
+    branches: [main]
+# Triggers: curl GET to COOLIFY_WEBHOOK_URL with Bearer token
+```
+
+**Verifying deployment:**
+1. After push, check GitHub Actions: `gh run list --limit 1`
+2. Check if the action succeeded: `gh run view <run-id>`
+3. Verify the live site responds: `curl -s -o /dev/null -w '%{http_code}' https://liquidround.com/`
+4. Spot-check a recent change on the live site via Playwright against `https://liquidround.com`
+
+**Docker build:**
+- `Dockerfile` — Python 3.13-slim, installs system deps (gcc, libpq-dev), pip installs from `requirements.txt`, runs `python main.py`
+- `docker-compose.yml` — local dev with port mapping
+
+**Rollback:** push a revert commit to `main`, or redeploy a previous image in Coolify dashboard.
+
 ## Cleanup
 
 Always close the browser when done:
