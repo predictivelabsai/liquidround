@@ -1,6 +1,8 @@
 """
 Configuration management for LiquidRound system.
 """
+VERSION = "0.2.0"
+
 import os
 from typing import Dict, Any, Optional
 from dotenv import load_dotenv

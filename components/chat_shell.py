@@ -18,6 +18,7 @@ from fasthtml.common import (
 )
 
 from agents.registry import AGENTS, AGENTS_BY_CATEGORY, AGENTS_BY_SLUG, CATEGORIES
+from utils.config import VERSION
 
 
 # ───── Small atoms ───────────────────────────────────────────────────
@@ -168,7 +169,7 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
         Div(
             A(Span("◆", cls="brand-mark"), Span("LiquidRound"),
               href="/", cls="brand-link"),
-            Span("Beta", cls="brand-badge"),
+            Span(f"v{VERSION}", cls="brand-version"),
             cls="left-header",
         ),
         # Body: sessions / agents / workspace / settings

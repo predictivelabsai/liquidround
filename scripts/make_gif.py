@@ -21,7 +21,6 @@ STATIC_GIF = ROOT / "static" / "liquidround.gif"
 # App-focused tour. Landing frames intentionally shortened (the GIF lives ON
 # the landing page — no point watching it play the landing again).
 FRAMES = [
-    ("03-agents.png",          2400),  # landing agent directory
     ("07-app-buyer.png",       2200),  # chat buyer view
     ("09-agent-browser.png",   2800),  # ECM Squad agent browser expanded
     ("10-chat-triage.png",     3200),  # triage

@@ -135,6 +135,16 @@ Use `browser_resize` to switch between them.
 - [ ] No input field or send button (readonly)
 - [ ] Copy button present
 
+## Versioning
+
+The app version is defined in `utils/config.py` as `VERSION`. It is displayed in light grey next to the logo in both:
+- **Landing page nav** (`components/landing.py`) — styled with `color:#64748b`
+- **Chat app left pane header** (`components/chat_shell.py`) — styled via `.brand-version` in `static/app.css`
+
+When bumping the version:
+1. Update `VERSION` in `utils/config.py`
+2. Verify it appears on both `/` and `/app` (both viewports)
+
 ## Architecture reference
 
 **Z-index hierarchy (mobile):**

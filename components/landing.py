@@ -6,6 +6,7 @@ Colors intentionally distinct from sibling PEHero project (parchment + forest).
 from __future__ import annotations
 
 from fasthtml.common import *
+from utils.config import VERSION
 
 # ───── Palette ──────────────────────────────────────────────────────────
 BG        = "#0B1220"   # deep navy
@@ -65,7 +66,7 @@ def landing_nav(active: str = "home"):
                 Div(
                     Span("◈", cls="text-xl mr-2", style=f"color:{CTA}"),
                     Span("LiquidRound", cls="text-base font-semibold tighter"),
-                    Span("beta", cls="ml-2 text-[10px] px-1.5 py-0.5 rounded mono", style=f"color:{CTA}; border:1px solid {CTA}; background:transparent;"),
+                    Span(f"v{VERSION}", cls="ml-2 text-[10px] px-1.5 py-0.5 rounded mono", style=f"color:#64748b; background:transparent;"),
                     cls="flex items-center",
                 ),
                 href="/", cls="text-white no-underline",

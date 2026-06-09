@@ -54,11 +54,9 @@ html, body {
 }
 .brand-link { display: flex; align-items: center; color: var(--ink); text-decoration: none; font-weight: 600; gap: .5rem; }
 .brand-mark { color: var(--accent); font-size: 1.1rem; }
-.brand-badge {
-    font-size: .6rem; font-weight: 600; color: var(--accent);
-    background: var(--accent-dim); padding: .15rem .45rem;
-    border-radius: 4px; letter-spacing: .08em; text-transform: uppercase;
-    border: 1px solid rgba(245, 158, 11, 0.3);
+.brand-version {
+    font-size: .6rem; font-weight: 400; color: #64748b;
+    padding: .15rem 0; letter-spacing: .04em;
 }
 .left-body { flex: 1; overflow-y: auto; padding: .75rem .7rem; scrollbar-width: thin; }
 .left-hr { border: none; border-top: 1px solid var(--line); margin: .9rem 0 .6rem; }
