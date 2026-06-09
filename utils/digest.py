@@ -327,102 +327,103 @@ def render_email_html(digest: dict) -> str:
     featured = digest.get("featured", {})
     deep_dive_md = digest.get("deep_dive", "")
 
-    company_rows = ""
+    company_cards = ""
     for i, c in enumerate(companies):
-        bg = "#f8fafc" if i % 2 == 0 else "#ffffff"
         is_featured = (c.get("name") == featured.get("name"))
         badge = (' <span style="background:#F59E0B;color:#fff;font-size:10px;'
                  'padding:1px 6px;border-radius:3px;font-weight:600;">DEEP DIVE</span>'
                  if is_featured else "")
         flag = _country_flag(c.get("country", ""))
         accent = _deal_type_color(c.get("deal_context", ""))
+        deal_size = c.get("deal_size_estimate", "")
+        size_text = f" &middot; {deal_size}" if deal_size and deal_size != "undisclosed" else ""
 
-        company_rows += f"""
-        <tr style="background:{bg};">
-          <td style="padding:14px 16px;border-bottom:1px solid #e2e8f0;">
-            <div style="font-weight:600;color:#0f172a;font-size:14px;margin-bottom:2px;">
+        company_cards += f"""
+        <div style="border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px;">
+            <div style="font-weight:600;color:#0f172a;font-size:14px;">
               {flag} {c.get('name', 'N/A')}{badge}
             </div>
-            <div style="font-size:11px;color:#64748b;margin-bottom:4px;">
-              {c.get('sector', '')} · {c.get('country', '')}
-              {(' · ' + c.get('deal_size_estimate', '')) if c.get('deal_size_estimate') and c.get('deal_size_estimate') != 'undisclosed' else ''}
-            </div>
-            <div style="font-size:12px;color:#475569;margin-bottom:6px;">
-              {c.get('description', '')}
-            </div>
-            <div style="font-size:11px;color:#334155;margin-bottom:8px;padding:4px 8px;background:#e0f2fe;border-radius:4px;display:inline-block;">
-              <strong>Deal angle:</strong> {c.get('deal_context', '')}
-            </div>
-            <div style="font-size:12px;color:#334155;line-height:1.5;background:#f1f5f9;padding:10px 12px;border-radius:6px;border-left:3px solid {accent};">
-              <strong style="color:#0f172a;">Thesis:</strong> {c.get('thesis', '')}
-            </div>
-          </td>
-        </tr>"""
+          </div>
+          <div style="font-size:11px;color:#64748b;margin-top:2px;">
+            {c.get('sector', '')} &middot; {c.get('country', '')}{size_text}
+          </div>
+          <div style="font-size:12px;color:#475569;margin-top:4px;">
+            {c.get('description', '')}
+          </div>
+          <div style="font-size:11px;color:#334155;margin-top:6px;padding:4px 8px;background:#e0f2fe;border-radius:4px;display:inline-block;">
+            <strong>Deal angle:</strong> {c.get('deal_context', '')}
+          </div>
+          <div style="font-size:12px;color:#334155;line-height:1.5;background:#f1f5f9;padding:10px 12px;border-radius:6px;border-left:3px solid {accent};margin-top:6px;">
+            <strong style="color:#0f172a;">Thesis:</strong> {c.get('thesis', '')}
+          </div>
+        </div>"""
 
     deep_dive_html = _markdown_to_email_html(deep_dive_md)
 
     return f"""<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
-  <div style="max-width:680px;margin:0 auto;background:#ffffff;">
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:'Inter','Helvetica Neue',Arial,sans-serif;-webkit-text-size-adjust:100%;">
+  <div style="max-width:600px;margin:0 auto;padding:0 12px;">
 
     <!-- Header -->
-    <div style="background:#0B1220;padding:28px 24px;text-align:center;">
-      <div style="font-size:24px;font-weight:700;color:#F59E0B;letter-spacing:-0.5px;">LiquidRound</div>
-      <div style="font-size:13px;color:#94a3b8;margin-top:4px;">Baltic ECM & M&amp;A Daily Digest</div>
-      <div style="font-size:12px;color:#64748b;margin-top:2px;">{today}</div>
+    <div style="background:#0B1220;padding:20px 16px;text-align:center;border-radius:0 0 8px 8px;">
+      <div style="font-size:22px;font-weight:700;color:#F59E0B;letter-spacing:-0.5px;">LiquidRound</div>
+      <div style="font-size:12px;color:#94a3b8;margin-top:4px;">Baltic ECM &amp; M&amp;A Daily Digest</div>
+      <div style="font-size:11px;color:#64748b;margin-top:2px;">{today}</div>
     </div>
 
     <!-- Intro -->
-    <div style="padding:20px 24px 8px;">
-      <p style="font-size:14px;color:#334155;line-height:1.6;margin:0;">
-        Good morning. Today's digest covers {len(companies)} Lithuanian and Estonian
+    <div style="padding:16px 4px 8px;">
+      <p style="font-size:13px;color:#334155;line-height:1.6;margin:0;">
+        Today's digest covers {len(companies)} Lithuanian and Estonian
         companies with live M&amp;A angles, each with an AI-generated investment thesis
         and a featured deep dive.
       </p>
     </div>
 
-    <!-- Company Table -->
-    <div style="padding:8px 24px 16px;">
-      <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
-        <tr style="background:#0B1220;">
-          <td style="padding:10px 16px;font-size:12px;font-weight:600;color:#F59E0B;text-transform:uppercase;letter-spacing:0.5px;">
-            Daily Company Scan — {len(companies)} Companies
-          </td>
-        </tr>
-        {company_rows}
-      </table>
+    <!-- Company Cards -->
+    <div style="padding:8px 0 12px;">
+      <div style="background:#0B1220;border-radius:8px;padding:10px 12px;margin-bottom:8px;">
+        <div style="font-size:12px;font-weight:600;color:#F59E0B;text-transform:uppercase;letter-spacing:0.5px;">
+          Daily Company Scan &mdash; {len(companies)} Companies
+        </div>
+      </div>
+      {company_cards}
     </div>
 
     <!-- Deep Dive Section -->
-    <div style="padding:8px 24px 24px;">
+    <div style="padding:0 0 16px;">
       <div style="background:#0B1220;border-radius:8px;overflow:hidden;">
-        <div style="padding:16px 20px;border-bottom:2px solid #F59E0B;">
+        <div style="padding:12px 16px;border-bottom:2px solid #F59E0B;">
           <div style="font-size:11px;font-weight:700;color:#F59E0B;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">
-            Deep Dive — Featured Company
+            Deep Dive
           </div>
-          <div style="font-size:18px;font-weight:700;color:#e2e8f0;">
+          <div style="font-size:16px;font-weight:700;color:#e2e8f0;">
             {_country_flag(featured.get('country', ''))} {featured.get('name', 'N/A')}
           </div>
-          <div style="font-size:12px;color:#94a3b8;margin-top:2px;">
-            {featured.get('sector', '')} · {featured.get('country', '')} · {featured.get('deal_context', '')}
+          <div style="font-size:11px;color:#94a3b8;margin-top:2px;">
+            {featured.get('sector', '')} &middot; {featured.get('country', '')} &middot; {featured.get('deal_context', '')}
           </div>
         </div>
-        <div style="padding:20px;color:#cbd5e1;font-size:13px;line-height:1.7;">
+        <div style="padding:16px;color:#cbd5e1;font-size:13px;line-height:1.7;">
           {deep_dive_html}
         </div>
       </div>
     </div>
 
     <!-- Footer -->
-    <div style="background:#f8fafc;padding:20px 24px;border-top:1px solid #e2e8f0;text-align:center;">
-      <div style="font-size:11px;color:#94a3b8;">
-        Generated by <strong style="color:#F59E0B;">LiquidRound AI</strong> · Predictive Labs Ltd
-      </div>
-      <div style="font-size:10px;color:#cbd5e1;margin-top:4px;">
+    <div style="text-align:center;padding:16px 0;border-top:1px solid #e2e8f0;margin-top:4px;">
+      <p style="color:#6B7280;font-size:11px;margin:0 0 4px;">
+        <a href="https://liquidround.com/app" style="color:#F59E0B;text-decoration:none;font-weight:600;">Open LiquidRound</a>
+      </p>
+      <p style="color:#94a3b8;font-size:10px;margin:0 0 2px;">
+        Generated by LiquidRound AI &middot; Predictive Labs Ltd
+      </p>
+      <p style="color:#cbd5e1;font-size:10px;margin:0;">
         AI-generated analysis for informational purposes only. Not investment advice.
-      </div>
+      </p>
     </div>
 
   </div>

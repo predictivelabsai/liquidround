@@ -134,12 +134,12 @@
         let prompts = (slug && AGENT_PROMPTS[slug]) || [];
         if (!prompts.length) {
             prompts = [
-                "triage: Nordic SaaS, EUR 8M EBITDA, 20% growth, EUR 85M ask",
-                "profile: SAP.DE",
-                "dcf: Harju Elekter at 9% WACC, 2.5% terminal growth",
-                "memo: draft the IC memo for Meridian Healthcare",
-                "vdr: audit the data room for NovaTech",
-                "ipo: Ignitis Group readiness assessment",
+                "triage: Baltic vet chain, EUR 4M EBITDA, 25% growth",
+                "profile: GRG1L.VS",
+                "dcf: Grigeo at 9% WACC, 2.5% terminal growth",
+                "memo: draft the IC memo for InMedica",
+                "vdr: audit the data room for Lietuvos Veterinarija",
+                "research: Baltic healthcare consolidation",
             ];
         }
         row.innerHTML = "";
@@ -581,6 +581,25 @@
 
     window.sendMessage = sendMessage;
 
+    // ── SVG icons for copy/share feedback ────────────────────────────
+    const _svgClipboard = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+    const _svgCheck = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    const _svgShare = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+    const _svgShareSmall = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+    const _svgCheckSmall = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+    function _flashBtn(btn, checkSvg, origSvg, label, doneLabel, cls) {
+        const lbl = btn.querySelector('.action-label');
+        btn.innerHTML = checkSvg;
+        if (lbl) { lbl.textContent = doneLabel; btn.appendChild(lbl); }
+        btn.classList.add(cls);
+        setTimeout(() => {
+            btn.innerHTML = origSvg;
+            if (lbl) { lbl.textContent = label; btn.appendChild(lbl); }
+            btn.classList.remove(cls);
+        }, 1800);
+    }
+
     // ── Copy / share chat ──────────────────────────────────────────
     window.copyChat = () => {
         const msgs = document.querySelectorAll(".msg");
@@ -593,13 +612,16 @@
         const text = lines.join("\n\n");
         navigator.clipboard.writeText(text).then(() => {
             const btn = document.getElementById("copy-chat-btn");
-            if (btn) { btn.textContent = "Copied!"; setTimeout(() => { btn.textContent = "Copy"; }, 1500); }
+            if (btn) _flashBtn(btn, _svgCheck, _svgClipboard, "Copy", "Copied!", "copied");
         });
     };
     window.shareChat = async () => {
         const btn = document.getElementById("share-chat-btn");
         if (!currentSessionId) {
-            if (btn) { btn.textContent = "No session"; setTimeout(() => { btn.textContent = "Share"; }, 1500); }
+            if (btn) {
+                const lbl = btn.querySelector('.action-label');
+                if (lbl) { lbl.textContent = "No session"; setTimeout(() => { lbl.textContent = "Share"; }, 1500); }
+            }
             return;
         }
         try {
@@ -611,13 +633,44 @@
             if (data.ok && data.url) {
                 const url = window.location.origin + data.url;
                 await navigator.clipboard.writeText(url);
-                if (btn) { btn.textContent = "Link copied!"; setTimeout(() => { btn.textContent = "Share"; }, 1500); }
+                if (btn) _flashBtn(btn, _svgCheck, _svgShare, "Share", "Copied!", "copied");
             } else {
-                if (btn) { btn.textContent = "Error"; setTimeout(() => { btn.textContent = "Share"; }, 1500); }
+                if (btn) {
+                    const lbl = btn.querySelector('.action-label');
+                    if (lbl) { lbl.textContent = "Error"; setTimeout(() => { lbl.textContent = "Share"; }, 1500); }
+                }
             }
         } catch (e) {
             console.error("share failed", e);
-            if (btn) { btn.textContent = "Error"; setTimeout(() => { btn.textContent = "Share"; }, 1500); }
+            if (btn) {
+                const lbl = btn.querySelector('.action-label');
+                if (lbl) { lbl.textContent = "Error"; setTimeout(() => { lbl.textContent = "Share"; }, 1500); }
+            }
+        }
+    };
+
+    // ── Sidebar session share button ─────────────────────────────────
+    window.shareSession = async (event, sid, btn) => {
+        event.stopPropagation();
+        if (!sid) return;
+        try {
+            const r = await fetch("/app/share", {
+                method: "POST",
+                body: new URLSearchParams({ sid }),
+            });
+            const data = await r.json();
+            if (data.ok && data.url) {
+                const url = window.location.origin + data.url;
+                await navigator.clipboard.writeText(url);
+                btn.innerHTML = _svgCheckSmall;
+                btn.classList.add("copied");
+                setTimeout(() => {
+                    btn.innerHTML = _svgShareSmall;
+                    btn.classList.remove("copied");
+                }, 1800);
+            }
+        } catch (e) {
+            console.error("session share failed", e);
         }
     };
 })();

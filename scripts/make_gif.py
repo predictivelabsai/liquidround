@@ -29,7 +29,7 @@ FRAMES = [
     ("12-chat-memo.png",       3400),  # IC memo
     ("08-app-seller.png",      2000),  # seller default view
     ("13-chat-ipo.png",        3200),  # IPO readiness
-    ("14-config.png",          2400),  # currency + role config
+    ("14-settings.png",        2400),  # profile & preferences
 ]
 
 TARGET_W = 1200

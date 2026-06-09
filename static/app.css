@@ -20,12 +20,11 @@
 }
 
 html, body {
-    height: 100%;
     background: var(--bg);
     color: var(--ink);
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     letter-spacing: -0.01em;
-    overflow: hidden;
+    margin: 0;
 }
 * { box-sizing: border-box; }
 
@@ -33,6 +32,7 @@ html, body {
     display: grid;
     grid-template-columns: 300px 1fr;
     height: 100vh;
+    overflow: hidden;
     padding-right: 420px;
     transition: padding-right .3s ease;
 }
@@ -76,20 +76,33 @@ html, body {
 .new-chat-btn:hover { background: #FBBF24; }
 
 /* Sessions */
-.session-list { display: flex; flex-direction: column; gap: .2rem; }
+.session-list { display: flex; flex-direction: column; gap: .15rem; }
 .sessions-empty { font-size: .72rem; color: var(--ink-dim); padding: .4rem; }
+.session-row {
+    display: flex; align-items: center; position: relative;
+}
+.session-row:hover .session-share-btn { opacity: 1; }
 .chat-history-item {
     display: flex; align-items: center; gap: .45rem; padding: .35rem .5rem;
     background: transparent; border: none; color: var(--ink-muted); text-align: left;
     font-size: .74rem; cursor: pointer; border-radius: .4rem;
     transition: background .15s, color .15s;
-    width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .chat-history-item:hover { background: var(--bg-raise); color: var(--ink); }
 .chat-history-item.active { background: var(--accent-dim); color: var(--accent); font-weight: 600; }
 .chat-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--line-br); flex-shrink: 0; }
 .chat-dot.active { background: var(--accent); }
 .chat-session-title { overflow: hidden; text-overflow: ellipsis; }
+.session-share-btn {
+    opacity: 0; position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+    background: var(--bg-elev); border: 1px solid var(--line-br); border-radius: .35rem;
+    color: var(--ink-muted); cursor: pointer; padding: 3px 5px;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity .15s, color .2s, border-color .2s;
+}
+.session-share-btn:hover { color: var(--accent); border-color: var(--accent); }
+.session-share-btn.copied { color: #64748b; border-color: #64748b; opacity: 1; }
 
 /* Agent browser */
 .agent-browser { display: flex; flex-direction: column; gap: .25rem; }
@@ -166,11 +179,14 @@ html, body {
 .mobile-menu-btn { display: none; padding: .3rem .5rem; background: transparent; border: 1px solid var(--line-br); border-radius: .4rem; color: var(--ink); font-size: 1.1rem; cursor: pointer; }
 
 .chat-action-btn {
+    display: inline-flex; align-items: center; gap: .35rem;
     padding: .3rem .7rem; background: transparent; border: 1px solid var(--line-br);
     border-radius: .45rem; color: var(--ink-muted); font-size: .72rem;
-    cursor: pointer; transition: all .15s;
+    cursor: pointer; transition: color .2s, border-color .2s;
 }
 .chat-action-btn:hover { border-color: var(--accent); color: var(--accent); }
+.chat-action-btn.copied { color: #64748b; border-color: #64748b; }
+.action-label { font-size: .72rem; }
 .artifact-toggle-btn {
     padding: .3rem .7rem; background: transparent; border: 1px solid var(--line-br);
     border-radius: .45rem; color: var(--ink-muted); font-size: .72rem;

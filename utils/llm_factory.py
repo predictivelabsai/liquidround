@@ -9,7 +9,7 @@ from utils.config import config
 _PROVIDERS = {
     "xai": {
         "base_url": "https://api.x.ai/v1",
-        "default_model": "grok-3-mini-fast",
+        "default_model": "grok-4-1-fast-reasoning",
     },
     "openai": {
         "base_url": None,

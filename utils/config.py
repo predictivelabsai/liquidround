@@ -19,8 +19,8 @@ class Config:
         self.tavily_api_key = os.getenv("TAVILY_API_KEY")
 
         # LLM settings
-        self.default_provider = os.getenv("DEFAULT_PROVIDER", "xai")
-        self.default_model = os.getenv("DEFAULT_MODEL", "grok-3-mini-fast")
+        self.default_provider = os.getenv("MODEL_PROVIDER") or os.getenv("DEFAULT_PROVIDER") or "xai"
+        self.default_model = os.getenv("DEFAULT_MODEL", "grok-4-1-fast-reasoning")
         self.default_temperature = float(os.getenv("DEFAULT_TEMPERATURE", "0.7"))
 
         # Environment

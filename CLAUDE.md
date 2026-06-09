@@ -70,7 +70,7 @@ python -m scripts.make_gif              # -> docs/liquidround.gif + static/liqui
 - `tools/scoring.py` -- `score_match` (invokes legacy `ScoringAgent` for 7-dimension radar).
 - `tools/artifact.py` -- `emit`, `is_artifact`, `parse_artifact`, `ARTIFACT_PREFIX`.
 
-**LLM.** All LLM calls flow through `utils/llm_factory.create_llm()` -- swap providers via `DEFAULT_PROVIDER` env (`xai` | `openai`). XAI/Grok hits `https://api.x.ai/v1` via `ChatOpenAI`. Never construct `ChatOpenAI` directly outside this factory.
+**LLM.** All LLM calls flow through `utils/llm_factory.create_llm()` -- swap providers via `MODEL_PROVIDER` env (`xai` | `openai`). XAI/Grok hits `https://api.x.ai/v1` via LangChain's `ChatOpenAI`. Never construct `ChatOpenAI` directly outside this factory.
 
 **Research / data tools.** `utils/yfinance_util.py` for company fundamentals (profile, financials, market cap -- not real-time quotes), `utils/research_tools.py` for EXA (semantic) + Tavily (web). `utils/document_parser.py` for PDF (pdfplumber) / XLSX (openpyxl) / PPTX (python-pptx). `utils/command_parser.py` is the legacy command DSL; `agents/router.py` is the newer free-form router. Both must stay in sync for new prefixes.
 
@@ -105,8 +105,8 @@ EXA_API_KEY=...              # semantic search
 TAVILY_API_KEY=...           # web search
 DB_URL=postgresql://...      # PostgreSQL, schema `liquidround`
 SESSION_SECRET=...           # FastHTML session cookie signing
-DEFAULT_PROVIDER=xai         # xai | openai -- drives utils/llm_factory.create_llm
-DEFAULT_MODEL=grok-3-mini-fast
+MODEL_PROVIDER=xai           # xai | openai -- drives utils/llm_factory.create_llm
+DEFAULT_MODEL=grok-4-1-fast-reasoning
 DEFAULT_TEMPERATURE=0.7
 PORT=5007
 POSTMARK_API_TOKEN=...       # Postmark transactional email

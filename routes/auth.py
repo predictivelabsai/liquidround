@@ -626,3 +626,46 @@ else:
     @ar("/login")
     def google_login_stub():
         return RedirectResponse("/signin")
+
+
+# ---------------------------------------------------------------------------
+# JSON API endpoints for the landing-page sign-in modal
+# ---------------------------------------------------------------------------
+
+@ar("/auth/login")
+def api_login(session, email: str = "", password: str = ""):
+    if not email or not password:
+        return {"ok": False, "error": "Email and password required"}
+    from utils.auth import authenticate
+    user = authenticate(email, password)
+    if not user:
+        return {"ok": False, "error": "Invalid email or password"}
+    _session_login(session, user)
+    return {"ok": True}
+
+
+@ar("/auth/register")
+def api_register(session, email: str = "", password: str = "", display_name: str = ""):
+    if not email or not password:
+        return {"ok": False, "error": "Email and password required"}
+    if len(password) < 8:
+        return {"ok": False, "error": "Password must be at least 8 characters"}
+    from utils.auth import create_user
+    user = create_user(email=email, password=password, display_name=display_name or None)
+    if not user:
+        return {"ok": False, "error": "Email already registered"}
+    _session_login(session, user)
+    return {"ok": True}
+
+
+@ar("/auth/forgot")
+def api_forgot(request, email: str = ""):
+    if not email:
+        return {"ok": False, "error": "Email required"}
+    from utils.auth import create_password_reset_token, send_password_reset_email
+    token = create_password_reset_token(email)
+    if token:
+        scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
+        host = request.headers.get("host", request.url.netloc)
+        send_password_reset_email(email, token, f"{scheme}://{host}")
+    return {"ok": True, "message": "Reset link sent if account exists"}

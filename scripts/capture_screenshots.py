@@ -46,15 +46,15 @@ TOUR = [
     ("12-chat-memo.png",       "/app?role=buyer",    "#chat-input",                      False, "memo"),
     # Seller
     ("13-chat-ipo.png",        "/app?role=seller",   "#chat-input",                      False, "ipo"),
-    # Configuration
-    ("14-config.png",          "/app?role=buyer",    ".config-section",                  False, None),
+    # Settings / Profile
+    ("14-settings.png",        "/profile",           "text=Profile",                     True,  None),
 ]
 
 
 CHAT_MSGS = {
-    "triage":   "triage: Nordic renewable energy target, EUR 80M revenue, 15% EBITDA",
-    "dcf":      "dcf: Harju Elekter at 9% WACC and 2.5% terminal growth",
-    "memo":     "memo: draft the IC memo for Meridian Healthcare",
+    "triage":   "triage: Baltic vet chain, EUR 4M EBITDA, 25% growth",
+    "dcf":      "dcf: Grigeo at 9% WACC, 2.5% terminal growth",
+    "memo":     "memo: draft the IC memo for InMedica",
     "ipo":      "ipo: Ignitis Group readiness assessment for Nasdaq Baltic",
 }
 

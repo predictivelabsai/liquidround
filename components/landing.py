@@ -78,9 +78,9 @@ def landing_nav(active: str = "home"):
                 cls="hidden lg:flex items-center gap-6",
             ),
             Div(
-                A("Open the app",
-                  href="/app",
-                  cls="text-sm px-3 py-1.5 rounded-md font-medium",
+                A("Sign in",
+                  href="/signin",
+                  cls="text-sm px-3 py-1.5 rounded-md font-medium cursor-pointer no-underline",
                   style=f"background:{BG_ELEV}; color:{INK}; border:1px solid {LINE};"),
                 cls="flex items-center",
             ),
@@ -161,15 +161,15 @@ def hero():
                 A(
                     Span("Buyer-Led", cls="text-base font-semibold"),
                     Span(" →", cls="ml-2 text-base"),
-                    href="/app?role=buyer",
-                    cls="cta-glow-buy rounded-lg px-6 py-3 inline-flex items-center text-white no-underline tracking-tight",
+                    href="/signin?role=buyer",
+                    cls="cta-glow-buy rounded-lg px-6 py-3 inline-flex items-center text-white no-underline tracking-tight cursor-pointer",
                     style=f"background:{BUY};",
                 ),
                 A(
                     Span("Seller-Led", cls="text-base font-semibold"),
                     Span(" →", cls="ml-2 text-base"),
-                    href="/app?role=seller",
-                    cls="cta-glow-sell rounded-lg px-6 py-3 inline-flex items-center text-white no-underline tracking-tight",
+                    href="/signin?role=seller",
+                    cls="cta-glow-sell rounded-lg px-6 py-3 inline-flex items-center text-white no-underline tracking-tight cursor-pointer",
                     style=f"background:{SELL};",
                 ),
                 cls="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-4",
@@ -185,7 +185,7 @@ def hero():
             # Product demo GIF
             Div(
                 Div(
-                    Img(src="/static/liquidround.gif", alt="LiquidRound product demo",
+                    Img(src="/liquidround.gif", alt="LiquidRound product demo",
                         cls="w-full rounded-lg",
                         style=f"border:1px solid {LINE}; background:{BG_ELEV};"),
                     P(
@@ -360,18 +360,20 @@ def cta_section():
               cls="text-center mb-10", style=f"color:{INK_MUTED};"),
             Div(
                 A("Buyer-Led →",
-                  href="/app?role=buyer",
-                  cls="cta-glow-buy rounded-lg px-6 py-3 text-base font-semibold text-white no-underline",
+                  href="/signin?role=buyer",
+                  cls="cta-glow-buy rounded-lg px-6 py-3 text-base font-semibold text-white no-underline cursor-pointer",
                   style=f"background:{BUY};"),
                 A("Seller-Led →",
-                  href="/app?role=seller",
-                  cls="cta-glow-sell rounded-lg px-6 py-3 text-base font-semibold text-white no-underline",
+                  href="/signin?role=seller",
+                  cls="cta-glow-sell rounded-lg px-6 py-3 text-base font-semibold text-white no-underline cursor-pointer",
                   style=f"background:{SELL};"),
                 cls="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4",
             ),
             cls="max-w-4xl mx-auto px-4 sm:px-6 py-14 md:py-20 text-center",
         ),
     )
+
+
 
 
 # ───── Page shells ──────────────────────────────────────────────────────

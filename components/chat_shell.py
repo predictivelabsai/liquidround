@@ -1,6 +1,6 @@
 """3-pane chat shell for /app — ported faithfully from pehero/chat/components.py.
 
-Composes left_pane (Sessions / Agents / Workspace / Configuration),
+Composes left_pane (Sessions / Agents / Workspace / Settings),
 center_pane (header + messages + welcome hero + chat input + sample cards),
 and right_pane (artifact canvas, filled by SSE artifact_show events).
 
@@ -18,9 +18,6 @@ from fasthtml.common import (
 )
 
 from agents.registry import AGENTS, AGENTS_BY_CATEGORY, AGENTS_BY_SLUG, CATEGORIES
-
-CURRENCIES = ("EUR", "GBP", "USD")
-CURRENCY_SYMBOLS = {"EUR": "€", "GBP": "£", "USD": "$"}
 
 
 # ───── Small atoms ───────────────────────────────────────────────────
@@ -57,19 +54,34 @@ def _content_html(content: str) -> str:
 
 # ───── Left pane sections ────────────────────────────────────────────
 
+_ICON_SHARE = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>'
+_ICON_CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+
+
 def sessions_list(sessions: list[dict] | None, current_sid: str = ""):
     if not sessions:
         return Div(P("No sessions yet — send a message to start.", cls="sessions-empty"))
     items = []
     for s in sessions:
-        is_active = str(s.get("id", "")) == str(current_sid)
+        sid = s.get("id", "")
+        is_active = str(sid) == str(current_sid)
         title = s.get("title") or s.get("user_query") or "Untitled session"
-        items.append(Button(
-            Span(cls=f"chat-dot{' active' if is_active else ''}"),
-            Span(title[:48] + ("…" if len(title) > 48 else ""), cls="chat-session-title"),
-            cls=f"chat-history-item{' active' if is_active else ''}",
-            onclick=f"window.location.href='/app?sid={s.get('id','')}'",
-            type="button",
+        items.append(Div(
+            Button(
+                Span(cls=f"chat-dot{' active' if is_active else ''}"),
+                Span(title[:48] + ("…" if len(title) > 48 else ""), cls="chat-session-title"),
+                cls=f"chat-history-item{' active' if is_active else ''}",
+                onclick=f"window.location.href='/app?sid={sid}'",
+                type="button",
+            ),
+            Button(
+                NotStr(_ICON_SHARE),
+                cls="session-share-btn",
+                title="Copy share link",
+                onclick=f"shareSession(event,'{sid}',this)",
+                type="button",
+            ),
+            cls="session-row",
         ))
     return Div(*items, cls="session-list")
 
@@ -108,42 +120,6 @@ def agent_browser():
     return Div(*groups, cls="agent-browser")
 
 
-def config_section(current_currency: str = "EUR", current_role: str = "buyer"):
-    """Currency selector + role toggle."""
-    currency_pills = [
-        Button(
-            Span(CURRENCY_SYMBOLS[c], cls="cfg-sym"),
-            Span(c, cls="cfg-code"),
-            cls=f"cfg-chip{' active' if c == current_currency else ''}",
-            onclick=f"setCurrency({c!r})",
-            type="button",
-            **{"data-code": c},
-        )
-        for c in CURRENCIES
-    ]
-    role_pills = [
-        Button(
-            Span(label, cls="cfg-code"),
-            cls=f"cfg-role-chip role-{code}{' active' if code == current_role else ''}",
-            onclick=f"setRole({code!r})",
-            type="button",
-            **{"data-role": code},
-        )
-        for code, label in [("buyer", "Buyer"), ("seller", "Seller"), ("both", "Both")]
-    ]
-    return Div(
-        Div(Span("Currency", cls="cfg-label"),
-            Span("affects agents + displays", cls="cfg-help"),
-            cls="cfg-row"),
-        Div(*currency_pills, cls="cfg-pills"),
-        Div(Span("Default view", cls="cfg-label"),
-            Span("buyer / seller / both", cls="cfg-help"),
-            cls="cfg-row", style="margin-top:.7rem;"),
-        Div(*role_pills, cls="cfg-role-pills"),
-        cls="config-section",
-    )
-
-
 def bottom_nav(current_path: str = ""):
     items = [
         ("Companies",    "/app/companies",     "⊞"),
@@ -156,27 +132,16 @@ def bottom_nav(current_path: str = ""):
         ("Deal history", "/page/deals",        "∑"),
         ("Instructions", "/app/instructions",  "✎"),
         ("Help",         "/app/help",          "?"),
-        ("Settings",     None,                 "⚙"),
     ]
     links = []
     for label, href, icon in items:
         active = href and current_path.startswith(href)
-        if href:
-            links.append(A(
-                Span(icon, cls="bottom-nav-icon"),
-                Span(label, cls="bottom-nav-label"),
-                href=href,
-                cls=f"bottom-nav-link{' active' if active else ''}",
-            ))
-        else:
-            # Settings opens via the chat "settings" command
-            links.append(Button(
-                Span(icon, cls="bottom-nav-icon"),
-                Span(label, cls="bottom-nav-label"),
-                cls="bottom-nav-link",
-                onclick="fillChat('settings'); sendMessage(null);",
-                type="button",
-            ))
+        links.append(A(
+            Span(icon, cls="bottom-nav-icon"),
+            Span(label, cls="bottom-nav-label"),
+            href=href,
+            cls=f"bottom-nav-link{' active' if active else ''}",
+        ))
     return Div(*links, cls="bottom-nav")
 
 
@@ -206,7 +171,7 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
             Span("Beta", cls="brand-badge"),
             cls="left-header",
         ),
-        # Body: sessions / agents / workspace / configuration
+        # Body: sessions / agents / workspace / settings
         Div(
             Div(
                 Button("+ New chat", cls="new-chat-btn", onclick="newChat()", type="button"),
@@ -242,8 +207,16 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
             ),
             Hr(cls="left-hr"),
             Div(
-                Div(Span("Configuration", cls="section-label")),
-                config_section(current_currency=current_currency, current_role=current_role),
+                Div(Span("Settings", cls="section-label")),
+                Div(
+                    A(
+                        Span("⚙", cls="bottom-nav-icon"),
+                        Span("Profile / Account", cls="bottom-nav-label"),
+                        href="/profile",
+                        cls=f"bottom-nav-link{' active' if current_path.startswith('/profile') else ''}",
+                    ),
+                    cls="bottom-nav",
+                ),
                 cls="config-wrap",
             ),
             cls="left-body",
@@ -260,22 +233,22 @@ def welcome_hero(current_role: str = "buyer"):
     # Prompts tilted to match the active role
     if current_role == "seller":
         prompts = [
-            ("buyers: SaaS EUR 15M revenue, EU", "buyer_scanner"),
-            ("teaser: blind teaser for NovaTech", "teaser_designer"),
+            ("buyers: veterinary clinics EUR 5M revenue, Baltics", "buyer_scanner"),
+            ("teaser: blind teaser for Lietuvos Veterinarija", "teaser_designer"),
             ("ipo: Ignitis Group readiness", "ipo_readiness"),
-            ("legal: open litigation risks", "legal_reviewer"),
-            ("dcf: Harju Elekter 9% WACC", "dcf_valuer"),
-            ("research: Nordic M&A 2026", "research_analyst"),
+            ("legal: open litigation risks for InMedica", "legal_reviewer"),
+            ("dcf: Grigeo at 9% WACC", "dcf_valuer"),
+            ("research: Baltic healthcare M&A 2026", "research_analyst"),
         ]
         sub = "Your AI ECM / IB analyst squad for sell-side M&A and IPO readiness. Upload your pitch book and they'll read, cite and draft from it."
     else:
         prompts = [
-            ("triage: Nordic SaaS, EUR 8M EBITDA, 20% growth", "deal_triage"),
-            ("profile: SAP.DE", "company_profiler"),
-            ("dcf: Harju Elekter at 9% WACC", "dcf_valuer"),
-            ("memo: draft the IC memo for Meridian", "ic_memo_writer"),
-            ("vdr: audit the data room for NovaTech", "vdr_auditor"),
-            ("research: Baltic renewable M&A", "research_analyst"),
+            ("triage: Baltic vet chain, EUR 4M EBITDA, 25% growth", "deal_triage"),
+            ("profile: GRG1L.VS", "company_profiler"),
+            ("dcf: Grigeo at 9% WACC", "dcf_valuer"),
+            ("memo: draft the IC memo for InMedica", "ic_memo_writer"),
+            ("vdr: audit the data room for Lietuvos Veterinarija", "vdr_auditor"),
+            ("research: Baltic healthcare consolidation", "research_analyst"),
         ]
         sub = "Your AI ECM / IB analyst squad for buy-side M&A. Type a prompt — the router picks the right analyst."
 
@@ -309,9 +282,9 @@ def sample_cards(current_agent_slug: str | None = None):
         label = f"Try with {spec.name}"
     else:
         prompts = [
-            "triage: Nordic SaaS, EUR 8M EBITDA, 20% growth",
-            "dcf: Harju Elekter at 9% WACC, 2.5% terminal growth",
-            "memo: draft the IC memo for Meridian Healthcare",
+            "triage: Baltic vet chain, EUR 4M EBITDA, 25% growth",
+            "dcf: Grigeo at 9% WACC, 2.5% terminal growth",
+            "memo: draft the IC memo for InMedica",
         ]
         label = "Try a prompt"
 
@@ -346,13 +319,18 @@ def center_pane(*, messages: list[dict] | None = None,
     prompts_lookup = {a.slug: list(a.example_prompts[:6]) for a in AGENTS}
     names_lookup = {a.slug: a.name for a in AGENTS}
 
+    _icon_clipboard = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>'
+    _icon_share = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>'
+
     header_actions = [
-        Button("Copy", id="copy-chat-btn", cls="chat-action-btn",
+        Button(NotStr(_icon_clipboard), Span("Copy", cls="action-label"),
+               id="copy-chat-btn", cls="chat-action-btn",
                onclick="copyChat()", type="button"),
     ]
     if not readonly:
         header_actions.append(
-            Button("Share", id="share-chat-btn", cls="chat-action-btn",
+            Button(NotStr(_icon_share), Span("Share", cls="action-label"),
+                   id="share-chat-btn", cls="chat-action-btn",
                    onclick="shareChat()", type="button"),
         )
         header_actions += [
