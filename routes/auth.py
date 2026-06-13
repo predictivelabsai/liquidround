@@ -124,11 +124,11 @@ def register(session, email: str = "", password: str = "", display_name: str = "
         if not user:
             return RedirectResponse("/register?error=Email+already+registered", status_code=303)
         _session_login(session, user)
-        return RedirectResponse("/", status_code=303)
+        return RedirectResponse("/app", status_code=303)
 
     # GET
     if session.get("user"):
-        return RedirectResponse("/")
+        return RedirectResponse("/app")
     parts = [H2("Create Account", cls="text-xl font-bold text-center mb-4")]
     if error:
         parts.append(_error_msg(error))
@@ -149,19 +149,21 @@ def register(session, email: str = "", password: str = "", display_name: str = "
 
 
 @ar("/signin")
-def signin(session, email: str = "", password: str = "", error: str = "", msg: str = ""):
+def signin(session, email: str = "", password: str = "", role: str = "", error: str = "", msg: str = ""):
+    redirect_to = f"/app?role={role}" if role else "/app"
     # POST
     if email and password:
         from utils.auth import authenticate
         user = authenticate(email, password)
         if not user:
-            return RedirectResponse("/signin?error=Invalid+email+or+password", status_code=303)
+            qs = f"error=Invalid+email+or+password&role={role}" if role else "error=Invalid+email+or+password"
+            return RedirectResponse(f"/signin?{qs}", status_code=303)
         _session_login(session, user)
-        return RedirectResponse("/", status_code=303)
+        return RedirectResponse(redirect_to, status_code=303)
 
     # GET
     if session.get("user"):
-        return RedirectResponse("/")
+        return RedirectResponse(redirect_to)
     parts = [H2("Sign In", cls="text-xl font-bold text-center mb-4")]
     if msg:
         parts.append(_success_msg(msg))
@@ -170,12 +172,13 @@ def signin(session, email: str = "", password: str = "", error: str = "", msg: s
     if _oauth_enabled:
         parts.append(_google_btn("Sign in with Google"))
         parts.append(_divider())
+    action = f"/signin?role={role}" if role else "/signin"
     parts.append(
         Form(
             _text_input("email", "Email", input_type="email", required=True, autofocus=True),
             _pw_input("password", "Password"),
             _submit_btn("Sign In"),
-            method="post", action="/signin", cls="flex flex-col gap-3",
+            method="post", action=action, cls="flex flex-col gap-3",
         )
     )
     parts.append(Div(A("Forgot password?", href="/forgot", cls="text-blue-600 hover:underline"), cls="text-center text-sm mt-3"))

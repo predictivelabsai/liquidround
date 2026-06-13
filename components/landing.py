@@ -37,7 +37,9 @@ def landing_head(title: str = "LiquidRound"):
         Link(rel="preconnect", href="https://fonts.gstatic.com", crossorigin=""),
         Link(href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap", rel="stylesheet"),
         Style(f"""
-            html, body {{ background: {BG}; color: {INK}; font-family: 'Inter', system-ui, sans-serif; letter-spacing: -0.01em; }}
+            html {{ overflow-x: hidden; overflow-y: auto; scrollbar-width: none; }}
+            html::-webkit-scrollbar {{ display: none; }}
+            html, body {{ background: {BG}; color: {INK}; font-family: 'Inter', system-ui, sans-serif; letter-spacing: -0.01em; margin: 0; }}
             .mono {{ font-family: 'JetBrains Mono', ui-monospace, monospace; }}
             .tighter {{ letter-spacing: -0.025em; }}
             .tightest {{ letter-spacing: -0.04em; }}
@@ -357,7 +359,7 @@ def cta_section():
             H2("Both sides of the deal. One platform.",
                cls="text-3xl md:text-4xl font-bold tightest text-center mb-4",
                style=f"color:{INK};"),
-            P("Open the app. Pick your role. Get to work.",
+            P("Sign in. Pick your role. Get to work.",
               cls="text-center mb-10", style=f"color:{INK_MUTED};"),
             Div(
                 A("Buyer-Led →",
