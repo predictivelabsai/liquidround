@@ -624,7 +624,7 @@ if _oauth_enabled:
         else:
             return RedirectResponse("/signin?error=Could+not+create+account")
 
-        return RedirectResponse("/")
+        return RedirectResponse("/app")
 else:
     @ar("/login")
     def google_login_stub():
