@@ -1854,4 +1854,7 @@ async def chat_upload(file: UploadFile):
 # ---------------------------------------------------------------------------
 # Serve
 # ---------------------------------------------------------------------------
-serve(port=int(os.getenv("PORT", "5007")))
+# Disable the auto-reloader in production (Coolify sets ENVIRONMENT=production):
+# the WatchFiles reloader slows container boot and muddies health checks.
+_prod = os.getenv("ENVIRONMENT", "").lower() == "production"
+serve(port=int(os.getenv("PORT", "5007")), reload=not _prod)
