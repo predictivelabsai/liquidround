@@ -79,90 +79,23 @@ class IPODataFetcher:
     def __init__(self):
         self.current_year = datetime.now().year
         
-    def get_nasdaq_nyse_ipos(self, year: int = None) -> List[Dict]:
-        """
-        Fetch IPO data for NASDAQ and NYSE exchanges for a given year
-        Note: This is a simplified approach using market data APIs
-        We'll use a combination of methods to identify recent IPOs
+    def get_nasdaq_nyse_ipos(self, year: int = None, max_tickers: int = 80) -> List[Dict]:
+        """Fetch real historical IPOs for a calendar year.
+
+        Delegates to ``utils.ipo_scraper`` which pulls the NASDAQ IPO calendar
+        (NASDAQ/NYSE/AMEX, US-focused) with a stockanalysis.com fallback, then
+        enriches each ticker with yfinance (sector / market cap / performance)
+        and tags country + region. Returns dicts ready for
+        ``DatabaseService.insert_ipo_data``.
         """
         if year is None:
             year = self.current_year
-            
-        # List of known IPO tickers from 2024 (this would need to be expanded with real data source)
-        # In a production environment, you'd use a dedicated IPO data provider
-        recent_ipos = [
-            # Technology IPOs 2024
-            "RDDT", "SMCI", "ARM", "SOLV", "KKVR", "KROS", "TMDX", "CGON",
-            # Healthcare/Biotech IPOs 2024  
-            "KRYS", "VERA", "IMVT", "PRCT", "CGEM", "LYEL", "NRIX", "BCYC",
-            # Financial IPOs 2024
-            "TPG", "FCNCA", "RYAN", "SOLV", "KKR", "TPVG",
-            # Consumer/Retail IPOs 2024
-            "SHAK", "FIGS", "RVLV", "BMBL", "DASH", "ABNB",
-            # Industrial IPOs 2024
-            "RIVN", "LCID", "BIRD", "GRAB", "DIDI", "CPNG"
-        ]
-        
-        ipo_data = []
-        
-        for ticker in recent_ipos:
-            try:
-                stock = yf.Ticker(ticker)
-                info = stock.info
-                hist = stock.history(period="1y")
-                
-                if len(hist) == 0:
-                    continue
-                    
-                # Get IPO date approximation (first trading date in our data)
-                ipo_date = hist.index[0].date()
-                
-                # Only include if IPO was in the specified year
-                if ipo_date.year != year:
-                    continue
-                
-                # Calculate performance since IPO
-                first_price = hist['Close'].iloc[0]
-                current_price = hist['Close'].iloc[-1]
-                price_change_since_ipo = (current_price - first_price) / first_price
-                
-                # Get market cap
-                market_cap = info.get('marketCap', 0)
-                if market_cap == 0:
-                    shares_outstanding = info.get('sharesOutstanding', 0)
-                    if shares_outstanding > 0:
-                        market_cap = shares_outstanding * current_price
-                
-                # Determine exchange
-                exchange = info.get('exchange', 'UNKNOWN')
-                if exchange in ['NMS', 'NGM', 'NCM']:
-                    exchange = 'NASDAQ'
-                elif exchange in ['NYQ', 'NYSE']:
-                    exchange = 'NYSE'
-                
-                ipo_data.append({
-                    'ticker': ticker,
-                    'company_name': info.get('longName', ticker),
-                    'sector': info.get('sector', 'Unknown'),
-                    'industry': info.get('industry', 'Unknown'),
-                    'exchange': exchange,
-                    'ipo_date': ipo_date.isoformat(),
-                    'ipo_price': first_price,
-                    'current_price': current_price,
-                    'market_cap': market_cap,
-                    'price_change_since_ipo': price_change_since_ipo,
-                    'volume': hist['Volume'].iloc[-1],
-                    'last_updated': datetime.now().isoformat()
-                })
-                
-                logger.info(f"Fetched data for {ticker}")
-                time.sleep(0.1)  # Rate limiting
-                
-            except Exception as e:
-                logger.error(f"Error fetching data for {ticker}: {str(e)}")
-                continue
-                
-        return ipo_data
+        from .ipo_scraper import scrape_ipos
+        try:
+            return scrape_ipos(year, max_tickers=max_tickers)
+        except Exception as e:  # noqa: BLE001
+            logger.error("IPO scrape failed for %s: %s", year, e)
+            return []
     
     def get_stock_info(self, ticker: str) -> Optional[Dict]:
         """Get detailed stock information for a single ticker"""

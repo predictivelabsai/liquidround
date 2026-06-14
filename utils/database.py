@@ -393,11 +393,17 @@ class DatabaseService:
                 try:
                     cur.execute("""
                         INSERT INTO liquidround.ipo_data
-                            (ticker, company_name, sector, industry, exchange, ipo_date,
+                            (ticker, company_name, sector, industry, exchange, country, region, ipo_date,
                              ipo_price, current_price, market_cap, price_change_since_ipo,
                              volume, last_updated)
-                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                         ON CONFLICT (ticker) DO UPDATE SET
+                            company_name = EXCLUDED.company_name,
+                            sector = EXCLUDED.sector,
+                            industry = EXCLUDED.industry,
+                            exchange = EXCLUDED.exchange,
+                            country = EXCLUDED.country,
+                            region = EXCLUDED.region,
                             current_price = EXCLUDED.current_price,
                             market_cap = EXCLUDED.market_cap,
                             price_change_since_ipo = EXCLUDED.price_change_since_ipo,
@@ -405,7 +411,8 @@ class DatabaseService:
                             last_updated = EXCLUDED.last_updated
                     """, (
                         rec["ticker"], rec["company_name"], rec["sector"], rec["industry"],
-                        rec["exchange"], rec["ipo_date"], rec["ipo_price"], rec["current_price"],
+                        rec["exchange"], rec.get("country"), rec.get("region"), rec["ipo_date"],
+                        rec["ipo_price"], rec["current_price"],
                         rec["market_cap"], rec["price_change_since_ipo"], rec["volume"], rec["last_updated"],
                     ))
                     count += 1
@@ -457,6 +464,79 @@ class DatabaseService:
             """)
             row = cur.fetchone()
             return dict(row) if row else None
+
+    # ------------------------------------------------------------------
+    # IPO pipeline (pre-IPO / upcoming companies)
+    # ------------------------------------------------------------------
+    _PIPELINE_COLS = [
+        "pipeline_key", "company_name", "ticker", "kind", "sector", "industry",
+        "country", "exchange", "last_valuation", "last_round", "last_round_date",
+        "last_amount_raised", "funding_to_date", "total_rounds", "proposed_price",
+        "shares_offered", "deal_value", "expected_date", "investors", "employees",
+        "website", "summary", "status", "source",
+    ]
+
+    def upsert_pipeline_companies(self, records: List[Dict]) -> int:
+        if not records:
+            return 0
+        cols = self._PIPELINE_COLS
+        placeholders = ",".join(["%s"] * len(cols))
+        update_set = ",\n".join(
+            f"{c} = EXCLUDED.{c}" for c in cols if c != "pipeline_key"
+        )
+        sql = f"""
+            INSERT INTO liquidround.ipo_pipeline ({", ".join(cols)}, last_updated)
+            VALUES ({placeholders}, NOW())
+            ON CONFLICT (pipeline_key) DO UPDATE SET
+                {update_set},
+                last_updated = NOW()
+        """
+        count = 0
+        with get_conn() as conn:
+            cur = conn.cursor()
+            for rec in records:
+                try:
+                    cur.execute(sql, tuple(rec.get(c) for c in cols))
+                    count += 1
+                except Exception as e:
+                    logger.error(f"Pipeline upsert error ({rec.get('pipeline_key')}): {e}")
+        logger.info(f"Upserted {count} pipeline companies")
+        return count
+
+    def get_pipeline_companies(self, kind: str = None, order_by: str = "last_valuation"):
+        import pandas as pd
+        order_map = {
+            "last_valuation": "last_valuation DESC NULLS LAST",
+            "name": "company_name ASC",
+            "expected_date": "expected_date ASC NULLS LAST",
+            "round_date": "last_round_date DESC NULLS LAST",
+        }
+        order_clause = order_map.get(order_by, order_map["last_valuation"])
+        query = "SELECT * FROM liquidround.ipo_pipeline WHERE 1=1"
+        params = []
+        if kind:
+            query += " AND kind = %s"
+            params.append(kind)
+        query += f" ORDER BY {order_clause}"
+        with get_conn() as conn:
+            df = pd.read_sql_query(query, conn, params=params or None)
+        return df
+
+    def insert_ipo_signup(self, email: str) -> bool:
+        if not email or "@" not in email:
+            return False
+        try:
+            with get_conn() as conn:
+                cur = conn.cursor()
+                cur.execute(
+                    "INSERT INTO liquidround.ipo_signups (email) VALUES (%s) "
+                    "ON CONFLICT (email) DO NOTHING",
+                    (email.strip().lower(),),
+                )
+                return cur.rowcount > 0
+        except Exception as e:
+            logger.error(f"IPO signup error: {e}")
+            return False
 
 
 # Global database instance

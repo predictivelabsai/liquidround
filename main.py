@@ -107,6 +107,16 @@ exports_router.to_app(app)
 from routes.dataroom import ar as dataroom_router
 dataroom_router.to_app(app)
 
+# Register IPO Map + IPO Pipeline routes (/app/ipo-map, /app/ipo-pipeline)
+from routes.ipo_map import ar as ipo_map_router
+ipo_map_router.to_app(app)
+from routes.ipo_pipeline import ar as ipo_pipeline_router
+ipo_pipeline_router.to_app(app)
+
+# Register Prospectus Builder routes (/app/prospectus)
+from routes.prospectus import ar as prospectus_router
+prospectus_router.to_app(app)
+
 # Register help page (/app/help)
 from routes.help import ar as help_router
 help_router.to_app(app)

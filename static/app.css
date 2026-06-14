@@ -748,3 +748,82 @@ html, body {
 details > summary { list-style: none; }
 details > summary::marker { display: none; }
 details > summary::-webkit-details-marker { display: none; }
+
+/* ───────── IPO Map + IPO Pipeline ───────── */
+.ipo-wrap { padding: 1rem 1.25rem 3rem; overflow-y: auto; }
+.ipo-hero { margin-bottom: 1rem; }
+.ipo-hero h2 { font-size: 1.4rem; font-weight: 700; }
+.ipo-hero p { font-size: .85rem; margin-top: .15rem; }
+
+.ipo-card { background: var(--bg-raise); border: 1px solid var(--line); border-radius: .6rem; padding: 1rem; margin-bottom: 1rem; }
+.ipo-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.ipo-half { margin-bottom: 0; }
+@media (max-width: 900px) { .ipo-row { grid-template-columns: 1fr; } }
+.ipo-section-title { font-size: .95rem; font-weight: 600; color: var(--ink); margin-bottom: .6rem; }
+
+.ipo-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; margin-bottom: 1rem; }
+@media (max-width: 700px) { .ipo-kpis { grid-template-columns: 1fr 1fr; } }
+.ipo-kpi { background: var(--bg-raise); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: .5rem; padding: .85rem 1rem; }
+.ipo-kpi-value { font-size: 1.5rem; font-weight: 700; color: var(--ink); }
+.ipo-kpi-label { font-size: .72rem; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .05em; margin-top: .15rem; }
+.ipo-kpi-sub { font-size: .75rem; color: var(--accent); margin-top: .1rem; }
+
+.ipo-filters { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; background: var(--bg-raise); border: 1px solid var(--line); border-radius: .6rem; padding: .9rem; margin-bottom: 1rem; }
+@media (max-width: 700px) { .ipo-filters { grid-template-columns: 1fr 1fr; } }
+.ipo-filter-label { font-size: .72rem; color: var(--ink-muted); display: block; margin-bottom: .3rem; }
+.ipo-filter-select { width: 100%; background: var(--bg); border: 1px solid var(--line-br); color: var(--ink); border-radius: .4rem; padding: .3rem; font-size: .78rem; }
+
+.ipo-empty { text-align: center; padding: 3rem 1rem; }
+.ipo-empty-title { font-size: 1rem; color: var(--ink); font-weight: 600; }
+.ipo-empty-sub { font-size: .82rem; color: var(--ink-muted); margin-top: .3rem; }
+
+.ipo-refresh-btn, .ipo-signup-btn, .ipo-sort-btn { background: var(--accent); color: var(--bg); border: none; border-radius: .45rem; padding: .45rem .8rem; font-size: .8rem; font-weight: 600; cursor: pointer; }
+.ipo-refresh-btn:hover, .ipo-signup-btn:hover, .ipo-sort-btn:hover { filter: brightness(1.1); }
+.ipo-sort-btn { background: var(--bg-raise); color: var(--ink-muted); border: 1px solid var(--line-br); font-weight: 500; }
+.ipo-sort-btn:hover { color: var(--ink); border-color: var(--accent); }
+.ipo-sort-bar { display: flex; align-items: center; gap: .5rem; margin-top: .8rem; flex-wrap: wrap; }
+.ipo-sort-label { font-size: .75rem; color: var(--ink-dim); }
+.ipo-indicator.htmx-indicator { opacity: 0; }
+.ipo-indicator.htmx-indicator::after { content: "⏳"; }
+.htmx-request .ipo-indicator.htmx-indicator, .ipo-indicator.htmx-request { opacity: 1; }
+
+.ipo-signup { display: flex; align-items: center; gap: .5rem; margin-top: .8rem; flex-wrap: wrap; }
+.ipo-signup-input { background: var(--bg-raise); border: 1px solid var(--line-br); color: var(--ink); border-radius: .45rem; padding: .45rem .7rem; font-size: .8rem; min-width: 220px; }
+.ipo-refresh-meta { font-size: .72rem; color: var(--ink-dim); }
+.ipo-signup-ok { color: #10B981; font-size: .8rem; }
+.ipo-signup-warn { color: var(--ink-muted); font-size: .8rem; }
+
+.ipo-markdown { font-size: .85rem; color: var(--ink-muted); line-height: 1.55; }
+.ipo-markdown h3 { color: var(--ink); font-size: 1rem; margin: .6rem 0 .3rem; }
+.ipo-markdown strong { color: var(--ink); }
+.ipo-markdown ul { margin-left: 1.1rem; list-style: disc; }
+
+.ipo-news-list { display: flex; flex-direction: column; gap: .7rem; }
+.ipo-news-item { border-bottom: 1px solid var(--line); padding-bottom: .6rem; }
+.ipo-news-title { color: var(--accent); font-size: .88rem; font-weight: 600; text-decoration: none; }
+.ipo-news-title:hover { text-decoration: underline; }
+.ipo-news-summary { font-size: .78rem; color: var(--ink-muted); margin-top: .2rem; }
+.ipo-news-source { font-size: .7rem; color: var(--ink-dim); margin-top: .15rem; }
+
+.ipo-pl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: .8rem; }
+.ipo-pl-card { background: var(--bg); border: 1px solid var(--line); border-radius: .55rem; padding: .85rem; }
+.ipo-pl-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; }
+.ipo-pl-name { font-size: .95rem; font-weight: 700; color: var(--ink); }
+.ipo-pl-val { font-size: .9rem; font-weight: 700; color: var(--accent); white-space: nowrap; }
+.ipo-pl-sector { font-size: .74rem; color: var(--ink-muted); margin-top: .15rem; }
+.ipo-pl-metarow { display: flex; flex-wrap: wrap; gap: .35rem .8rem; margin-top: .5rem; }
+.ipo-pl-meta { font-size: .72rem; color: var(--ink-dim); }
+.ipo-pl-summary { font-size: .76rem; color: var(--ink-muted); margin-top: .5rem; line-height: 1.45; }
+.ipo-pl-link { font-size: .74rem; color: var(--accent); text-decoration: none; display: inline-block; margin-top: .5rem; }
+
+/* ───────── Prospectus Builder ───────── */
+.prospectus-picker { display: flex; align-items: flex-end; gap: .75rem; flex-wrap: wrap; margin-bottom: 1rem; background: var(--bg-raise); border: 1px solid var(--line); border-radius: .6rem; padding: .9rem; }
+.prospectus-field { display: flex; flex-direction: column; gap: .3rem; min-width: 240px; }
+.prospectus-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-top: .6rem; }
+@media (max-width: 800px) { .prospectus-grid { grid-template-columns: 1fr; } }
+.prospectus-help { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; margin-top: .6rem; }
+@media (max-width: 800px) { .prospectus-help { grid-template-columns: 1fr; } }
+.prospectus-help-item { background: var(--bg); border: 1px solid var(--line); border-radius: .45rem; padding: .6rem .7rem; }
+.prospectus-actions { display: flex; align-items: center; gap: .6rem; margin: 1rem 0; }
+.prospectus-output-bar { display: flex; align-items: center; gap: 1rem; margin-bottom: .6rem; }
+.prospectus-pdf { width: 100%; height: 720px; border: 1px solid var(--line); border-radius: .5rem; background: #fff; }

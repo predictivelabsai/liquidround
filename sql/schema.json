@@ -1,74 +1,4 @@
 {
-  "liquidround.active_deals": {
-    "columns": [
-      {
-        "name": "id",
-        "type": "UUID"
-      },
-      {
-        "name": "deal_type",
-        "type": "TEXT"
-      },
-      {
-        "name": "company_name",
-        "type": "TEXT"
-      },
-      {
-        "name": "industry",
-        "type": "TEXT"
-      },
-      {
-        "name": "sector",
-        "type": "TEXT"
-      },
-      {
-        "name": "deal_size_min",
-        "type": "BIGINT"
-      },
-      {
-        "name": "deal_size_max",
-        "type": "BIGINT"
-      },
-      {
-        "name": "deal_size_currency",
-        "type": "TEXT"
-      },
-      {
-        "name": "status",
-        "type": "TEXT"
-      },
-      {
-        "name": "priority",
-        "type": "TEXT"
-      },
-      {
-        "name": "created_at",
-        "type": "TIMESTAMP"
-      },
-      {
-        "name": "updated_at",
-        "type": "TIMESTAMP"
-      },
-      {
-        "name": "metadata",
-        "type": "JSONB"
-      },
-      {
-        "name": "target_count",
-        "type": "BIGINT"
-      },
-      {
-        "name": "avg_strategic_fit",
-        "type": "DOUBLE PRECISION"
-      },
-      {
-        "name": "max_valuation",
-        "type": "NUMERIC"
-      }
-    ],
-    "row_count": 0,
-    "enums": {}
-  },
   "liquidround.companies": {
     "columns": [
       {
@@ -139,6 +69,54 @@
     "row_count": 0,
     "enums": {}
   },
+  "liquidround.data_room": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER"
+      },
+      {
+        "name": "user_id",
+        "type": "TEXT"
+      },
+      {
+        "name": "company_slug",
+        "type": "TEXT"
+      },
+      {
+        "name": "filename",
+        "type": "TEXT"
+      },
+      {
+        "name": "content_type",
+        "type": "TEXT"
+      },
+      {
+        "name": "size_bytes",
+        "type": "BIGINT"
+      },
+      {
+        "name": "data",
+        "type": "BYTEA"
+      },
+      {
+        "name": "uploaded_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 1,
+    "enums": {
+      "user_id": [
+        "ed7d62d5-2ece-4eaf-9060-ba198b4928cd"
+      ],
+      "filename": [
+        "NovaTech-Pitch-Deck.pdf"
+      ],
+      "content_type": [
+        "application/pdf"
+      ]
+    }
+  },
   "liquidround.deal_activities": {
     "columns": [
       {
@@ -168,56 +146,6 @@
       {
         "name": "created_at",
         "type": "TIMESTAMP"
-      }
-    ],
-    "row_count": 0,
-    "enums": {}
-  },
-  "liquidround.deal_summary": {
-    "columns": [
-      {
-        "name": "id",
-        "type": "UUID"
-      },
-      {
-        "name": "deal_type",
-        "type": "TEXT"
-      },
-      {
-        "name": "company_name",
-        "type": "TEXT"
-      },
-      {
-        "name": "industry",
-        "type": "TEXT"
-      },
-      {
-        "name": "status",
-        "type": "TEXT"
-      },
-      {
-        "name": "created_at",
-        "type": "TIMESTAMP"
-      },
-      {
-        "name": "target_companies",
-        "type": "BIGINT"
-      },
-      {
-        "name": "valuations_count",
-        "type": "BIGINT"
-      },
-      {
-        "name": "avg_strategic_fit",
-        "type": "DOUBLE PRECISION"
-      },
-      {
-        "name": "min_valuation",
-        "type": "NUMERIC"
-      },
-      {
-        "name": "max_valuation",
-        "type": "NUMERIC"
       }
     ],
     "row_count": 0,
@@ -375,7 +303,17 @@
       }
     ],
     "row_count": 1,
-    "enums": {}
+    "enums": {
+      "filename": [
+        "CIM_Acme.pdf"
+      ],
+      "file_type": [
+        "pdf"
+      ],
+      "file_path": [
+        "/uploads/CIM_Acme.pdf"
+      ]
+    }
   },
   "liquidround.ipo_data": {
     "columns": [
@@ -434,10 +372,215 @@
       {
         "name": "created_at",
         "type": "TIMESTAMP"
+      },
+      {
+        "name": "country",
+        "type": "TEXT"
+      },
+      {
+        "name": "region",
+        "type": "TEXT"
       }
     ],
-    "row_count": 0,
-    "enums": {}
+    "row_count": 76,
+    "enums": {
+      "sector": [
+        "Basic Materials",
+        "Communication Services",
+        "Consumer Cyclical",
+        "Consumer Defensive",
+        "Energy",
+        "Financial Services",
+        "Healthcare",
+        "Industrials",
+        "Technology",
+        "Unknown"
+      ],
+      "exchange": [
+        "AMEX",
+        "NASDAQ",
+        "NYSE",
+        "OQB"
+      ],
+      "country": [
+        "United States"
+      ],
+      "region": [
+        "Americas"
+      ]
+    }
+  },
+  "liquidround.ipo_pipeline": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER"
+      },
+      {
+        "name": "pipeline_key",
+        "type": "TEXT"
+      },
+      {
+        "name": "company_name",
+        "type": "TEXT"
+      },
+      {
+        "name": "ticker",
+        "type": "TEXT"
+      },
+      {
+        "name": "kind",
+        "type": "TEXT"
+      },
+      {
+        "name": "sector",
+        "type": "TEXT"
+      },
+      {
+        "name": "industry",
+        "type": "TEXT"
+      },
+      {
+        "name": "country",
+        "type": "TEXT"
+      },
+      {
+        "name": "exchange",
+        "type": "TEXT"
+      },
+      {
+        "name": "last_valuation",
+        "type": "BIGINT"
+      },
+      {
+        "name": "last_round",
+        "type": "TEXT"
+      },
+      {
+        "name": "last_round_date",
+        "type": "DATE"
+      },
+      {
+        "name": "last_amount_raised",
+        "type": "BIGINT"
+      },
+      {
+        "name": "funding_to_date",
+        "type": "BIGINT"
+      },
+      {
+        "name": "total_rounds",
+        "type": "INTEGER"
+      },
+      {
+        "name": "proposed_price",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "shares_offered",
+        "type": "BIGINT"
+      },
+      {
+        "name": "deal_value",
+        "type": "BIGINT"
+      },
+      {
+        "name": "expected_date",
+        "type": "DATE"
+      },
+      {
+        "name": "investors",
+        "type": "TEXT"
+      },
+      {
+        "name": "employees",
+        "type": "INTEGER"
+      },
+      {
+        "name": "website",
+        "type": "TEXT"
+      },
+      {
+        "name": "summary",
+        "type": "TEXT"
+      },
+      {
+        "name": "status",
+        "type": "TEXT"
+      },
+      {
+        "name": "source",
+        "type": "TEXT"
+      },
+      {
+        "name": "last_updated",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 24,
+    "enums": {
+      "kind": [
+        "filed",
+        "private"
+      ],
+      "sector": [
+        "AI Hardware",
+        "Artificial Intelligence",
+        "Commerce and Shopping",
+        "Data and Analytics",
+        "Financial Services",
+        "Government and Military",
+        "Sales and Marketing",
+        "Software",
+        "Space"
+      ],
+      "country": [
+        "United States"
+      ],
+      "exchange": [
+        "UNKNOWN"
+      ],
+      "last_round": [
+        "Private Equity Round 3",
+        "Series B",
+        "Series C-NV",
+        "Series D",
+        "Series E",
+        "Series G",
+        "Series H",
+        "Series H-1",
+        "Series L",
+        "Series N",
+        "Tender Offer 3"
+      ],
+      "website": [
+        "http://www.fanaticsinc.com",
+        "https://stripe.com",
+        "https://www.anduril.com",
+        "https://www.anthropic.com",
+        "https://www.apollo.io",
+        "https://www.automationanywhere.com/",
+        "https://www.chime.com",
+        "https://www.databricks.com",
+        "https://www.epirusinc.com",
+        "https://www.figma.com",
+        "https://www.openai.com",
+        "https://www.spacex.com"
+      ],
+      "status": [
+        "filed",
+        "private"
+      ],
+      "source": [
+        "nasdaq",
+        "seed",
+        "yfinance"
+      ]
+    }
   },
   "liquidround.ipo_refresh_log": {
     "columns": [
@@ -467,6 +610,31 @@
       },
       {
         "name": "completed_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 2,
+    "enums": {
+      "refresh_type": [
+        "IPO_PIPELINE_REFRESH"
+      ],
+      "status": [
+        "SUCCESS"
+      ]
+    }
+  },
+  "liquidround.ipo_signups": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER"
+      },
+      {
+        "name": "email",
+        "type": "TEXT"
+      },
+      {
+        "name": "created_at",
         "type": "TIMESTAMP"
       }
     ],
@@ -538,7 +706,7 @@
         "type": "TIMESTAMP"
       }
     ],
-    "row_count": 2,
+    "row_count": 12,
     "enums": {
       "role": [
         "assistant",
@@ -558,7 +726,7 @@
       },
       {
         "name": "token",
-        "type": "VARCHAR(128)"
+        "type": "TEXT"
       },
       {
         "name": "expires_at",
@@ -588,7 +756,7 @@
       },
       {
         "name": "pipeline_type",
-        "type": "VARCHAR(10)"
+        "type": "TEXT"
       },
       {
         "name": "company_name",
@@ -596,7 +764,7 @@
       },
       {
         "name": "stage",
-        "type": "VARCHAR(30)"
+        "type": "TEXT"
       },
       {
         "name": "score",
@@ -646,7 +814,12 @@
       }
     ],
     "row_count": 23,
-    "enums": {}
+    "enums": {
+      "changed_by": [
+        "seed",
+        "web-editor"
+      ]
+    }
   },
   "liquidround.research_results": {
     "columns": [
@@ -684,7 +857,14 @@
       }
     ],
     "row_count": 1,
-    "enums": {}
+    "enums": {
+      "query": [
+        "fintech acquisition targets"
+      ],
+      "summary": [
+        "Found promising targets"
+      ]
+    }
   },
   "liquidround.scoring_results": {
     "columns": [
@@ -730,7 +910,133 @@
       }
     ],
     "row_count": 1,
-    "enums": {}
+    "enums": {
+      "buyer": [
+        "PE Fund Alpha"
+      ],
+      "target": [
+        "Acme Fintech"
+      ],
+      "recommendation": [
+        "PROCEED"
+      ]
+    }
+  },
+  "liquidround.user_preferences": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER"
+      },
+      {
+        "name": "user_id",
+        "type": "UUID"
+      },
+      {
+        "name": "company_name",
+        "type": "TEXT"
+      },
+      {
+        "name": "job_title",
+        "type": "TEXT"
+      },
+      {
+        "name": "phone",
+        "type": "TEXT"
+      },
+      {
+        "name": "country",
+        "type": "TEXT"
+      },
+      {
+        "name": "city",
+        "type": "TEXT"
+      },
+      {
+        "name": "currency",
+        "type": "TEXT"
+      },
+      {
+        "name": "language",
+        "type": "TEXT"
+      },
+      {
+        "name": "deal_size_min_eur",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "deal_size_max_eur",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "preferred_sectors",
+        "type": "JSONB"
+      },
+      {
+        "name": "preferred_geographies",
+        "type": "JSONB"
+      },
+      {
+        "name": "preferred_deal_types",
+        "type": "JSONB"
+      },
+      {
+        "name": "target_revenue_min_eur",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "target_revenue_max_eur",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "target_ebitda_min_eur",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "target_ebitda_max_eur",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "notify_new_deals",
+        "type": "BOOLEAN"
+      },
+      {
+        "name": "notify_price_changes",
+        "type": "BOOLEAN"
+      },
+      {
+        "name": "notify_weekly_digest",
+        "type": "BOOLEAN"
+      },
+      {
+        "name": "updated_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 1,
+    "enums": {
+      "company_name": [
+        "Predictive Labs"
+      ],
+      "job_title": [
+        "CEO"
+      ],
+      "phone": [
+        ""
+      ],
+      "country": [
+        "UK"
+      ],
+      "city": [
+        "London"
+      ],
+      "currency": [
+        "EUR"
+      ],
+      "language": [
+        "en"
+      ]
+    }
   },
   "liquidround.users": {
     "columns": [
@@ -744,19 +1050,19 @@
       },
       {
         "name": "email",
-        "type": "VARCHAR(255)"
+        "type": "TEXT"
       },
       {
         "name": "password_hash",
-        "type": "VARCHAR(255)"
+        "type": "TEXT"
       },
       {
         "name": "google_id",
-        "type": "VARCHAR(255)"
+        "type": "TEXT"
       },
       {
         "name": "display_name",
-        "type": "VARCHAR(255)"
+        "type": "TEXT"
       },
       {
         "name": "is_admin",
@@ -775,8 +1081,22 @@
         "type": "TIMESTAMP"
       }
     ],
-    "row_count": 1,
-    "enums": {}
+    "row_count": 4,
+    "enums": {
+      "email": [
+        "kaljuvee@gmail.com",
+        "prospectus_test_1781428176@example.com",
+        "prospectus_test_1781428201@example.com",
+        "test-smoke@example.com"
+      ],
+      "google_id": [
+        "115216694452849390181"
+      ],
+      "display_name": [
+        "Julian Kaljuvee",
+        "Test"
+      ]
+    }
   },
   "liquidround.valuations": {
     "columns": [
@@ -857,6 +1177,10 @@
     ],
     "row_count": 2,
     "enums": {
+      "agent_name": [
+        "orchestrator",
+        "target_finder"
+      ],
       "status": [
         "success"
       ]
@@ -898,16 +1222,25 @@
       },
       {
         "name": "conversation_title",
-        "type": "VARCHAR(200)"
+        "type": "TEXT"
+      },
+      {
+        "name": "share_token",
+        "type": "TEXT"
       }
     ],
-    "row_count": 1,
+    "row_count": 4,
     "enums": {
       "workflow_type": [
-        "buyer_ma"
+        "buyer_ma",
+        "conversation"
       ],
       "status": [
         "completed"
+      ],
+      "share_token": [
+        "3df864e8ae1849caa48ef384ca0037bb",
+        "7d7b781690eb4992b9e4720d7aee2f0d"
       ]
     }
   },
@@ -1010,11 +1343,26 @@
         "type": "TIMESTAMP"
       }
     ],
-    "row_count": 174,
+    "row_count": 184,
     "enums": {
       "role": [
         "assistant",
         "user"
+      ],
+      "agent_slug": [
+        "comp_finder",
+        "deal_triage",
+        "doc_room_auditor",
+        "investor_memo",
+        "loi_writer",
+        "market_scanner",
+        "outreach_email",
+        "physical_condition",
+        "pro_forma_builder",
+        "rent_optimization",
+        "rent_roll_parser",
+        "seller_intent",
+        "t12_normalizer"
       ]
     }
   },
@@ -1049,8 +1397,26 @@
         "type": "TEXT"
       }
     ],
-    "row_count": 101,
-    "enums": {}
+    "row_count": 107,
+    "enums": {
+      "agent_slug": [
+        "comp_finder",
+        "deal_triage",
+        "doc_room_auditor",
+        "investor_memo",
+        "market_scanner",
+        "outreach_email",
+        "physical_condition",
+        "pro_forma_builder",
+        "rent_optimization",
+        "rent_roll_parser",
+        "seller_intent",
+        "t12_normalizer"
+      ],
+      "share_token": [
+        "8243303ca1c64039b0e4814d5f26786f"
+      ]
+    }
   },
   "pehero.companies": {
     "columns": [
@@ -1166,33 +1532,21 @@
         "industrials",
         "software"
       ],
-      "sub_sector": [
-        "Ambulance & emergency services",
-        "Automation & robotics",
-        "Banking",
-        "Business services",
-        "Cargo handling",
-        "Computer manufacturing",
-        "Construction",
-        "Consumer",
-        "Credit & lending",
-        "Data processing & hosting",
-        "Dental clinics",
-        "Dental practice",
-        "Financial services",
-        "Freight forwarding",
-        "General",
-        "General medical practice",
-        "Health care institutions",
-        "Healthcare",
-        "Hotels",
-        "IT consulting"
+      "ownership": [
+        "founder",
+        "pe_backed",
+        "unknown"
       ],
       "deal_stage": [
         "sourced"
       ],
       "deal_type": [
         "platform"
+      ],
+      "seller_intent": [
+        "cold",
+        "hot",
+        "warm"
       ]
     }
   },
@@ -1378,6 +1732,36 @@
       }
     ],
     "row_count": 1,
+    "enums": {
+      "name": [
+        "Kardiolita, UAB \u2014 base debt stack"
+      ]
+    }
+  },
+  "pehero.digest_sends": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER"
+      },
+      {
+        "name": "user_id",
+        "type": "INTEGER"
+      },
+      {
+        "name": "subject",
+        "type": "TEXT"
+      },
+      {
+        "name": "message_id",
+        "type": "TEXT"
+      },
+      {
+        "name": "sent_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "row_count": 0,
     "enums": {}
   },
   "pehero.financials": {
@@ -1589,8 +1973,14 @@
         "type": "TIMESTAMP"
       }
     ],
-    "row_count": 36,
-    "enums": {}
+    "row_count": 47,
+    "enums": {
+      "name": [
+        "Eika Construction, UAB \u2014 base case",
+        "Kardiolita, UAB \u2014 base case",
+        "UAB \"ESTETUS KLINIKA\" \u2014 base case"
+      ]
+    }
   },
   "pehero.market_signals": {
     "columns": [
@@ -1692,7 +2082,14 @@
       }
     ],
     "row_count": 863,
-    "enums": {}
+    "enums": {
+      "entity_type": [
+        "company"
+      ],
+      "pipedrive_type": [
+        "deal"
+      ]
+    }
   },
   "pehero.portfolio_kpis": {
     "columns": [
@@ -1752,7 +2149,12 @@
       }
     ],
     "row_count": 28,
-    "enums": {}
+    "enums": {
+      "changed_by": [
+        "seed",
+        "web-editor"
+      ]
+    }
   },
   "pehero.trading_comps": {
     "columns": [
@@ -1926,7 +2328,126 @@
       }
     ],
     "row_count": 1,
-    "enums": {}
+    "enums": {
+      "provider": [
+        "pipedrive"
+      ],
+      "api_token": [
+        "fe5bd40c42dd42ef737e2c589b2108ea083c1a5d"
+      ],
+      "domain": [
+        "predictivelabsltd"
+      ]
+    }
+  },
+  "pehero.user_preferences": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER"
+      },
+      {
+        "name": "user_id",
+        "type": "INTEGER"
+      },
+      {
+        "name": "phone",
+        "type": "TEXT"
+      },
+      {
+        "name": "company",
+        "type": "TEXT"
+      },
+      {
+        "name": "role",
+        "type": "TEXT"
+      },
+      {
+        "name": "country",
+        "type": "TEXT"
+      },
+      {
+        "name": "city",
+        "type": "TEXT"
+      },
+      {
+        "name": "currency",
+        "type": "TEXT"
+      },
+      {
+        "name": "language",
+        "type": "TEXT"
+      },
+      {
+        "name": "deal_size_min",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "deal_size_max",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "revenue_min",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "revenue_max",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "ebitda_min",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "ebitda_max",
+        "type": "NUMERIC"
+      },
+      {
+        "name": "preferred_sectors",
+        "type": "JSONB"
+      },
+      {
+        "name": "preferred_deal_types",
+        "type": "JSONB"
+      },
+      {
+        "name": "preferred_geographies",
+        "type": "JSONB"
+      },
+      {
+        "name": "preferred_stage",
+        "type": "TEXT"
+      },
+      {
+        "name": "notify_new_deals",
+        "type": "BOOLEAN"
+      },
+      {
+        "name": "notify_deal_updates",
+        "type": "BOOLEAN"
+      },
+      {
+        "name": "notify_weekly_digest",
+        "type": "BOOLEAN"
+      },
+      {
+        "name": "updated_at",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "unsubscribe_token",
+        "type": "TEXT"
+      }
+    ],
+    "row_count": 1,
+    "enums": {
+      "currency": [
+        "EUR"
+      ],
+      "language": [
+        "en"
+      ]
+    }
   },
   "pehero.users": {
     "columns": [
@@ -1941,9 +2462,37 @@
       {
         "name": "created_at",
         "type": "TIMESTAMP"
+      },
+      {
+        "name": "password_hash",
+        "type": "TEXT"
+      },
+      {
+        "name": "name",
+        "type": "TEXT"
+      },
+      {
+        "name": "is_verified",
+        "type": "BOOLEAN"
+      },
+      {
+        "name": "verify_token",
+        "type": "TEXT"
+      },
+      {
+        "name": "reset_token",
+        "type": "TEXT"
+      },
+      {
+        "name": "reset_token_expires",
+        "type": "TIMESTAMP"
       }
     ],
-    "row_count": 99,
-    "enums": {}
+    "row_count": 104,
+    "enums": {
+      "name": [
+        "Test User"
+      ]
+    }
   }
 }

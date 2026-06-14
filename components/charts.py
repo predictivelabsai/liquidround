@@ -13,6 +13,32 @@ def PlotlyDiv(chart_id: str, data: list, layout: dict):
     )
 
 
+# Shared navy/amber dark palette for the LiquidRound app pages.
+LR_COLORWAY = ["#F59E0B", "#3B82F6", "#10B981", "#EF4444", "#8B5CF6",
+               "#EC4899", "#14B8A6", "#F97316", "#6366F1", "#84CC16"]
+
+
+def apply_dark_layout(fig, height: int = None):
+    """Apply the LiquidRound dark theme to a Plotly figure and return its JSON.
+
+    Mirrors the layout used by routes/analytics.py so every workspace chart looks
+    consistent. Returns ``{"data": [...], "layout": {...}}`` ready for PlotlyDiv.
+    """
+    fig.update_layout(
+        paper_bgcolor="#111A2E", plot_bgcolor="#0B1220",
+        font=dict(family="Inter, system-ui", color="#E5E7EB"),
+        margin=dict(l=40, r=20, t=50, b=40),
+        title=dict(font=dict(size=15, color="#E5E7EB")),
+        xaxis=dict(gridcolor="#1E293B", zerolinecolor="#1E293B"),
+        yaxis=dict(gridcolor="#1E293B", zerolinecolor="#1E293B"),
+        legend=dict(font=dict(color="#94A3B8")),
+        colorway=LR_COLORWAY,
+    )
+    if height:
+        fig.update_layout(height=height)
+    return json.loads(fig.to_json())
+
+
 def RadarChart(chart_id: str, dimensions: dict, title: str = "Synergy Score Breakdown"):
     """Radar/spider chart for scoring dimensions."""
     labels = [k.replace("_", " ").title() for k in dimensions.keys()]
