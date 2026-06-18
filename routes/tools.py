@@ -12,6 +12,8 @@ from fasthtml.common import *
 from fasthtml.core import APIRouter
 from starlette.responses import JSONResponse
 
+from utils.parse import parse_amount
+
 from components.tools import (
     tool_page, tool_hero, url_input_step, loading_animation,
     comps_financial_form, comps_results,
@@ -148,9 +150,9 @@ async def tools_comps_results(request):
     form = await request.form()
     company_data = json.loads(form.get("company_data", "{}"))
     financials = {
-        "revenue": float(form.get("revenue", 0) or 0),
-        "pretax_profit": float(form.get("pretax_profit", 0) or 0),
-        "owner_salary": float(form.get("owner_salary", 0) or 0),
+        "revenue": parse_amount(form.get("revenue", 0)),
+        "pretax_profit": parse_amount(form.get("pretax_profit", 0)),
+        "owner_salary": parse_amount(form.get("owner_salary", 0)),
     }
     sector = company_data.get("sector") or "Technology"
     company_data["sector"] = sector
@@ -246,9 +248,9 @@ async def tools_valuation_results(request):
     form = await request.form()
     company_data = json.loads(form.get("company_data", "{}"))
     financials = {
-        "revenue": float(form.get("revenue", 0) or 0),
-        "pretax_profit": float(form.get("pretax_profit", 0) or 0),
-        "owner_salary": float(form.get("owner_salary", 0) or 0),
+        "revenue": parse_amount(form.get("revenue", 0)),
+        "pretax_profit": parse_amount(form.get("pretax_profit", 0)),
+        "owner_salary": parse_amount(form.get("owner_salary", 0)),
     }
     sector = company_data.get("sector") or "Technology"
     company_data["sector"] = sector

@@ -178,18 +178,19 @@ def company_profile_card(profile: dict):
 
 # ───── Financial inputs (Step 2) ──────────────────────────────────────
 
-def _eur_input(name: str, label: str, placeholder: str = "0"):
+def _eur_input(name: str, label: str, placeholder: str = "1M"):
     return Div(
         Label(label, cls="text-xs font-medium mb-1 block", style=f"color:{INK_MUTED}"),
         Div(
             Span("€", cls="text-sm font-medium px-3 flex items-center",
                  style=f"color:{INK_MUTED}; background:{BG}; border:1px solid {LINE}; border-right:none; border-radius:0.5rem 0 0 0.5rem;"),
-            Input(name=name, type="number", step="1000", min="0", required=True,
+            Input(name=name, type="text", inputmode="decimal", required=True,
                   placeholder=placeholder,
                   cls="flex-1 px-3 py-2.5 text-sm",
                   style=f"background:{BG}; color:{INK}; border:1px solid {LINE}; border-left:none; border-radius:0 0.5rem 0.5rem 0; outline:none;"),
             cls="flex",
         ),
+        P("e.g. 1M, 500k, 2.5B, 1000000", cls="text-xs mt-0.5", style=f"color:{INK_MUTED}; opacity:0.6"),
     )
 
 
