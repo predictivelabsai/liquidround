@@ -214,12 +214,6 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
             ),
             Hr(cls="left-hr"),
             Div(
-                Div(Span("Workspace", cls="section-label")),
-                bottom_nav(current_path),
-                cls="workspace-section",
-            ),
-            Hr(cls="left-hr"),
-            Div(
                 Div(Span("Public Markets", cls="section-label")),
                 Div(
                     A(
@@ -257,24 +251,33 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
                     A(
                         Span("▤", cls="bottom-nav-icon"),
                         Span("Top Holdings", cls="bottom-nav-label"),
-                        href="#", onclick="sendChat('hedgefunds: top funds by AUM'); return false;",
+                        href="/app?q=hedgefunds%3A+top+funds+by+AUM",
+                        onclick="if(window.fillChat){fillChat('hedgefunds: top funds by AUM'); sendMessage(null); return false;}",
                         cls="bottom-nav-link",
                     ),
                     A(
                         Span("≡", cls="bottom-nav-icon"),
                         Span("Popular Securities", cls="bottom-nav-label"),
-                        href="#", onclick="sendChat('hedgefunds: most popular securities across all funds'); return false;",
+                        href="/app?q=hedgefunds%3A+most+popular+securities+across+all+funds",
+                        onclick="if(window.fillChat){fillChat('hedgefunds: most popular securities across all funds'); sendMessage(null); return false;}",
                         cls="bottom-nav-link",
                     ),
                     A(
                         Span("⚠", cls="bottom-nav-icon"),
                         Span("Activist Filings", cls="bottom-nav-label"),
-                        href="#", onclick="sendChat('hedgefunds: recent activist filings'); return false;",
+                        href="/app?q=hedgefunds%3A+recent+activist+filings",
+                        onclick="if(window.fillChat){fillChat('hedgefunds: recent activist filings'); sendMessage(null); return false;}",
                         cls="bottom-nav-link",
                     ),
                     cls="bottom-nav",
                 ),
                 cls="hedge-funds-section",
+            ),
+            Hr(cls="left-hr"),
+            Div(
+                Div(Span("Workspace", cls="section-label")),
+                bottom_nav(current_path),
+                cls="workspace-section",
             ),
             Hr(cls="left-hr"),
             Div(

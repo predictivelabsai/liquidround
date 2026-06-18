@@ -160,5 +160,5 @@ def hedge_fund_page_content():
         }
         """),
         cls="w-full",
-        style=f"color:{INK}",
+        style=f"color:{INK}; padding: 1.5rem;",
     )
