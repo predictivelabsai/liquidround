@@ -91,6 +91,31 @@ def landing_nav(active: str = "home", lang: str = "en"):
         is_active = key == active
         cls = "text-sm nav-link " + ("text-white font-medium" if is_active else "text-slate-400")
         return A(label, href=href, cls=cls)
+
+    tools_active = active == "tools"
+    tools_cls = "text-sm nav-link cursor-pointer " + ("text-white font-medium" if tools_active else "text-slate-400")
+    tools_dropdown = Div(
+        Span(t("nav_tools", lang),
+             cls=tools_cls,
+             onclick="this.nextElementSibling.classList.toggle('hidden')",
+             ),
+        Div(
+            A("Market Comps", href="/tools/comparables",
+              cls="block px-4 py-2 text-sm no-underline hover:opacity-80",
+              style=f"color:{INK_MUTED};"),
+            A("Find Buyers", href="/tools/match",
+              cls="block px-4 py-2 text-sm no-underline hover:opacity-80",
+              style=f"color:{INK_MUTED};"),
+            A("Valuation", href="/tools/valuation",
+              cls="block px-4 py-2 text-sm no-underline hover:opacity-80",
+              style=f"color:{INK_MUTED};"),
+            cls="hidden absolute left-0 top-full mt-1 rounded-lg shadow-lg z-50 py-1 min-w-[160px] flex flex-col",
+            style=f"background:{BG_ELEV}; border:1px solid {LINE};",
+        ),
+        Script("document.addEventListener('click',e=>{if(!e.target.closest('.tools-dd'))document.querySelectorAll('.tools-dd>div:last-child').forEach(m=>m.classList.add('hidden'))})"),
+        cls="relative tools-dd",
+    )
+
     return Div(
         Div(
             A(
@@ -105,7 +130,7 @@ def landing_nav(active: str = "home", lang: str = "en"):
             Div(
                 link("/platform", t("nav_platform", lang), "platform"),
                 link("/agents", t("nav_agents", lang), "agents"),
-                link("/tools/comparables", t("nav_tools", lang), "tools"),
+                tools_dropdown,
                 link("/industries", t("nav_industries", lang), "industries"),
                 link("/pricing", t("nav_pricing", lang), "pricing"),
                 cls="hidden lg:flex items-center gap-6",

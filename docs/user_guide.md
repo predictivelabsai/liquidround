@@ -1,22 +1,86 @@
-# LiquidRound User Guide
+# LiquidRound
 
-Welcome to LiquidRound v0.4.0 — your AI-powered M&A and capital markets research platform by Predictive Labs Ltd.
+## User Guide — AI ECM / IB Analyst Squad for M&A and IPO
 
-## Getting Started
+Version 0.4.0 · Predictive Labs Ltd · Live at **liquidround.ai**
 
-LiquidRound provides three modes of operation:
+An AI-powered M&A, IPO readiness, and hedge fund intelligence platform.
+23 specialist agents — buyer-led sourcing and diligence, seller-led positioning
+and IPO readiness, and public markets intelligence — in one chat-first workspace.
 
-- **Buyer-Led** — Find acquisition targets, run diligence, score matches, and draft IC memos
-- **Seller-Led** — Prepare for sale (teasers / CIMs), identify buyers, and assess IPO readiness
-- **Public Markets / Hedge Funds** — Explore SEC 13F institutional holdings, fund AUM rankings, and activist filings
+---
 
-Sign in or register to save your sessions, conversations, and pipelines. Guest users can still use the chat with in-memory sessions.
+## What this platform is for
 
-## The Chat Interface
+**LiquidRound is the AI ECM / IB analyst squad** — a chat-first workspace where
+every question routes to the right specialist agent automatically.
 
-The chat is your primary interface. Type a message or use a **prefix command** to route your query to a specific agent.
+- **Buy-side:** Find acquisition targets, run diligence, score matches, and draft IC memos.
+- **Sell-side:** Prepare for sale (teasers / CIMs), identify buyers, and assess IPO readiness.
+- **Public markets:** Explore SEC 13F institutional holdings, fund AUM rankings, and activist filings.
+- **BYOD:** Upload your own pitch books, CIMs, and term sheets — agents read, cite, and draft from them.
 
-### Prefix Commands
+> The whole product answers one question: **"Who should we look at, what is it
+> worth, and what are the risks — ready for IC?"**
+
+---
+
+## Getting started
+
+![Landing page](img/01-landing.png)
+
+Open **liquidround.ai** and choose your side:
+
+- **Buyer-Led** — the app defaults to sourcing, diligence, and valuation agents.
+- **Seller-Led** — the app defaults to positioning, teaser, and IPO readiness agents.
+
+Sign in or register to save sessions, conversations, and pipelines. Guest users
+can still use the full chat with in-memory sessions.
+
+---
+
+## The platform — one system, every stage
+
+![Platform overview](img/02-ecm-squad.png)
+
+Your ECM / IB analyst squad spans 6 workflow categories:
+
+- **Deal Sourcing & Screening** (4 agents) — target scanning, buyer scanning, deal triage, seller intent
+- **Valuation & Underwriting** (6 agents) — company profiling, DCF, comps, LTM, multiples, synergy
+- **Due Diligence Stack** (5 agents) — VDR audit, contract abstraction, legal, operational, ESG
+- **Deal Execution & Capital** (5 agents) — IC memo, teaser, bid strategy, IPO readiness, integration
+- **Research & Post-Deal** (2 agents) — research analyst, match scorer
+- **Public Markets & Hedge Funds** (1 agent) — SEC 13F holdings, fund AUM, activist filings
+
+---
+
+## Sign in
+
+![Sign in](img/03-signin.png)
+
+Email + password or **Sign in with Google**. Registration is free. Signed-in users
+get persistent conversations, share links, and saved pipelines.
+
+---
+
+## The chat interface — your primary workspace
+
+![Chat interface](img/04-app-chat.png)
+
+The screen has **three panes** that stay consistent everywhere:
+
+- **Left** — navigation: Sessions, Agents (6 categories), Tools, Public Markets, Hedge Funds, Workspace (10 pages), Training, Help.
+- **Centre** — the chat: welcome hero with example prompts, message thread, and input bar.
+- **Right** — the artifact canvas: News, Artifact tabs for agent-produced tables, charts, citations, and PDF previews.
+
+### Ask a question
+
+Type a natural-language question — *"Find founder-owned vet clinics in the Baltics
+with EUR 4M+ EBITDA"* — and the **auto-router** picks the best agent.
+
+### Try a shortcut
+
+Use a **prefix command** to route directly to a specific agent:
 
 | Prefix | Agent | What it does |
 |--------|-------|-------------|
@@ -44,165 +108,223 @@ The chat is your primary interface. Type a message or use a **prefix command** t
 | `research:` | Research Analyst | Deep web + semantic research |
 | `hedgefunds:` | Hedge Fund Analyst | SEC 13F holdings, fund AUM, activist filings |
 
-### Free-Form Chat
+---
 
-If you don't use a prefix, the **auto-router** picks the best agent for your query based on keywords and context.
+## Agent browser — 23 specialists at a glance
 
-## ECM Agent Squad
+![Agent browser expanded](img/05-agents-expanded.png)
 
-LiquidRound includes 23 specialized AI agents organized into 6 categories:
+Click any **agent category** in the left nav to expand it. Each agent shows its
+name and prefix shortcut. Click an agent to fill the chat input with a sample
+question — the router picks up automatically.
 
-- **Deal Sourcing & Screening** (4 agents) — Deal triage, target scanning, buyer scanning, seller intent analysis
-- **Valuation & Underwriting** (6 agents) — Company profiling, DCF, comps, LTM normalization, multiples, synergy modelling
-- **Due Diligence Stack** (5 agents) — VDR audit, contract abstraction, legal review, operational review, ESG screening
-- **Deal Execution & Capital** (5 agents) — IC memo writing, teaser design, bid strategy, IPO readiness, integration planning
-- **Research & Post-Deal** (2 agents) — Research analyst, match scorer
-- **Public Markets & Hedge Funds** (1 agent) — Hedge fund analyst with SEC 13F data
+Each agent has its own system prompt and tool set. View and customize prompts in
+**Help → Instructions**.
 
-Each agent has its own system prompt and tool set. You can view and edit agent prompts in **Instructions**.
+---
+
+## Hedge Fund Treemap
+
+![Hedge Fund Treemap](img/06-hedgefunds-treemap.png)
+
+Interactive Plotly treemap at **Hedge Funds → Fund Treemap** showing SEC Form 13F
+institutional holdings. Cell size is proportional to portfolio value.
+
+**Filter controls:**
+- **Fund** — search for a specific fund manager (e.g. "Bridgewater", "Vanguard")
+- **Min Value ($)** — filter positions by minimum value ($1M, $10M, $100M, $1B)
+- **Limit** — number of positions to display (200, 500, 1000)
+
+Click **Apply** to refresh the treemap.
+
+### Chat commands
+
+Click these in the left nav or type the prefix in chat:
+
+- **Top Holdings** — `hedgefunds: top funds by AUM`
+- **Popular Securities** — `hedgefunds: most popular securities across all funds`
+- **Activist Filings** — `hedgefunds: recent activist filings`
+- **Fund Search** — `hedgefunds: search for Bridgewater`
+
+### Data source
+
+All hedge fund data comes from SEC Form 13F filings — mandatory quarterly
+disclosures by institutional investment managers with over $100M in qualifying
+assets. Approximately **10,000+ fund managers** and **7 million+ holdings** in
+the database.
+
+---
+
+## Free tools — no sign-in required
+
+### Market Comparables
+
+![Comparables tool](img/07-tools-comps.png)
+
+Enter a company URL to get sector M&A benchmarks — EV/Revenue and EV/EBITDA
+multiples compared to Damodaran sector averages.
+
+### Business Valuation
+
+![Valuation tool](img/08-tools-valuation.png)
+
+Enter a company URL and basic financials to get an indicative valuation range.
+AI-generated value drivers (positive and negative) are included. Supports
+human-friendly number input: `1M`, `500k`, `2.5B`, or `1,000,000`.
+
+### Find Buyers
+
+Enter a company URL to identify potential strategic and financial buyers with
+match scoring.
+
+All three tools work by scraping the company website, identifying the sector, and
+applying relevant multiples and buyer databases. Each ends with a **Book a
+15-minute call** lead capture form.
+
+---
+
+## Industries
+
+![Industries](img/09-industries.png)
+
+Sector-specific M&A advisory pages across the Baltics and Nordics. Each industry
+page includes sector description, sub-sectors, advisor CTAs, and a "Find Buyers"
+widget.
+
+---
 
 ## Public Markets
 
-Access via the **Public Markets** section in the left navigation:
-
 ### IPO Map
 
-Interactive world map of recent and upcoming IPOs. Filter by geography and sector.
+![IPO Map](img/16-ipo-map.png)
+
+Global IPO heatmap — recent IPOs sized by market cap, colored by performance since
+listing. Filter by region, country, exchange, and sector. KPIs: total IPOs, average
+performance, total market cap, best performer.
 
 ### IPO Pipeline
 
-Track the IPO pipeline with deal stages, expected pricing dates, and offering sizes.
+![IPO Pipeline](img/17-ipo-pipeline.png)
+
+Track private mega-caps and upcoming US IPOs from the NASDAQ calendar. Bar chart
+by sector, with company details including round, valuation, and description.
 
 ### Prospectus
 
 Browse and analyze IPO prospectus documents.
 
-## Hedge Funds
+---
 
-Access via the **Hedge Funds** section in the left navigation:
-
-### Fund Treemap
-
-Interactive Plotly treemap at `/app/hedgefunds` showing SEC Form 13F institutional holdings. The visualization groups positions by fund manager, with cell size proportional to portfolio value.
-
-**Filter controls:**
-- **Fund** — Search for a specific fund manager (e.g. "Bridgewater", "Vanguard")
-- **Min Value ($)** — Filter positions by minimum value ($1M, $10M, $100M, $1B)
-- **Limit** — Number of positions to display (200, 500, 1000)
-
-Click **Apply** to refresh the treemap with your filters.
-
-### Chat Commands
-
-Click these in the left nav or type the prefix in chat:
-
-- **Top Holdings** — `hedgefunds: top funds by AUM` — Shows the largest institutional investors ranked by total portfolio value
-- **Popular Securities** — `hedgefunds: most popular securities across all funds` — The most widely held stocks across all 13F filers
-- **Activist Filings** — `hedgefunds: recent activist filings` — Recent Schedule 13D/13G beneficial ownership filings (indicates activist stakes)
-
-### Data Source
-
-All hedge fund data comes from SEC Form 13F filings — mandatory quarterly disclosures by institutional investment managers with over $100M in qualifying assets. Key points:
-
-- Data reflects the **latest available quarter** with a 45-day filing lag
-- Values are reported in **thousands of dollars** (the SEC standard)
-- Only **long equity positions** are included (no shorts, options, or fixed income)
-- Approximately **10,000+ fund managers** and **7 million+ holdings** in the database
-
-## Lead-Magnet Tools
-
-Three free tools are available without sign-in, accessible from the **Tools** section:
-
-### Market Comps
-
-Enter a company URL to get sector M&A benchmarks — EV/Revenue and EV/EBITDA multiples compared to sector averages.
-
-### Find Buyers
-
-Enter a company URL to identify potential strategic and financial buyers with match scoring.
-
-### Valuation
-
-Enter a company URL and basic financials to get an indicative valuation range based on sector benchmarks.
-
-All three tools work by scraping the company website, identifying the sector, and applying relevant multiples and buyer databases.
-
-## Workspace Pages
+## Workspace pages
 
 ### Companies
 
-Search the company database by name, sector, or geography. Click a company to see its full profile with financials, description, and deal brief.
+![Companies](img/10-companies.png)
+
+Search the company database by name, sector, or geography. Click a company to see
+its full profile with financials, description, and deal brief.
 
 ### Pipelines
 
-Track your deal pipeline — add targets or buyers, set deal stages, and monitor progress.
+Track your deal pipeline — add targets or buyers, set deal stages, and monitor
+progress. Requires sign-in.
 
 ### Daily Deals
 
-AI-curated daily digest of M&A-relevant companies with thesis analysis and sector comps.
+![Daily Digest](img/18-daily-digest.png)
 
-### Valuation
+AI-curated daily digest of M&A-relevant companies. Each company gets a deal angle,
+investment thesis, and sector comps. The featured company gets a deep dive with
+company overview, deal context, and a bottom-line recommendation.
 
-Interactive valuation simulator with 4 methods: EV/Revenue multiples, EV/EBITDA multiples, DCF (WACC + equity bridge), and combined view.
+Delivered as a styled email — opt in via your profile preferences.
+
+### Valuation Simulator
+
+![Valuation Simulator](img/12-valuation-sim.png)
+
+Interactive valuation simulator with 4 methods: EV/Revenue multiples, EV/EBITDA
+multiples, DCF (WACC + equity bridge), and combined view. Enter your financials
+and adjust assumptions in real time.
 
 ### Analytics
 
-Text-to-SQL analytics — ask questions in plain English and get charts + tables from the database.
+![Analytics](img/13-analytics.png)
+
+Text-to-SQL analytics — ask questions in plain English and get charts + tables
+from the database.
 
 ### Data Room
 
-Upload and manage deal documents organized by company. Supports PDF, DOCX, XLSX, PPTX, CSV, and image files.
+![Data Room](img/14-dataroom.png)
+
+Upload and manage deal documents organized by company. Supports PDF, DOCX, XLSX,
+PPTX, CSV, and image files. Drag-and-drop or use the upload button.
 
 ### Documents
 
-Browse and view uploaded documents. Extract key terms or score documents against buyer criteria.
+Browse uploaded documents. Extract key terms or score documents against buyer
+criteria.
 
 ### Deal History
 
-View your workflow history with charts showing deal types, timeline, and status distribution.
+View your workflow history with charts showing deal types, timeline, and status
+distribution.
 
 ### Instructions
 
-View and customize agent system prompts to tailor AI behavior to your firm's standards.
+View and customize agent system prompts to tailor AI behavior to your firm's
+standards.
 
-### Help
-
-In-app help and quick reference.
+---
 
 ## Exports
 
-### Excel (XLSX)
+- **Excel (XLSX)** — when an agent produces a table, click **Download XLSX** for a formatted spreadsheet with styled headers.
+- **Word (DOCX)** — IC memos, teasers, and other markdown content export as Word documents via **Download DOCX**.
+- **PDF** — IC memos produce a PDF preview in the right pane. Company cards can also be downloaded as branded PDFs.
 
-When an agent produces a table, click the **Download XLSX** button to get a formatted Excel file with styled headers.
-
-### Word (DOCX)
-
-IC memos, teasers, and other markdown content can be exported as Word documents via the **Download DOCX** button.
-
-### PDF
-
-IC memos produce a PDF preview in the right pane. Company cards can also be downloaded as PDF files with LiquidRound branding.
+---
 
 ## Configuration
 
-### Currency
+- **Currency** — switch between EUR, GBP, and USD in Configuration.
+- **Role** — set your default view to Buyer, Seller, or Both. Affects which agents and suggestions appear first.
+- **Number input** — all financial inputs support human-friendly shortcuts: `1M`, `35.5k`, `2B`, `1,000,000`.
 
-Switch between EUR, GBP, and USD in the Configuration section of the left pane.
+---
 
-### Role
+## Keyboard shortcuts
 
-Set your default view to Buyer, Seller, or Both. This affects which agents and suggestions appear first.
+- **Enter** — send message
+- **Shift+Enter** — new line in message
 
-## Keyboard Shortcuts
-
-- **Enter** — Send message
-- **Shift+Enter** — New line in message
+---
 
 ## Tips
 
-- Use the **Copy** button to copy all chat messages to clipboard
-- Use the **Share** button to generate a shareable link for your chat session
-- The **News** tab in the right pane shows live M&A news from major financial sources
-- The **Artifact** tab shows agent-produced tables, charts, and citations
-- Upload documents via the paperclip button or drag-and-drop
-- All collapsible nav sections (Agents, Tools, Public Markets, Hedge Funds, Workspace) can be expanded by clicking the section header
+- Use the **Copy** button to copy all chat messages to clipboard.
+- Use the **Share** button to generate a shareable link for your session.
+- The **News** tab in the right pane shows live M&A news.
+- The **Artifact** tab shows agent-produced tables, charts, and citations.
+- Upload documents via the paperclip button or drag-and-drop.
+- All collapsible nav sections can be expanded by clicking the section header.
+
+---
+
+## Quick reference
+
+**Navigation**
+
+- *Agents* — 6 categories, 23 specialists · *Tools* — Market Comps, Find Buyers, Valuation
+- *Public Markets* — IPO Map, IPO Pipeline, Prospectus
+- *Hedge Funds* — Fund Treemap, Top Holdings, Popular Securities, Activist Filings
+- *Workspace* — Companies, Pipelines, Daily Deals, Valuation, Analytics, Data Room, Documents, Deal History, Exports, Instructions
+- *Help* — Profile, Help page, Keyboard shortcuts
+
+**Prefix commands:** `profile:` · `scan:` · `buyers:` · `triage:` · `intent:` · `dcf:` · `multi:` · `comps:` · `ltm:` · `synergy:` · `score` · `vdr:` · `abstract:` · `legal:` · `ops:` · `esg:` · `memo:` · `teaser:` · `bid:` · `ipo:` · `integrate:` · `research:` · `hedgefunds:`
+
+---
+
+LiquidRound v0.4.0 — Predictive Labs Ltd
