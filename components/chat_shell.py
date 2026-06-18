@@ -191,6 +191,32 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
             ),
             Hr(cls="left-hr"),
             Div(
+                Div(Span("Tools", cls="section-label")),
+                Div(
+                    A(
+                        Span("📊", cls="bottom-nav-icon"),
+                        Span("Market Comps", cls="bottom-nav-label"),
+                        href="/tools/comparables",
+                        cls=f"bottom-nav-link{' active' if current_path == '/tools/comparables' else ''}",
+                    ),
+                    A(
+                        Span("🔍", cls="bottom-nav-icon"),
+                        Span("Find Buyers", cls="bottom-nav-label"),
+                        href="/tools/match",
+                        cls=f"bottom-nav-link{' active' if current_path == '/tools/match' else ''}",
+                    ),
+                    A(
+                        Span("💰", cls="bottom-nav-icon"),
+                        Span("Valuation", cls="bottom-nav-label"),
+                        href="/tools/valuation",
+                        cls=f"bottom-nav-link{' active' if current_path == '/tools/valuation' else ''}",
+                    ),
+                    cls="bottom-nav",
+                ),
+                cls="tools-section",
+            ),
+            Hr(cls="left-hr"),
+            Div(
                 Div(Span("Workspace", cls="section-label")),
                 bottom_nav(current_path),
                 cls="workspace-section",

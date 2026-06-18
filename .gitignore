@@ -213,3 +213,8 @@ screenshots/
 # Local Playwright MCP workspace
 .playwright-mcp/
 .digest_cache.json
+
+# Baltic company databases (too large for git — copy from pehero/data/)
+data/ee_companies.json
+data/lt_companies.json
+data/lv_companies.json
