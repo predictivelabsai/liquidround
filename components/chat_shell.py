@@ -121,29 +121,30 @@ def agent_browser():
     return Div(*groups, cls="agent-browser")
 
 
-def bottom_nav(current_path: str = ""):
-    items = [
-        ("Companies",    "/app/companies",     "⊞"),
-        ("Pipelines",    "/pipeline/target",   "◆"),
-        ("Daily Deals",  "/app/deals",         "◉"),
-        ("Valuation",    "/app/valuation",     "◎"),
-        ("Analytics",    "/app/analytics",     "◇"),
-        ("Data Room",    "/app/dataroom",      "◈"),
-        ("Documents",    "/page/documents",    "▦"),
-        ("Deal history", "/page/deals",        "∑"),
-        ("Instructions", "/app/instructions",  "✎"),
-        ("Help",         "/app/help",          "?"),
+_WORKSPACE_ITEMS = [
+    ("Companies",    "/app/companies",     "⊞"),
+    ("Pipelines",    "/pipeline/target",   "◆"),
+    ("Daily Deals",  "/app/deals",         "◉"),
+    ("Valuation",    "/app/valuation",     "◎"),
+    ("Analytics",    "/app/analytics",     "◇"),
+    ("Data Room",    "/app/dataroom",      "◈"),
+    ("Documents",    "/page/documents",    "▦"),
+    ("Deal history", "/page/deals",        "∑"),
+    ("Instructions", "/app/instructions",  "✎"),
+    ("Help",         "/app/help",          "?"),
+]
+
+
+def _workspace_links(current_path: str = ""):
+    return [
+        A(Span(icon, cls="bottom-nav-icon"), Span(label, cls="bottom-nav-label"),
+          href=href, cls=f"bottom-nav-link{' active' if href and current_path.startswith(href) else ''}")
+        for label, href, icon in _WORKSPACE_ITEMS
     ]
-    links = []
-    for label, href, icon in items:
-        active = href and current_path.startswith(href)
-        links.append(A(
-            Span(icon, cls="bottom-nav-icon"),
-            Span(label, cls="bottom-nav-label"),
-            href=href,
-            cls=f"bottom-nav-link{' active' if active else ''}",
-        ))
-    return Div(*links, cls="bottom-nav")
+
+
+def bottom_nav(current_path: str = ""):
+    return Div(*_workspace_links(current_path), cls="bottom-nav")
 
 
 def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = None,
@@ -188,96 +189,105 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
             ),
             Hr(cls="left-hr"),
             Div(
-                Div(Span("Tools", cls="section-label")),
-                Div(
-                    A(
-                        Span("📊", cls="bottom-nav-icon"),
-                        Span("Market Comps", cls="bottom-nav-label"),
-                        href="/tools/comparables",
-                        cls=f"bottom-nav-link{' active' if current_path == '/tools/comparables' else ''}",
-                    ),
-                    A(
-                        Span("🔍", cls="bottom-nav-icon"),
-                        Span("Find Buyers", cls="bottom-nav-label"),
-                        href="/tools/match",
-                        cls=f"bottom-nav-link{' active' if current_path == '/tools/match' else ''}",
-                    ),
-                    A(
-                        Span("💰", cls="bottom-nav-icon"),
-                        Span("Valuation", cls="bottom-nav-label"),
-                        href="/tools/valuation",
-                        cls=f"bottom-nav-link{' active' if current_path == '/tools/valuation' else ''}",
-                    ),
-                    cls="bottom-nav",
+                Button(
+                    Span("🔧", cls="cat-icon"),
+                    Span("Tools", cls="cat-name"),
+                    Span("3", cls="cat-count"),
+                    Span("▸", cls="cat-arrow"),
+                    cls="cat-toggle",
+                    onclick="toggleGroup('sec-tools')",
+                    id="btn-sec-tools",
+                    type="button",
                 ),
-                cls="tools-section",
+                Div(
+                    A(Span("📊", cls="bottom-nav-icon"), Span("Market Comps", cls="bottom-nav-label"),
+                      href="/tools/comparables",
+                      cls=f"bottom-nav-link{' active' if current_path == '/tools/comparables' else ''}"),
+                    A(Span("🔍", cls="bottom-nav-icon"), Span("Find Buyers", cls="bottom-nav-label"),
+                      href="/tools/match",
+                      cls=f"bottom-nav-link{' active' if current_path == '/tools/match' else ''}"),
+                    A(Span("💰", cls="bottom-nav-icon"), Span("Valuation", cls="bottom-nav-label"),
+                      href="/tools/valuation",
+                      cls=f"bottom-nav-link{' active' if current_path == '/tools/valuation' else ''}"),
+                    cls="agent-list", id="sec-tools",
+                ),
+                cls="agent-group",
             ),
             Hr(cls="left-hr"),
             Div(
-                Div(Span("Public Markets", cls="section-label")),
-                Div(
-                    A(
-                        Span("◧", cls="bottom-nav-icon"),
-                        Span("IPO Map", cls="bottom-nav-label"),
-                        href="/app/ipo-map",
-                        cls=f"bottom-nav-link{' active' if current_path.startswith('/app/ipo-map') else ''}",
-                    ),
-                    A(
-                        Span("◨", cls="bottom-nav-icon"),
-                        Span("IPO Pipeline", cls="bottom-nav-label"),
-                        href="/app/ipo-pipeline",
-                        cls=f"bottom-nav-link{' active' if current_path.startswith('/app/ipo-pipeline') else ''}",
-                    ),
-                    A(
-                        Span("◰", cls="bottom-nav-icon"),
-                        Span("Prospectus", cls="bottom-nav-label"),
-                        href="/app/prospectus",
-                        cls=f"bottom-nav-link{' active' if current_path.startswith('/app/prospectus') else ''}",
-                    ),
-                    cls="bottom-nav",
+                Button(
+                    Span("◧", cls="cat-icon"),
+                    Span("Public Markets", cls="cat-name"),
+                    Span("3", cls="cat-count"),
+                    Span("▸", cls="cat-arrow"),
+                    cls="cat-toggle",
+                    onclick="toggleGroup('sec-public-markets')",
+                    id="btn-sec-public-markets",
+                    type="button",
                 ),
-                cls="public-markets-section",
+                Div(
+                    A(Span("◧", cls="bottom-nav-icon"), Span("IPO Map", cls="bottom-nav-label"),
+                      href="/app/ipo-map",
+                      cls=f"bottom-nav-link{' active' if current_path.startswith('/app/ipo-map') else ''}"),
+                    A(Span("◨", cls="bottom-nav-icon"), Span("IPO Pipeline", cls="bottom-nav-label"),
+                      href="/app/ipo-pipeline",
+                      cls=f"bottom-nav-link{' active' if current_path.startswith('/app/ipo-pipeline') else ''}"),
+                    A(Span("◰", cls="bottom-nav-icon"), Span("Prospectus", cls="bottom-nav-label"),
+                      href="/app/prospectus",
+                      cls=f"bottom-nav-link{' active' if current_path.startswith('/app/prospectus') else ''}"),
+                    cls="agent-list", id="sec-public-markets",
+                ),
+                cls="agent-group",
             ),
             Hr(cls="left-hr"),
             Div(
-                Div(Span("Hedge Funds", cls="section-label")),
-                Div(
-                    A(
-                        Span("◉", cls="bottom-nav-icon"),
-                        Span("Fund Treemap", cls="bottom-nav-label"),
-                        href="/app/hedgefunds",
-                        cls=f"bottom-nav-link{' active' if current_path.startswith('/app/hedgefunds') else ''}",
-                    ),
-                    A(
-                        Span("▤", cls="bottom-nav-icon"),
-                        Span("Top Holdings", cls="bottom-nav-label"),
-                        href="/app?q=hedgefunds%3A+top+funds+by+AUM",
-                        onclick="if(window.fillChat){fillChat('hedgefunds: top funds by AUM'); sendMessage(null); return false;}",
-                        cls="bottom-nav-link",
-                    ),
-                    A(
-                        Span("≡", cls="bottom-nav-icon"),
-                        Span("Popular Securities", cls="bottom-nav-label"),
-                        href="/app?q=hedgefunds%3A+most+popular+securities+across+all+funds",
-                        onclick="if(window.fillChat){fillChat('hedgefunds: most popular securities across all funds'); sendMessage(null); return false;}",
-                        cls="bottom-nav-link",
-                    ),
-                    A(
-                        Span("⚠", cls="bottom-nav-icon"),
-                        Span("Activist Filings", cls="bottom-nav-label"),
-                        href="/app?q=hedgefunds%3A+recent+activist+filings",
-                        onclick="if(window.fillChat){fillChat('hedgefunds: recent activist filings'); sendMessage(null); return false;}",
-                        cls="bottom-nav-link",
-                    ),
-                    cls="bottom-nav",
+                Button(
+                    Span("◉", cls="cat-icon"),
+                    Span("Hedge Funds", cls="cat-name"),
+                    Span("4", cls="cat-count"),
+                    Span("▸", cls="cat-arrow"),
+                    cls="cat-toggle",
+                    onclick="toggleGroup('sec-hedge-funds')",
+                    id="btn-sec-hedge-funds",
+                    type="button",
                 ),
-                cls="hedge-funds-section",
+                Div(
+                    A(Span("◉", cls="bottom-nav-icon"), Span("Fund Treemap", cls="bottom-nav-label"),
+                      href="/app/hedgefunds",
+                      cls=f"bottom-nav-link{' active' if current_path.startswith('/app/hedgefunds') else ''}"),
+                    A(Span("▤", cls="bottom-nav-icon"), Span("Top Holdings", cls="bottom-nav-label"),
+                      href="/app?q=hedgefunds%3A+top+funds+by+AUM",
+                      onclick="if(window.fillChat){fillChat('hedgefunds: top funds by AUM'); sendMessage(null); return false;}",
+                      cls="bottom-nav-link"),
+                    A(Span("≡", cls="bottom-nav-icon"), Span("Popular Securities", cls="bottom-nav-label"),
+                      href="/app?q=hedgefunds%3A+most+popular+securities+across+all+funds",
+                      onclick="if(window.fillChat){fillChat('hedgefunds: most popular securities across all funds'); sendMessage(null); return false;}",
+                      cls="bottom-nav-link"),
+                    A(Span("⚠", cls="bottom-nav-icon"), Span("Activist Filings", cls="bottom-nav-label"),
+                      href="/app?q=hedgefunds%3A+recent+activist+filings",
+                      onclick="if(window.fillChat){fillChat('hedgefunds: recent activist filings'); sendMessage(null); return false;}",
+                      cls="bottom-nav-link"),
+                    cls="agent-list", id="sec-hedge-funds",
+                ),
+                cls="agent-group",
             ),
             Hr(cls="left-hr"),
             Div(
-                Div(Span("Workspace", cls="section-label")),
-                bottom_nav(current_path),
-                cls="workspace-section",
+                Button(
+                    Span("◆", cls="cat-icon"),
+                    Span("Workspace", cls="cat-name"),
+                    Span("10", cls="cat-count"),
+                    Span("▸", cls="cat-arrow"),
+                    cls="cat-toggle",
+                    onclick="toggleGroup('sec-workspace')",
+                    id="btn-sec-workspace",
+                    type="button",
+                ),
+                Div(
+                    *_workspace_links(current_path),
+                    cls="agent-list", id="sec-workspace",
+                ),
+                cls="agent-group",
             ),
             Hr(cls="left-hr"),
             Div(
