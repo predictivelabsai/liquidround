@@ -13,6 +13,9 @@ from __future__ import annotations
 import calendar
 import logging
 import os
+
+from dotenv import load_dotenv
+load_dotenv()
 import shutil
 import zipfile
 from datetime import date

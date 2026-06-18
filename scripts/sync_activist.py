@@ -13,6 +13,9 @@ import logging
 import os
 import re
 import time
+
+from dotenv import load_dotenv
+load_dotenv()
 from datetime import date, timedelta
 from typing import Iterator, Optional
 
