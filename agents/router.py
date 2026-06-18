@@ -49,6 +49,13 @@ CATEGORY_HINTS: dict[str, list[str]] = {
         "integrate", "integration plan", "post-close", "post close",
         "day one", "first 100 days",
     ],
+    "public_markets": [
+        "hedge fund", "hedge funds", "13f", "13-f",
+        "activist filing", "activist stake", "13d", "13g",
+        "fund holdings", "institutional ownership", "aum",
+        "popular securities", "crowded trade", "most held",
+        "fund concentration",
+    ],
 }
 
 
@@ -107,6 +114,10 @@ def _best_in_category_for(message: str) -> str | None:
         return "contract_abstractor"
     if "100-day" in lower or "100 day" in lower or "integration" in lower:
         return "integration_planner"
+    if "hedge fund" in lower or "13f" in lower or "activist filing" in lower:
+        return "hedge_fund_analyst"
+    if "fund holdings" in lower or "institutional ownership" in lower:
+        return "hedge_fund_analyst"
     return None
 
 

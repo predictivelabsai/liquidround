@@ -121,6 +121,10 @@ ipo_pipeline_router.to_app(app)
 from routes.prospectus import ar as prospectus_router
 prospectus_router.to_app(app)
 
+# Register hedge fund routes (/app/hedgefunds)
+from routes.hedge_funds import ar as hedge_funds_router
+hedge_funds_router.to_app(app)
+
 # Register help page (/app/help)
 from routes.help import ar as help_router
 help_router.to_app(app)
@@ -738,6 +742,35 @@ def _nav_section(session):
                         _nav_button("Company News", "news:NOVO-B.CO"),
                         _nav_button("Financials", "financials:SIE.DE"),
                         _nav_button("Market Intel", "market"),
+                        cls="pl-2 border-l-2 border-gray-200 ml-3 mb-2",
+                    ),
+                    cls="mb-1",
+                ),
+                # PUBLIC MARKETS section (collapsed)
+                Details(
+                    Summary(
+                        Span("PUBLIC MARKETS", cls="text-xs font-bold text-gray-500 uppercase tracking-wide"),
+                        cls="px-3 py-2 cursor-pointer hover:bg-gray-50 rounded list-none flex items-center nav-section-header",
+                    ),
+                    Div(
+                        _nav_page_link("IPO Map", "/app/ipo-map"),
+                        _nav_page_link("IPO Pipeline", "/app/ipo-pipeline"),
+                        _nav_page_link("Prospectus", "/app/prospectus"),
+                        cls="pl-2 border-l-2 border-gray-200 ml-3 mb-2",
+                    ),
+                    cls="mb-1",
+                ),
+                # HEDGE FUNDS section (collapsed)
+                Details(
+                    Summary(
+                        Span("HEDGE FUNDS", cls="text-xs font-bold text-gray-500 uppercase tracking-wide"),
+                        cls="px-3 py-2 cursor-pointer hover:bg-gray-50 rounded list-none flex items-center nav-section-header",
+                    ),
+                    Div(
+                        _nav_page_link("Fund Treemap", "/app/hedgefunds"),
+                        _nav_button("Top Holdings", "hedgefunds: top funds by AUM"),
+                        _nav_button("Popular Securities", "hedgefunds: most popular securities across all funds"),
+                        _nav_button("Activist Filings", "hedgefunds: recent activist filings"),
                         cls="pl-2 border-l-2 border-gray-200 ml-3 mb-2",
                     ),
                     cls="mb-1",

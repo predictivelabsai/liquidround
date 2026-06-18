@@ -60,6 +60,12 @@ CATEGORIES: list[dict] = [
         "blurb": "Deep research, integration planning and match scoring.",
         "icon": "◼",
     },
+    {
+        "key": "public_markets",
+        "name": "Public Markets & Hedge Funds",
+        "blurb": "SEC 13F filings, institutional ownership, activist stakes.",
+        "icon": "◉",
+    },
 ]
 
 
@@ -347,6 +353,22 @@ AGENTS: tuple[AgentSpec, ...] = (
             "Synergy tracking plan for the Meridian integration",
         ),
     ),
+
+    # ─────────────────────────────────────────────────────────────────────
+    # Public Markets & Hedge Funds (1)
+    # ─────────────────────────────────────────────────────────────────────
+    AgentSpec(
+        slug="hedge_fund_analyst", name="Hedge Fund Analyst",
+        category="public_markets", audience="shared", icon="◉", prefix="hedgefunds:",
+        one_liner="SEC 13F filings — fund holdings, market concentration, activist stakes.",
+        description="Analyses SEC Form 13F quarterly filings: fund AUM rankings, portfolio holdings, security popularity across institutional investors, market concentration metrics, and Schedule 13D/13G activist filings.",
+        example_prompts=(
+            "hedgefunds: top 20 funds by AUM",
+            "hedgefunds: what does Berkshire Hathaway hold?",
+            "hedgefunds: which funds own Apple?",
+            "hedgefunds: recent activist filings",
+        ),
+    ),
 )
 
 
@@ -372,4 +394,4 @@ def by_audience(audience: str) -> list[AgentSpec]:
     return [a for a in AGENTS if a.audience == audience or a.audience == "shared"]
 
 
-assert len(AGENTS) == 22, f"expected 22 agents, got {len(AGENTS)}"
+assert len(AGENTS) == 23, f"expected 23 agents, got {len(AGENTS)}"

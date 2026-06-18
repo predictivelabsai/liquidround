@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-LiquidRound is Predictive Labs Ltd's AI platform for **both sides of an M&A / IPO deal**. Buyers use it to find acquisition targets, underwrite, run diligence, and draft IC memos. Sellers use it to prepare for sale (teasers / CIMs), identify buyers, and assess IPO readiness. Marketing positions the agents as the "ECM Agent Squad" (ECM = Equity Capital Markets).
+LiquidRound is Predictive Labs Ltd's AI platform for **both sides of an M&A / IPO deal** plus **public markets / hedge fund intelligence**. Buyers use it to find acquisition targets, underwrite, run diligence, and draft IC memos. Sellers use it to prepare for sale (teasers / CIMs), identify buyers, and assess IPO readiness. The hedge fund module surfaces SEC 13F institutional holdings, fund AUM rankings, and Schedule 13D/13G activist filings. Marketing positions the agents as the "ECM Agent Squad" (ECM = Equity Capital Markets).
 
 ## Commands
 
@@ -18,7 +18,7 @@ python main.py
 
 # Tests
 pytest -q                                         # unit only (pytest.ini excludes `e2e` by default)
-pytest -q tests/test_registry.py                  # 22-agent registry integrity (120 cases)
+pytest -q tests/test_registry.py                  # 23-agent registry integrity (125 cases)
 pytest -q tests/test_e2e_smoke.py -m e2e          # Playwright — requires server on :5007
 pytest -q tests/test_registry.py -k prefix_routing  # run a single test
 
@@ -47,14 +47,14 @@ python -m scripts.make_gif              # -> docs/liquidround.gif + static/liqui
 
 1. `agents/render_agent.py` (legacy, but live) -- the dispatcher wired to `main.py`'s `/chat` HTMX endpoint. Handles the command DSL parsed by `utils/command_parser.py`: `profile:MSFT`, `targets industry:fintech`, `score buyer:X target:Y`, `keyterms filename.pdf`, `settings`, `help`, `clear`. Returns FastHTML `FT` components that go straight into the chat bubble.
 
-2. `agents/registry.py` + `agents/router.py` + `agents/base.py` + 22 per-slug modules under `agents/<category>/<slug>.py` -- the **ECM Agent Squad** architecture, modelled after `~/dev/plai/pehero`. Each agent module exports `SPEC` + `TOOLS` + `build()`. `build_agent(spec, tools)` wraps a `create_react_agent(llm, tools, prompt=system)` LangGraph app. `cached_agent(slug)` imports the module and returns its cached graph. If the LLM can't be constructed (no API key), falls back to `build_simple_agent` -- the structural tests still pass without keys.
+2. `agents/registry.py` + `agents/router.py` + `agents/base.py` + 23 per-slug modules under `agents/<category>/<slug>.py` -- the **ECM Agent Squad** architecture, modelled after `~/dev/plai/pehero`. Each agent module exports `SPEC` + `TOOLS` + `build()`. `build_agent(spec, tools)` wraps a `create_react_agent(llm, tools, prompt=system)` LangGraph app. `cached_agent(slug)` imports the module and returns its cached graph. If the LLM can't be constructed (no API key), falls back to `build_simple_agent` -- the structural tests still pass without keys.
 
-   - Categories: `sourcing` (4), `underwriting` (6), `diligence` (5), `capital` (5), `portfolio` (2) = **22 agents**.
+   - Categories: `sourcing` (4), `underwriting` (6), `diligence` (5), `capital` (5), `portfolio` (2), `public_markets` (1) = **23 agents**.
    - Router in `agents/router.py` picks a slug: (1) explicit prefix match (`has_specialist_prefix`), (2) keyword heuristics, (3) LLM fallback. `strip_prefix` removes the leading `xxx:` for the agent.
 
 **How they compose in the running chat:**
 - Legacy command prefixes (`profile:`, `financials:`, `news:`, `valuation:`, `targets`, `buyers`, `ipo`, `score`, `keyterms`, `research`, `settings`, `help`, `clear`, `market`, `tools`, `upload`, `docs`, `deals`) -- handled inline by `render_agent.process()` with hand-rolled `FT` components.
-- **New specialist prefixes** (`scan:`, `triage:`, `intent:`, `comps:`, `ltm:`, `dcf:`, `multi:`, `synergy:`, `vdr:`, `abstract:`, `legal:`, `ops:`, `esg:`, `memo:`, `teaser:`, `bid:`, `integrate:`) -- `render_agent._specialist()` invokes the LangGraph agent via `cached_agent(slug).ainvoke(...)`, extracts the final `AIMessage`, and renders both the text bubble and any `__ARTIFACT__` payloads as inline tables / citations. Matching artifacts land in the right-pane canvas (`_canvas_state`) as well.
+- **New specialist prefixes** (`scan:`, `triage:`, `intent:`, `comps:`, `ltm:`, `dcf:`, `multi:`, `synergy:`, `vdr:`, `abstract:`, `legal:`, `ops:`, `esg:`, `memo:`, `teaser:`, `bid:`, `integrate:`, `hedgefunds:`) -- `render_agent._specialist()` invokes the LangGraph agent via `cached_agent(slug).ainvoke(...)`, extracts the final `AIMessage`, and renders both the text bubble and any `__ARTIFACT__` payloads as inline tables / citations. Matching artifacts land in the right-pane canvas (`_canvas_state`) as well.
 - **SSE streaming endpoint** `/app/chat` (POST) -- the **primary chat path** used by `static/chat.js`. Pehero-compatible event stream: `agent_route`, `token`, `tool_start`, `tool_end`, `artifact_show`, `session`, `done`, `error`. Helpers in `chat_sse.py`. This endpoint also creates conversations in DB for logged-in users and emits a `session` event with the `{sid}` so the client can update the URL and enable the Share button.
 - **HTMX `/chat` endpoint** -- the older HTMX-based chat path; still functional but `chat.js` uses the SSE endpoint by default.
 - **Memo -> PDF pipeline** (`chat_memo_pdf.py`, mounted as `/app/memo-pdf/*`) -- after an IC Memo / Teaser response, the client POSTs rendered markdown to `/app/memo-pdf/render`, which generates a reportlab PDF and returns a `file_id`. A PDF.js iframe in the right pane loads `/app/memo-pdf/file/<file_id>`. Content-addressed (sha1) so identical memos reuse cached PDFs.
@@ -62,19 +62,22 @@ python -m scripts.make_gif              # -> docs/liquidround.gif + static/liqui
 
 **Chat sharing.** `POST /app/share` generates a `share_token` (UUID hex) on the `liquidround.workflows` row and returns the URL. `GET /app/s/{token}` renders a read-only view (no auth required, no input form, Copy button only). The JS `shareChat()` copies the URL to clipboard. `setSid()` is exposed as `window.setSid` so the server can push the conversation ID to the client.
 
-**`tools/` layer** -- LangChain StructuredTools consumed by the 22 agents. Each tool is a sync function wrapped with `StructuredTool.from_function(...)` and, where relevant, emits an artifact via `tools.artifact.emit(...)` (which prepends `__ARTIFACT__` + JSON). Current tools:
+**`tools/` layer** -- LangChain StructuredTools consumed by the 23 agents. Each tool is a sync function wrapped with `StructuredTool.from_function(...)` and, where relevant, emits an artifact via `tools.artifact.emit(...)` (which prepends `__ARTIFACT__` + JSON). Current tools:
 - `tools/companies.py` -- `get_company_profile`, `get_financials`, `get_peer_companies` (wraps `utils/yfinance_util`).
 - `tools/research.py` -- `exa_search`, `tavily_search`, `deep_research` (sync wrappers around async `utils/research_tools`).
 - `tools/documents.py` -- `read_document`, `extract_key_terms`, `list_documents` (wraps `utils/document_parser`).
 - `tools/valuation.py` -- `dcf_valuer`, `multiples_valuer` (pure Python, consumes yfinance data).
 - `tools/scoring.py` -- `score_match` (invokes legacy `ScoringAgent` for 7-dimension radar).
 - `tools/artifact.py` -- `emit`, `is_artifact`, `parse_artifact`, `ARTIFACT_PREFIX`.
+- `tools/hedge_funds.py` -- `get_market_overview`, `search_funds_tool`, `get_top_funds_tool`, `get_fund_holdings_tool`, `search_securities_tool`, `get_popular_securities_tool`, `get_fund_concentration_tool`, `get_recent_activist_filings_tool` (wraps `utils/hedge_fund_db`).
 
 **LLM.** All LLM calls flow through `utils/llm_factory.create_llm()` -- swap providers via `MODEL_PROVIDER` env (`xai` | `openai`). XAI/Grok hits `https://api.x.ai/v1` via LangChain's `ChatOpenAI`. Never construct `ChatOpenAI` directly outside this factory.
 
 **Research / data tools.** `utils/yfinance_util.py` for company fundamentals (profile, financials, market cap -- not real-time quotes), `utils/research_tools.py` for EXA (semantic) + Tavily (web). `utils/document_parser.py` for PDF (pdfplumber) / XLSX (openpyxl) / PPTX (python-pptx). `utils/command_parser.py` is the legacy command DSL; `agents/router.py` is the newer free-form router. Both must stay in sync for new prefixes.
 
 **Database.** PostgreSQL, schema `liquidround`. Connection via `utils/database.py` (`get_conn()` + `db_service = DatabaseService()`). Tables: `users`, `workflows` (doubles as conversations), `messages`, `user_preferences`, `deals`, `documents`, `scoring_results`, `research_results`, `ipo_data`, `pipeline_items`, `prompt_versions`. Always qualify tables as `liquidround.<table>` -- do not rely on `search_path`. Migrations are numbered SQL files in `sql/` (01 through 09). The `workflows.status` column has a CHECK constraint: valid values are `pending`, `routing`, `executing`, `completed`, `failed` -- conversations use `completed`.
+
+**Hedge fund data.** SEC 13F institutional holdings live in the `hedgefolio` schema on the **same** PostgreSQL instance. ORM models + query functions in `utils/hedge_fund_db.py` (SQLAlchemy, separate engine). Tables: `submission`, `coverpage`, `summarypage`, `infotable`, `activist_filing`. ~10K funds, 3.4M holdings, $71T AUM. Data refresh: `python -m scripts.download_sec_13f` (quarterly 13F zip from SEC), `python -m scripts.sync_activist` (daily 13D/G index). Treemap page at `/app/hedgefunds` with Plotly.js; routes in `routes/hedge_funds.py`, UI in `components/hedge_funds.py`.
 
 **User preferences.** `utils/preferences.py` provides CRUD for `liquidround.user_preferences` (account info, M&A deal filters, notification toggles). `routes/auth.py` serves the `/profile` page with 3 HTMX-powered sections. `get_digest_recipients()` returns all opted-in users (LEFT JOIN with COALESCE so users without a preferences row default to opted-in).
 
@@ -92,7 +95,7 @@ python -m scripts.make_gif              # -> docs/liquidround.gif + static/liqui
 - **No Pico CSS.** `fast_app(pico=False)`. Styling is Tailwind via CDN; any CSS overrides go in `static/app.css`. The landing page has its own palette + fonts defined inline in `components/landing.py` -- keep it distinct from the chat app.
 - **Static files served at root**, not `/static/...`. `fast_app(static_path="static")` exposes `static/foo.png` as `/foo.png`. `static/app.css` is referenced as `/app.css`; favicons are `/favicon.svg` etc.
 - **Dark chat theme.** `/app` sets `<body class="lr-dark">` (via a tiny Script in `app_shell`) + inline `<style>` for the navy background to avoid a flash of light content. `static/app.css` contains the overrides that convert Tailwind light utility classes (`bg-gray-50`, `bg-white`, `text-gray-600`, blue accents) to the landing palette (navy `#0B1220`, slate text, amber accents). Don't use the `.lr-dark` class on the landing -- the landing has its own inline palette via `components/landing.py`.
-- **Adding a new 22-agent entry:** append an `AgentSpec` to `agents/registry.py` (keep the `assert len(AGENTS) == 22` honest by bumping it or keeping the count), add `prompts/system/<slug>.md`, and if it needs custom tools or non-LLM logic, create `agents/<category>/<slug>.py` with `SPEC` + `build() -> callable`. Add the prefix to the router's `_best_in_category_for` if it should win on keyword matches. Re-run `pytest tests/test_registry.py`.
+- **Adding a new agent entry:** append an `AgentSpec` to `agents/registry.py` (keep the `assert len(AGENTS) == N` honest by bumping it), add `prompts/system/<slug>.md`, and create `agents/<category>/<slug>.py` with `SPEC` + `TOOLS` + `build() -> callable`. Add the prefix to the router's `_best_in_category_for` if it should win on keyword matches. Re-run `pytest tests/test_registry.py`.
 - **E2E test isolation:** Playwright tests live in `tests/test_e2e_smoke.py` with `@pytest.mark.e2e`. `pytest.ini` has `addopts = -m "not e2e"` so the default run is unit-only. Run E2E explicitly: `pytest -m e2e`. They assume a server on `$LIQUIDROUND_URL` (default `http://localhost:5007`).
 - **Commit style:** sentence-case, one short line describing the change (see `git log --oneline`). Commits created by Claude are co-authored per the project default.
 
@@ -126,5 +129,5 @@ At least one of `XAI_API_KEY` or `OPENAI_API_KEY` must be set or `utils/config.C
 - `Home.py` (if present) and the README's "Streamlit run Home.py" sections -- predate the FastHTML rewrite.
 - `routes/home.py` -- defines `ar` but isn't mounted; its routes are superseded by `main.py` + `render_agent.py`.
 - `agents/workflow.py` -- has a relative-import bug that breaks `tests/test_integration.py` collection. Not part of the live chat path.
-- `agents/base_agent.py` -- the old `BaseAgent` ABC, still used by `scoring_agent.py`, `valuer.py`, `target_finder.py`, `research_agent.py`, `document_agent.py`. The new 22-agent architecture uses `agents/base.py` (`cached_agent`, `build_simple_agent`) -- different file, different pattern, don't confuse them.
+- `agents/base_agent.py` -- the old `BaseAgent` ABC, still used by `scoring_agent.py`, `valuer.py`, `target_finder.py`, `research_agent.py`, `document_agent.py`. The new 23-agent architecture uses `agents/base.py` (`cached_agent`, `build_simple_agent`) -- different file, different pattern, don't confuse them.
 - `routes/deals.py`, `routes/market.py` -- exist on disk but are **not mounted** in `main.py`; their endpoints are dead code.
