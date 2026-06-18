@@ -56,8 +56,37 @@ def landing_head(title: str = "LiquidRound"):
     )
 
 
-def landing_nav(active: str = "home"):
+def _lang_dropdown(lang: str = "en"):
+    """Flag-emoji language selector dropdown."""
+    from utils.i18n import LANGUAGES
+    current_flag = LANGUAGES.get(lang, LANGUAGES["en"])["flag"]
+    options = [
+        A(
+            Span(info["flag"], cls="mr-2"),
+            Span(info["native"], cls="text-xs"),
+            href=f"/set-lang/{code}",
+            cls="flex items-center gap-1 px-3 py-1.5 rounded text-sm no-underline",
+            style=f"color:{INK_MUTED};" + (f" font-weight:600; color:{CTA};" if code == lang else ""),
+        )
+        for code, info in LANGUAGES.items()
+    ]
+    return Div(
+        Button(current_flag,
+               cls="text-base leading-none px-1.5 py-1 rounded cursor-pointer bg-transparent",
+               style=f"border:1px solid transparent;",
+               onclick="this.nextElementSibling.classList.toggle('hidden')",
+               type="button"),
+        Div(*options,
+            cls="hidden absolute right-0 top-full mt-1 rounded-lg shadow-lg z-50 py-1 min-w-[130px] flex flex-col",
+            style=f"background:{BG_ELEV}; border:1px solid {LINE};"),
+        Script("document.addEventListener('click',e=>{if(!e.target.closest('.lang-dd'))document.querySelectorAll('.lang-dd .hidden')||(document.querySelectorAll('.lang-dd>div:last-child').forEach(m=>m.classList.add('hidden')))})"),
+        cls="relative lang-dd",
+    )
+
+
+def landing_nav(active: str = "home", lang: str = "en"):
     """Top nav bar — common to all landing pages."""
+    from utils.i18n import t
     def link(href: str, label: str, key: str):
         is_active = key == active
         cls = "text-sm nav-link " + ("text-white font-medium" if is_active else "text-slate-400")
@@ -74,17 +103,18 @@ def landing_nav(active: str = "home"):
                 href="/", cls="text-white no-underline",
             ),
             Div(
-                link("/platform", "Platform", "platform"),
-                link("/agents", "ECM Squad", "agents"),
-                link("/tools/comparables", "Tools", "tools"),
-                link("/industries", "Industries", "industries"),
-                link("/pricing", "Pricing", "pricing"),
+                link("/platform", t("nav_platform", lang), "platform"),
+                link("/agents", t("nav_agents", lang), "agents"),
+                link("/tools/comparables", t("nav_tools", lang), "tools"),
+                link("/industries", t("nav_industries", lang), "industries"),
+                link("/pricing", t("nav_pricing", lang), "pricing"),
                 cls="hidden lg:flex items-center gap-6",
             ),
             Div(
-                A("Sign in",
+                _lang_dropdown(lang),
+                A(t("nav_sign_in", lang),
                   href="/signin",
-                  cls="text-sm px-3 py-1.5 rounded-md font-medium cursor-pointer no-underline",
+                  cls="text-sm px-3 py-1.5 rounded-md font-medium cursor-pointer no-underline ml-3",
                   style=f"background:{BG_ELEV}; color:{INK}; border:1px solid {LINE};"),
                 cls="flex items-center",
             ),
@@ -386,11 +416,11 @@ def cta_section():
 
 # ───── Page shells ──────────────────────────────────────────────────────
 
-def landing_page(*sections, active: str = "home", title: str = "LiquidRound"):
+def landing_page(*sections, active: str = "home", title: str = "LiquidRound", lang: str = "en"):
     """Wrap sections with head + nav + footer."""
     return (
         *landing_head(title),
-        landing_nav(active=active),
+        landing_nav(active=active, lang=lang),
         Main(*sections),
         landing_footer(),
     )

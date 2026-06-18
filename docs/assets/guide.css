@@ -1,0 +1,210 @@
+/* LiquidRound User Guide — A4 landscape slide-deck */
+@page {
+  size: A4 landscape;
+  margin: 20mm 25mm;
+  @bottom-center {
+    content: "LiquidRound — Predictive Labs Ltd";
+    font-size: 8pt;
+    color: #64748B;
+  }
+  @bottom-right {
+    content: counter(page) " / " counter(pages);
+    font-size: 8pt;
+    color: #64748B;
+  }
+}
+
+body {
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 12pt;
+  line-height: 1.5;
+  color: #E5E7EB;
+  background: #0B1220;
+  margin: 0;
+  padding: 0;
+}
+
+/* --- = page break */
+hr {
+  break-after: page;
+  border: none;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/* Slide titles */
+h1 {
+  font-size: 28pt;
+  font-weight: 800;
+  color: #F59E0B;
+  margin: 0 0 12pt 0;
+  padding-bottom: 6pt;
+  border-bottom: 4px solid #F59E0B;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: 20pt;
+  font-weight: 700;
+  color: #F59E0B;
+  margin: 20pt 0 8pt 0;
+  padding-bottom: 4pt;
+  border-bottom: 3px solid #1E293B;
+}
+
+h3 {
+  font-size: 14pt;
+  font-weight: 600;
+  color: #F8FAFC;
+  margin: 14pt 0 6pt 0;
+}
+
+h4 {
+  font-size: 12pt;
+  font-weight: 600;
+  color: #CBD5E1;
+  margin: 10pt 0 4pt 0;
+}
+
+p {
+  margin: 0 0 8pt 0;
+  color: #CBD5E1;
+}
+
+a {
+  color: #F59E0B;
+  text-decoration: none;
+}
+
+strong {
+  color: #F8FAFC;
+}
+
+em {
+  color: #94A3B8;
+}
+
+/* Bullet lists */
+ul, ol {
+  margin: 4pt 0 10pt 0;
+  padding-left: 20pt;
+}
+
+li {
+  margin-bottom: 4pt;
+  color: #CBD5E1;
+}
+
+li strong {
+  color: #F59E0B;
+}
+
+/* Screenshots float right */
+img {
+  max-width: 48%;
+  float: right;
+  margin: 0 0 10pt 16pt;
+  border-radius: 6px;
+  border: 1px solid #1E293B;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+
+/* Cover slide */
+.cover {
+  text-align: center;
+  padding-top: 60pt;
+}
+
+.cover img {
+  float: none;
+  max-width: 60%;
+  margin: 20pt auto;
+  display: block;
+}
+
+.cover h1 {
+  font-size: 36pt;
+  border-bottom: none;
+  margin-bottom: 8pt;
+}
+
+.cover p {
+  font-size: 14pt;
+  color: #94A3B8;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8pt 0 12pt 0;
+  font-size: 10pt;
+}
+
+th {
+  background: #1E293B;
+  color: #F59E0B;
+  padding: 6pt 10pt;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #F59E0B;
+}
+
+td {
+  padding: 5pt 10pt;
+  border-bottom: 1px solid #1E293B;
+  color: #CBD5E1;
+}
+
+tr:nth-child(even) td {
+  background: rgba(30, 41, 59, 0.3);
+}
+
+/* Code / command blocks */
+code {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 10pt;
+  background: #1E293B;
+  color: #F59E0B;
+  padding: 1pt 4pt;
+  border-radius: 3px;
+}
+
+pre {
+  background: #1E293B;
+  padding: 10pt 14pt;
+  border-radius: 6px;
+  border: 1px solid #334155;
+  overflow-x: auto;
+  font-size: 9pt;
+  line-height: 1.4;
+}
+
+pre code {
+  background: none;
+  padding: 0;
+}
+
+/* Tip / note boxes */
+blockquote {
+  background: rgba(245, 158, 11, 0.08);
+  border-left: 4px solid #F59E0B;
+  margin: 8pt 0;
+  padding: 8pt 14pt;
+  border-radius: 0 6px 6px 0;
+  color: #CBD5E1;
+}
+
+blockquote strong {
+  color: #F59E0B;
+}
+
+/* Print-friendly overrides */
+@media print {
+  body {
+    background: #0B1220;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

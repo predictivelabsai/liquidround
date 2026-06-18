@@ -12,7 +12,7 @@ from components.landing import (
 
 # ───── Shared layouts ──────────────────────────────────────────────────
 
-def tool_page(*sections, title: str = "Tool", active: str = "tools"):
+def tool_page(*sections, title: str = "Tool", active: str = "tools", lang: str = "en"):
     """Full-page shell for public /tools/* pages."""
     return (
         *landing_head(f"{title} — LiquidRound"),
@@ -24,7 +24,7 @@ def tool_page(*sections, title: str = "Tool", active: str = "tools"):
                 arrow.textContent = content.classList.contains('hidden') ? '+' : '−';
             }
         """),
-        landing_nav(active=active),
+        landing_nav(active=active, lang=lang),
         Main(*sections),
         landing_footer(),
     )

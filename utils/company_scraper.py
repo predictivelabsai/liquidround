@@ -59,27 +59,33 @@ class CompanyProfile:
 
 
 async def scrape_company(url: str) -> CompanyProfile:
-    """Scrape a company URL via Tavily search + LLM extraction."""
+    """Scrape a company URL via Tavily search + LLM extraction.
+
+    Handles multilingual sites by trying both English and local-language queries.
+    """
     url = url.strip().rstrip("/")
     if not url.startswith("http"):
         url = f"https://{url}"
 
     domain = url.split("//")[-1].split("/")[0]
-    query = f"site:{domain} company about products services"
-    result = await _research.tavily_search(query, search_depth="advanced")
+
+    queries = [
+        f"{domain} company about products services",
+        f"site:{domain}",
+        f"{domain} ettevõte teenused tooted",  # Estonian
+        f"{domain} įmonė paslaugos produktai",  # Lithuanian
+        f"{domain} uzņēmums pakalpojumi produkti",  # Latvian
+    ]
 
     search_text = ""
-    for r in result.get("results", [])[:5]:
-        search_text += f"URL: {r.get('url', '')}\n"
-        search_text += f"Title: {r.get('title', '')}\n"
-        search_text += f"Content: {r.get('content', '')}\n\n"
-
-    if not search_text.strip():
-        query_fallback = f"{domain} company"
-        result = await _research.tavily_search(query_fallback, search_depth="basic")
-        for r in result.get("results", [])[:3]:
+    for query in queries:
+        result = await _research.tavily_search(query, search_depth="advanced")
+        for r in result.get("results", [])[:5]:
+            search_text += f"URL: {r.get('url', '')}\n"
             search_text += f"Title: {r.get('title', '')}\n"
             search_text += f"Content: {r.get('content', '')}\n\n"
+        if len(search_text.strip()) > 200:
+            break
 
     if not search_text.strip():
         return CompanyProfile(url=url, name=domain)

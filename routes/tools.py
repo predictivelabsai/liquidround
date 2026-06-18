@@ -23,6 +23,7 @@ from components.tools import (
     industry_advisor_ctas, industry_find_buyers_widget, industry_faqs,
 )
 from components.landing import landing_page, BG, BG_ELEV, INK, INK_MUTED, CTA, LINE
+from utils.i18n import get_lang
 
 log = logging.getLogger(__name__)
 ar = APIRouter()
@@ -91,7 +92,8 @@ def _get_sector_multiples(sector: str) -> dict:
 # ───── Comparables tool ──────────────────────────────────────────────
 
 @ar("/tools/comparables")
-def tools_comps():
+def tools_comps(sess):
+    lang = get_lang(sess)
     return tool_page(
         tool_hero(
             "Market Comparables",
@@ -103,6 +105,7 @@ def tools_comps():
             cls="max-w-3xl mx-auto px-6 pb-20",
         ),
         title="Market Comparables",
+        lang=lang,
     )
 
 
@@ -135,7 +138,8 @@ async def tools_comps_results(request):
 # ───── Find Buyers tool ──────────────────────────────────────────────
 
 @ar("/tools/match")
-def tools_match():
+def tools_match(sess):
+    lang = get_lang(sess)
     return tool_page(
         tool_hero(
             "Find Buyers",
@@ -147,6 +151,7 @@ def tools_match():
             cls="max-w-3xl mx-auto px-6 pb-20",
         ),
         title="Find Buyers",
+        lang=lang,
     )
 
 
@@ -184,7 +189,8 @@ async def tools_match_results(request):
 # ───── Valuation tool ────────────────────────────────────────────────
 
 @ar("/tools/valuation")
-def tools_valuation():
+def tools_valuation(sess):
+    lang = get_lang(sess)
     return tool_page(
         tool_hero(
             "Business Valuation",
@@ -196,6 +202,7 @@ def tools_valuation():
             cls="max-w-3xl mx-auto px-6 pb-20",
         ),
         title="Business Valuation",
+        lang=lang,
     )
 
 
@@ -321,7 +328,8 @@ async def tools_lead_capture(request):
 # ───── Industry pages ────────────────────────────────────────────────
 
 @ar("/industries")
-def industries_index():
+def industries_index(sess):
+    lang = get_lang(sess)
     from data.industries import INDUSTRIES
     return tool_page(
         Div(
@@ -360,17 +368,20 @@ def industries_index():
             cls="px-6 pb-20",
         ),
         title="Industries",
+        lang=lang,
     )
 
 
 @ar("/industries/{slug}")
-def industry_page(slug: str):
+def industry_page(slug: str, sess):
+    lang = get_lang(sess)
     from data.industries import INDUSTRIES_BY_SLUG
     industry = INDUSTRIES_BY_SLUG.get(slug)
     if not industry:
         return tool_page(
             Div(P("Industry not found.", cls="text-center py-20", style=f"color:{INK_MUTED}")),
             title="Not Found",
+            lang=lang,
         )
     return tool_page(
         industry_hero(industry),
@@ -380,4 +391,5 @@ def industry_page(slug: str):
         industry_find_buyers_widget(),
         industry_faqs(industry),
         title=industry["title"],
+        lang=lang,
     )

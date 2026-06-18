@@ -45,7 +45,8 @@ def _google_btn(label: str):
     return A(
         NotStr(_GOOGLE_SVG), label,
         href="/login",
-        cls="flex items-center justify-center gap-2 w-full bg-blue-600 text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-blue-700 transition-colors no-underline",
+        cls="flex items-center justify-center gap-2 w-full text-white py-2.5 rounded-lg font-semibold text-sm transition-colors no-underline",
+        style="background:#3B82F6;",
     )
 
 
@@ -53,19 +54,20 @@ def _auth_layout(title: str, card_parts: list):
     return (
         Title(f"{title} — LiquidRound"),
         Script(src="https://cdn.tailwindcss.com"),
+        Style("html,body{margin:0;} input::placeholder{color:#64748b;}"),
         Main(
             Div(
                 Div(
-                    Div("LR", cls="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-600 to-blue-400 text-white flex items-center justify-center text-xl font-extrabold mx-auto"),
-                    P("LiquidRound", cls="text-xl font-bold text-blue-800 mt-2"),
-                    P("M&A Research Platform", cls="text-xs text-gray-500"),
+                    Span("◈", cls="text-3xl", style="color:#F59E0B;"),
+                    P("LiquidRound", cls="text-xl font-bold mt-2", style="color:#E5E7EB;"),
+                    P("M&A Research Platform", cls="text-xs", style="color:#94A3B8;"),
                     cls="text-center mb-6",
                 ),
-                Div(*card_parts, cls="w-full max-w-sm bg-white border border-gray-200 rounded-xl p-8 shadow-lg"),
-                P("Predictive Labs Ltd", cls="text-xs text-gray-400 mt-6"),
+                Div(*card_parts, cls="w-full max-w-sm rounded-xl p-8 shadow-lg", style="background:#111A2E; border:1px solid #1E293B;"),
+                P("Predictive Labs Ltd", cls="text-xs mt-6", style="color:#475569;"),
                 cls="flex flex-col items-center justify-center min-h-screen",
             ),
-            cls="bg-gray-50",
+            style="background:#0B1220;",
         ),
     )
 
@@ -73,7 +75,8 @@ def _auth_layout(title: str, card_parts: list):
 def _pw_input(name: str, placeholder: str, **kw):
     return Input(
         type="password", name=name, placeholder=placeholder, required=True,
-        cls="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none",
+        cls="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none",
+        style="background:#0B1220; color:#E5E7EB; border:1px solid #1E293B;",
         **kw,
     )
 
@@ -81,7 +84,8 @@ def _pw_input(name: str, placeholder: str, **kw):
 def _text_input(name: str, placeholder: str, input_type: str = "text", **kw):
     return Input(
         type=input_type, name=name, placeholder=placeholder,
-        cls="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none",
+        cls="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none",
+        style="background:#0B1220; color:#E5E7EB; border:1px solid #1E293B;",
         **kw,
     )
 
@@ -89,23 +93,24 @@ def _text_input(name: str, placeholder: str, input_type: str = "text", **kw):
 def _submit_btn(label: str):
     return Button(
         label, type="submit",
-        cls="w-full bg-blue-600 text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-blue-700 transition-colors",
+        cls="w-full text-white py-2.5 rounded-lg font-semibold text-sm cursor-pointer",
+        style="background:#F59E0B;",
     )
 
 
 def _error_msg(msg: str):
-    return Div(msg, cls="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg text-center") if msg else ""
+    return Div(msg, cls="text-sm px-3 py-2 rounded-lg text-center", style="color:#EF4444; background:rgba(239,68,68,0.1);") if msg else ""
 
 
 def _success_msg(msg: str):
-    return Div(msg, cls="text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg text-center") if msg else ""
+    return Div(msg, cls="text-sm px-3 py-2 rounded-lg text-center", style="color:#10B981; background:rgba(16,185,129,0.1);") if msg else ""
 
 
 def _divider():
     return Div(
-        Div(cls="flex-1 h-px bg-gray-200"),
-        Span("or", cls="px-3 text-xs text-gray-400"),
-        Div(cls="flex-1 h-px bg-gray-200"),
+        Div(cls="flex-1 h-px", style="background:#1E293B;"),
+        Span("or", cls="px-3 text-xs", style="color:#64748b;"),
+        Div(cls="flex-1 h-px", style="background:#1E293B;"),
         cls="flex items-center my-4",
     )
 
@@ -144,7 +149,7 @@ def register(session, email: str = "", password: str = "", display_name: str = "
             method="post", action="/register", cls="flex flex-col gap-3",
         )
     )
-    parts.append(Div("Already have an account? ", A("Sign in", href="/signin", cls="text-blue-600 hover:underline"), cls="text-center text-sm text-gray-500 mt-4"))
+    parts.append(Div("Already have an account? ", A("Sign in", href="/signin", style="color:#F59E0B;"), cls="text-center text-sm", style="color:#94A3B8; mt-4"))
     return _auth_layout("Register", parts)
 
 
@@ -181,8 +186,8 @@ def signin(session, email: str = "", password: str = "", role: str = "", error: 
             method="post", action=action, cls="flex flex-col gap-3",
         )
     )
-    parts.append(Div(A("Forgot password?", href="/forgot", cls="text-blue-600 hover:underline"), cls="text-center text-sm mt-3"))
-    parts.append(Div("Don't have an account? ", A("Sign up", href="/register", cls="text-blue-600 hover:underline"), cls="text-center text-sm text-gray-500 mt-3"))
+    parts.append(Div(A("Forgot password?", href="/forgot", style="color:#F59E0B;"), cls="text-center text-sm mt-3"))
+    parts.append(Div("Don't have an account? ", A("Sign up", href="/register", style="color:#F59E0B;"), cls="text-center text-sm", style="color:#94A3B8; mt-3"))
     return _auth_layout("Sign In", parts)
 
 
@@ -204,7 +209,7 @@ def forgot(request, session, email: str = "", error: str = "", msg: str = ""):
         parts.append(_success_msg(msg))
     if error:
         parts.append(_error_msg(error))
-    parts.append(P("Enter your email and we'll send you a reset link.", cls="text-sm text-gray-500 text-center mb-3"))
+    parts.append(P("Enter your email and we'll send you a reset link.", cls="text-sm text-center mb-3", style="color:#94A3B8;"))
     parts.append(
         Form(
             _text_input("email", "Enter your email", input_type="email", required=True, autofocus=True),
@@ -212,7 +217,7 @@ def forgot(request, session, email: str = "", error: str = "", msg: str = ""):
             method="post", action="/forgot", cls="flex flex-col gap-3",
         )
     )
-    parts.append(Div(A("Back to sign in", href="/signin", cls="text-blue-600 hover:underline"), cls="text-center text-sm mt-4"))
+    parts.append(Div(A("Back to sign in", href="/signin", style="color:#F59E0B;"), cls="text-center text-sm mt-4"))
     return _auth_layout("Forgot Password", parts)
 
 

@@ -9,6 +9,8 @@ from __future__ import annotations
 from fasthtml.common import *
 from fasthtml.core import APIRouter
 
+from starlette.responses import RedirectResponse
+
 from agents.registry import AGENTS, AGENTS_BY_SLUG, AGENTS_BY_CATEGORY, CATEGORIES, by_slug
 from components.landing import (
     BG, BG_ELEV, INK, INK_MUTED, BUY, SELL, CTA, LINE,
@@ -16,12 +18,22 @@ from components.landing import (
     agent_grid_section, how_it_works_section, cta_section,
     landing_head, landing_nav, landing_footer, agent_card,
 )
+from utils.i18n import get_lang, set_lang, LANGUAGES
 
 ar = APIRouter()
 
 
+@ar("/set-lang/{code}")
+def change_language(code: str, sess):
+    if code in LANGUAGES:
+        set_lang(sess, code)
+    referer = ""
+    return RedirectResponse(referer or "/", status_code=303)
+
+
 @ar("/")
-def landing_home():
+def landing_home(sess):
+    lang = get_lang(sess)
     return landing_page(
         hero(),
         stats_bar(),
@@ -30,11 +42,13 @@ def landing_home():
         cta_section(),
         active="home",
         title="LiquidRound — Your ECM Agent Squad for M&A and IPO",
+        lang=lang,
     )
 
 
 @ar("/platform")
-def landing_platform():
+def landing_platform(sess):
+    lang = get_lang(sess)
     return landing_page(
         Div(
             Div(
@@ -82,11 +96,13 @@ def landing_platform():
         cta_section(),
         active="platform",
         title="Platform — LiquidRound",
+        lang=lang,
     )
 
 
 @ar("/agents")
-def landing_agents():
+def landing_agents(sess):
+    lang = get_lang(sess)
     return landing_page(
         Div(
             Div(
@@ -108,11 +124,13 @@ def landing_agents():
         cta_section(),
         active="agents",
         title="ECM Agent Squad — LiquidRound",
+        lang=lang,
     )
 
 
 @ar("/agents/{slug}")
-def landing_agent_detail(slug: str):
+def landing_agent_detail(slug: str, sess):
+    lang = get_lang(sess)
     spec = by_slug(slug)
     if spec is None:
         return landing_page(
@@ -122,6 +140,7 @@ def landing_agent_detail(slug: str):
                   cls="block text-center", style=f"color:{CTA}"),
             ),
             title="Not found — LiquidRound",
+            lang=lang,
         )
     # Find category metadata
     cat_meta = next((c for c in CATEGORIES if c["key"] == spec.category), None)
@@ -192,11 +211,13 @@ def landing_agent_detail(slug: str):
         ),
         active="agents",
         title=f"{spec.name} — LiquidRound",
+        lang=lang,
     )
 
 
 @ar("/how-it-works")
-def landing_how():
+def landing_how(sess):
+    lang = get_lang(sess)
     return landing_page(
         Div(
             H1("How it works.",
@@ -209,11 +230,13 @@ def landing_how():
         cta_section(),
         active="how",
         title="How it works — LiquidRound",
+        lang=lang,
     )
 
 
 @ar("/pricing")
-def landing_pricing():
+def landing_pricing(sess):
+    lang = get_lang(sess)
     tiers = [
         ("Starter", "Free", "For solo advisors exploring LiquidRound.",
          ["Full ECM Agent Squad (22 analysts)", "Real-time market data & research", "Up to 20 queries / day", "Community support"], False),
@@ -249,11 +272,13 @@ def landing_pricing():
         ),
         active="pricing",
         title="Pricing — LiquidRound",
+        lang=lang,
     )
 
 
 @ar("/contact")
-def landing_contact():
+def landing_contact(sess):
+    lang = get_lang(sess)
     return landing_page(
         Div(
             H1("Talk to us.",
@@ -273,4 +298,5 @@ def landing_contact():
         ),
         active="contact",
         title="Contact — LiquidRound",
+        lang=lang,
     )
