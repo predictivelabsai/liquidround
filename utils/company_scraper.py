@@ -1,4 +1,4 @@
-"""Scrape company info from a URL using Tavily + LLM extraction.
+"""Scrape company info from a URL using Tavily + direct fetch + LLM extraction.
 
 Returns a CompanyProfile dict with name, description, products, end_markets,
 sector classification, and NACE code — used by all three lead-magnet tools.
@@ -8,6 +8,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import re
 from dataclasses import dataclass, field, asdict
 from typing import Optional
 
@@ -18,10 +19,10 @@ log = logging.getLogger(__name__)
 _research = ResearchTools()
 
 EXTRACTION_PROMPT = """\
-You are a business analyst. Given web search results about a company website,
+You are a business analyst. Given content from a company's website,
 extract structured company information.
 
-Search results:
+Website content:
 {search_results}
 
 Return valid JSON with these fields:
@@ -53,15 +54,52 @@ class CompanyProfile:
     nace_code: str = ""
     country: str = ""
     employees_estimate: Optional[int] = None
+    source_text: str = ""
 
     def to_dict(self) -> dict:
         return asdict(self)
 
 
-async def scrape_company(url: str) -> CompanyProfile:
-    """Scrape a company URL via Tavily search + LLM extraction.
+async def _fetch_website_text(url: str) -> str:
+    """Fetch a website URL and extract visible text from HTML."""
+    import httpx
 
-    Handles multilingual sites by trying both English and local-language queries.
+    headers = {
+        "User-Agent": "Mozilla/5.0 (compatible; LiquidRound/1.0; +https://liquidround.ai)",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en,et,lt,lv;q=0.5",
+    }
+    try:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=15.0) as client:
+            resp = await client.get(url, headers=headers)
+            resp.raise_for_status()
+            html = resp.text
+    except Exception as e:
+        log.warning("Direct fetch failed for %s: %s", url, e)
+        return ""
+
+    text = _html_to_text(html)
+    return text[:6000]
+
+
+def _html_to_text(html: str) -> str:
+    """Extract visible text from HTML, stripping tags and scripts."""
+    html = re.sub(r'<script[^>]*>.*?</script>', ' ', html, flags=re.DOTALL | re.IGNORECASE)
+    html = re.sub(r'<style[^>]*>.*?</style>', ' ', html, flags=re.DOTALL | re.IGNORECASE)
+    html = re.sub(r'<nav[^>]*>.*?</nav>', ' ', html, flags=re.DOTALL | re.IGNORECASE)
+    html = re.sub(r'<footer[^>]*>.*?</footer>', ' ', html, flags=re.DOTALL | re.IGNORECASE)
+    html = re.sub(r'<!--.*?-->', ' ', html, flags=re.DOTALL)
+    html = re.sub(r'<[^>]+>', ' ', html)
+    html = re.sub(r'&[a-z]+;', ' ', html)
+    html = re.sub(r'\s+', ' ', html)
+    return html.strip()
+
+
+async def scrape_company(url: str) -> CompanyProfile:
+    """Scrape a company URL via Tavily search + direct fetch + LLM extraction.
+
+    Strategy: try Tavily first; if no results, fall back to direct HTTP fetch.
+    Both paths feed content to the LLM for structured extraction.
     """
     url = url.strip().rstrip("/")
     if not url.startswith("http"):
@@ -69,29 +107,38 @@ async def scrape_company(url: str) -> CompanyProfile:
 
     domain = url.split("//")[-1].split("/")[0]
 
+    # --- Strategy 1: Tavily search ---
+    search_text = ""
     queries = [
         f"{domain} company about products services",
         f"site:{domain}",
-        f"{domain} ettevõte teenused tooted",  # Estonian
-        f"{domain} įmonė paslaugos produktai",  # Lithuanian
-        f"{domain} uzņēmums pakalpojumi produkti",  # Latvian
     ]
-
-    search_text = ""
     for query in queries:
-        result = await _research.tavily_search(query, search_depth="advanced")
-        for r in result.get("results", [])[:5]:
-            search_text += f"URL: {r.get('url', '')}\n"
-            search_text += f"Title: {r.get('title', '')}\n"
-            search_text += f"Content: {r.get('content', '')}\n\n"
+        try:
+            result = await _research.tavily_search(query, search_depth="advanced")
+            for r in result.get("results", [])[:5]:
+                search_text += f"URL: {r.get('url', '')}\n"
+                search_text += f"Title: {r.get('title', '')}\n"
+                search_text += f"Content: {r.get('content', '')}\n\n"
+        except Exception as e:
+            log.warning("Tavily search failed for %s: %s", query, e)
         if len(search_text.strip()) > 200:
             break
 
+    # --- Strategy 2: Direct fetch if Tavily found nothing ---
+    source_text = ""
+    if len(search_text.strip()) < 200:
+        log.info("Tavily returned thin results for %s, trying direct fetch", domain)
+        page_text = await _fetch_website_text(url)
+        if page_text:
+            source_text = page_text[:2000]
+            search_text = f"URL: {url}\nDirect website content:\n{page_text}\n"
+
     if not search_text.strip():
-        return CompanyProfile(url=url, name=domain)
+        return CompanyProfile(url=url, name=domain, sector="Technology")
 
     llm = create_llm(temperature=0.1)
-    prompt = EXTRACTION_PROMPT.format(search_results=search_text[:4000])
+    prompt = EXTRACTION_PROMPT.format(search_results=search_text[:6000])
 
     try:
         resp = await asyncio.to_thread(
@@ -103,17 +150,18 @@ async def scrape_company(url: str) -> CompanyProfile:
         data = json.loads(text)
     except Exception as e:
         log.warning("LLM extraction failed for %s: %s", url, e)
-        return CompanyProfile(url=url, name=domain)
+        return CompanyProfile(url=url, name=domain, sector="Technology")
 
     return CompanyProfile(
         url=url,
-        name=data.get("name", domain),
-        description=data.get("description", ""),
-        products=data.get("products", []),
-        end_markets=data.get("end_markets", []),
-        sector=data.get("sector", "Other"),
-        sub_sector=data.get("sub_sector", ""),
-        nace_code=data.get("nace_code", ""),
-        country=data.get("country", ""),
+        name=data.get("name") or domain,
+        description=data.get("description") or "",
+        products=data.get("products") or [],
+        end_markets=data.get("end_markets") or [],
+        sector=data.get("sector") or "Technology",
+        sub_sector=data.get("sub_sector") or "",
+        nace_code=data.get("nace_code") or "",
+        country=data.get("country") or "",
         employees_estimate=data.get("employees_estimate"),
+        source_text=source_text,
     )

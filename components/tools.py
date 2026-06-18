@@ -107,6 +107,8 @@ def company_profile_card(profile: dict):
     """Right-panel company info card after scraping."""
     tags = profile.get("products", [])[:6]
     markets = profile.get("end_markets", [])[:4]
+    source = profile.get("source_text", "")
+    source_id = f"source-text-{abs(hash(profile.get('url', ''))) % 100000}"
     return Div(
         Div(
             H3(profile.get("name", "Company"), cls="text-lg font-semibold tighter", style=f"color:{INK}"),
@@ -137,7 +139,23 @@ def company_profile_card(profile: dict):
                 *[Span(m, cls="text-xs px-2 py-0.5 rounded-full mr-1 mb-1 inline-block",
                         style=f"background:{BG}; color:{INK}; border:1px solid {LINE}") for m in markets],
             ),
+            cls="mb-3",
         ) if markets else "",
+        Div(
+            Div(
+                Span("Website Source Text", cls="text-xs font-medium", style=f"color:{INK_MUTED}"),
+                Span("+", cls="faq-arrow text-xs ml-2", style=f"color:{CTA}"),
+                cls="flex items-center cursor-pointer",
+                onclick=f"var el=document.getElementById('{source_id}');el.classList.toggle('hidden');this.querySelector('.faq-arrow').textContent=el.classList.contains('hidden')?'+':'-'",
+            ),
+            Div(
+                P(source[:1000], cls="text-xs leading-relaxed mt-2",
+                  style=f"color:{INK_MUTED}; opacity:0.8;"),
+                id=source_id,
+                cls="hidden",
+            ),
+            cls="pt-3 border-t", style=f"border-color:{LINE}",
+        ) if source else "",
         cls="card rounded-lg p-5",
     )
 
@@ -150,7 +168,8 @@ def _eur_input(name: str, label: str, placeholder: str = "0"):
         Div(
             Span("€", cls="text-sm font-medium px-3 flex items-center",
                  style=f"color:{INK_MUTED}; background:{BG}; border:1px solid {LINE}; border-right:none; border-radius:0.5rem 0 0 0.5rem;"),
-            Input(name=name, type="number", step="1000", placeholder=placeholder,
+            Input(name=name, type="number", step="1000", min="0", required=True,
+                  placeholder=placeholder,
                   cls="flex-1 px-3 py-2.5 text-sm",
                   style=f"background:{BG}; color:{INK}; border:1px solid {LINE}; border-left:none; border-radius:0 0.5rem 0.5rem 0; outline:none;"),
             cls="flex",
@@ -289,7 +308,7 @@ def _kv_row(label: str, value: str, highlight: bool = False):
 def comps_results(profile: dict, financials: dict, sector_data: dict):
     """Market Comps results page."""
     name = profile.get("name", "Company")
-    sector = profile.get("sector", "Technology")
+    sector = profile.get("sector") or "Technology"
     revenue = financials.get("revenue", 0)
     pretax = financials.get("pretax_profit", 0)
     owner_salary = financials.get("owner_salary", 0)
@@ -398,7 +417,7 @@ def buyer_results(profile: dict, buyers: list[dict], total_count: int = 5):
 def valuation_results(profile: dict, financials: dict, sector_data: dict, value_drivers: list[dict] = None):
     """3-step valuation results: Comps → Drivers → Range."""
     name = profile.get("name", "Company")
-    sector = profile.get("sector", "Technology")
+    sector = profile.get("sector") or "Technology"
     revenue = financials.get("revenue", 0)
     pretax = financials.get("pretax_profit", 0)
     owner_salary = financials.get("owner_salary", 0)
@@ -522,9 +541,15 @@ def lead_capture_form(tool: str, profile: dict):
                 ),
                 cls="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4",
             ),
-            Button("Book Call →", type="submit",
-                   cls="rounded-lg px-6 py-2.5 text-sm font-semibold text-white cursor-pointer",
-                   style=f"background:{CTA};"),
+            Div(
+                Button("Book Call →", type="submit",
+                       cls="rounded-lg px-6 py-2.5 text-sm font-semibold text-white cursor-pointer",
+                       style=f"background:{CTA};"),
+                A("Go to AI Advisor →", href="/signin",
+                  cls="rounded-lg px-6 py-2.5 text-sm font-semibold no-underline inline-block",
+                  style=f"color:{INK}; border:1px solid {LINE};"),
+                cls="flex gap-3 items-center",
+            ),
             hx_post="/tools/lead",
             hx_target="#lead-form-result",
             hx_swap="innerHTML",

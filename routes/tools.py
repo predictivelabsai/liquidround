@@ -33,13 +33,35 @@ ar = APIRouter()
 
 _SECTOR_MAP = {
     "technology": "Software (System & Application)",
+    "technology & saas": "Software (System & Application)",
+    "software": "Software (System & Application)",
+    "saas": "Software (System & Application)",
+    "it services": "Computer Services",
     "healthcare": "Healthcare Products",
+    "healthtech": "Heathcare Information and Technology",
     "manufacturing": "Machinery",
+    "industrial": "Machinery",
     "business services": "Business & Consumer Services",
+    "professional services": "Business & Consumer Services",
+    "consulting": "Business & Consumer Services",
     "consumer": "Retail (General)",
+    "e-commerce": "Retail (Online)",
+    "retail": "Retail (General)",
     "financial services": "Financial Svcs. (Non-bank & Insurance)",
+    "fintech": "Financial Svcs. (Non-bank & Insurance)",
     "energy": "Oil/Gas (Production and Exploration)",
     "real estate": "Real Estate (Development)",
+    "food": "Food Processing",
+    "food & beverage": "Food Processing",
+    "construction": "Engineering/Construction",
+    "education": "Education",
+    "media": "Entertainment",
+    "advertising": "Advertising",
+    "telecom": "Telecom. Services",
+    "automotive": "Auto & Truck",
+    "pharmaceutical": "Drugs (Pharmaceutical)",
+    "biotech": "Drugs (Biotechnology)",
+    "other": "Business & Consumer Services",
 }
 
 
@@ -130,7 +152,8 @@ async def tools_comps_results(request):
         "pretax_profit": float(form.get("pretax_profit", 0) or 0),
         "owner_salary": float(form.get("owner_salary", 0) or 0),
     }
-    sector = company_data.get("sector", "Technology")
+    sector = company_data.get("sector") or "Technology"
+    company_data["sector"] = sector
     sector_data = _get_sector_multiples(sector)
     return comps_results(company_data, financials, sector_data)
 
@@ -227,7 +250,8 @@ async def tools_valuation_results(request):
         "pretax_profit": float(form.get("pretax_profit", 0) or 0),
         "owner_salary": float(form.get("owner_salary", 0) or 0),
     }
-    sector = company_data.get("sector", "Technology")
+    sector = company_data.get("sector") or "Technology"
+    company_data["sector"] = sector
     sector_data = _get_sector_multiples(sector)
 
     value_drivers = await _generate_value_drivers(company_data)
