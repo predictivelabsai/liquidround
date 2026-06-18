@@ -46,7 +46,7 @@ Click the flag icon to switch. The interface, navigation, and tool labels update
 
 ## Free Tool: Market Comparables
 
-![Market Comps tool](../screenshots/guide-02-comps-tool.png)
+![Market Comps results](../screenshots/guide-comps-results.png)
 
 The **Market Comparables** tool benchmarks your company against industry M&A transaction multiples using Damodaran's dataset (96 revenue sectors, 92 EBITDA sectors). No sign-in required.
 
@@ -60,13 +60,13 @@ The **Market Comparables** tool benchmarks your company against industry M&A tra
    - **Estimated valuation range** — based on your financials applied to sector multiples
    - **Key value drivers** — AI-generated analysis of what drives (or discounts) value in your sector
 
-> **Tip:** The tool uses Damodaran's industry classification. If your sector seems off, check that your website clearly describes your core business.
+The tool uses Damodaran's industry classification. If your sector seems off, check that your website clearly describes your core business.
 
 ---
 
 ## Free Tool: Find Buyers
 
-![Find Buyers tool](../screenshots/guide-03-match-tool.png)
+![Find Buyers results](../screenshots/guide-match-results.png)
 
 The **Find Buyers** tool matches your company with potential acquirers using a hybrid approach: Baltic company databases (Estonia, Lithuania, Latvia) combined with AI-powered web research.
 
@@ -85,9 +85,9 @@ The **Find Buyers** tool matches your company with potential acquirers using a h
 
 ## Free Tool: Business Valuation
 
-![Valuation tool](../screenshots/guide-04-valuation-tool.png)
+![Valuation results](../screenshots/guide-valuation-results.png)
 
-The **Business Valuation** tool provides a multi-method valuation estimate using industry-standard approaches. No sign-in required.
+The **Business Valuation** tool provides a multi-method valuation estimate using industry-standard approaches. No sign-in required. All amounts are in EUR.
 
 **How to use:**
 
@@ -95,33 +95,26 @@ The **Business Valuation** tool provides a multi-method valuation estimate using
 2. Enter financials: **Revenue**, **Pre-tax Profit**, and **Owner Salary** (EUR)
 3. Click **Calculate Valuation** to see a 3-step result:
 
-**Step 1 — Deal Comparables:**
-Sector transaction multiples (EV/Revenue, EV/EBITDA) from Damodaran's dataset, applied to your financials.
+**Step 1 — Deal Comparables:** Sector transaction multiples (EV/Revenue, EV/EBITDA) from Damodaran's dataset, applied to your financials.
 
-**Step 2 — Value Drivers:**
-AI-identified factors that positively or negatively affect your company's valuation — recurring revenue, market position, concentration risk, growth trajectory.
+**Step 2 — Value Drivers:** AI-identified factors that positively or negatively affect your company's valuation — recurring revenue, market position, concentration risk, growth trajectory.
 
-**Step 3 — Valuation Range:**
-Combined estimate showing low/mid/high enterprise values based on multiple methods (SDE, EBITDA multiples, revenue multiples).
-
-> **Tip:** All amounts are in EUR. The valuation is indicative — a full engagement produces a detailed report with sensitivity analysis.
+**Step 3 — Valuation Range:** Combined estimate showing low/mid/high enterprise values based on multiple methods (SDE, EBITDA multiples, revenue multiples). The valuation is indicative — a full engagement produces a detailed report with sensitivity analysis.
 
 ---
 
 ## Industry Pages
 
-![Industries overview](../screenshots/guide-05-industries.png)
+![Technology industry page](../screenshots/guide-industry-tech.png)
 
-LiquidRound provides sector-specific landing pages with tailored M&A context, sub-sector breakdowns, and regional advisor connections.
+LiquidRound provides sector-specific landing pages with tailored M&A context, sub-sector breakdowns, and regional advisor connections. Four industries covered:
 
-| Industry | Sub-sectors |
-|----------|-------------|
-| **Technology & SaaS** | Enterprise SaaS, FinTech, E-Commerce, IT Services |
-| **Manufacturing** | Precision Engineering, Food & Beverage, Building Materials, Industrial Automation |
-| **Healthcare** | HealthTech / Digital, Medical Devices, Pharmaceutical, Clinical Services |
-| **Business Services** | Management Consulting, Accounting & Legal, HR & Staffing, Marketing & Digital |
+- **Technology & SaaS** — Enterprise SaaS, FinTech, E-Commerce, IT Services
+- **Manufacturing** — Precision Engineering, Food & Beverage, Building Materials, Industrial Automation
+- **Healthcare** — HealthTech / Digital, Medical Devices, Pharmaceutical, Clinical Services
+- **Business Services** — Management Consulting, Accounting & Legal, HR & Staffing, Marketing & Digital
 
-**Each industry page includes:** sector overview and M&A landscape, four sub-sector cards with descriptions, regional advisor links (🇱🇹 [Orion Corporate Finance](https://www.orion.lt) · 🇪🇪 [Superia](https://superia.ee)), sector-specific FAQs (5 per industry), and an inline buyer search widget so visitors can find matched buyers directly from the industry page.
+**Each industry page includes:** sector overview and M&A landscape, four sub-sector cards, regional advisor links (🇱🇹 [Orion Corporate Finance](https://www.orion.lt) · 🇪🇪 [Superia](https://superia.ee)), sector-specific FAQs (5 per industry), and an inline buyer search widget.
 
 ---
 
@@ -147,37 +140,15 @@ The core of LiquidRound is the 3-pane chat application at `/app`:
 
 LiquidRound's AI backbone is the **ECM Agent Squad** — 22 specialist agents organized into 5 categories. Invoke via prefix (e.g. `scan: find SaaS in Nordics >€5M ARR`) or natural language.
 
-| Category | Agent | Prefix | Purpose |
-|----------|-------|--------|---------|
-| **Sourcing** | Deal Scanner | `scan:` | Screen M&A pipeline, filter by criteria |
-| | Triage Analyst | `triage:` | Rapid initial assessment of targets |
-| | Intent Mapper | `intent:` | Map strategic buyer intent and themes |
-| | Comps Analyst | `comps:` | Comparable transactions analysis |
-| **Underwriting** | LTM Builder | `ltm:` | Last-twelve-months financials |
-| | DCF Modeller | `dcf:` | Discounted cash flow analysis |
-| | Multiples Analyst | `multi:` | Trading and transaction multiples |
-| | Synergy Analyst | `synergy:` | Synergy quantification |
-| | Bid Strategist | `bid:` | Bid pricing and negotiation strategy |
-| | Integration Planner | `integrate:` | Post-merger integration planning |
+**Sourcing (4):** `scan:` Deal Scanner · `triage:` Triage Analyst · `intent:` Intent Mapper · `comps:` Comps Analyst
 
----
+**Underwriting (6):** `ltm:` LTM Builder · `dcf:` DCF Modeller · `multi:` Multiples Analyst · `synergy:` Synergy Analyst · `bid:` Bid Strategist · `integrate:` Integration Planner
 
-## ECM Agent Squad (continued)
+**Diligence (5):** `vdr:` VDR Analyst · `abstract:` Abstract Writer · `legal:` Legal Reviewer · `ops:` Ops Analyst · `esg:` ESG Analyst
 
-| Category | Agent | Prefix | Purpose |
-|----------|-------|--------|---------|
-| **Diligence** | VDR Analyst | `vdr:` | Virtual data room document review |
-| | Abstract Writer | `abstract:` | Executive summary generation |
-| | Legal Reviewer | `legal:` | Legal risk identification |
-| | Ops Analyst | `ops:` | Operational due diligence |
-| | ESG Analyst | `esg:` | ESG and sustainability assessment |
-| **Capital** | IC Memo Writer | `memo:` | Investment committee memo drafting |
-| | Teaser Builder | `teaser:` | One-page teaser creation |
-| | CIM Drafter | — | Confidential information memorandum |
-| | IPO Readiness | — | IPO readiness assessment |
-| | Pitch Deck | — | Pitch deck content generation |
-| **Portfolio** | Portfolio Monitor | — | Track portfolio company performance |
-| | Exit Planner | — | Exit strategy and timing analysis |
+**Capital Markets (5):** `memo:` IC Memo Writer · `teaser:` Teaser Builder · CIM Drafter · IPO Readiness · Pitch Deck
+
+**Portfolio (2):** Portfolio Monitor · Exit Planner
 
 ---
 
@@ -227,9 +198,7 @@ Visit [liquidround.ai/signin](https://liquidround.ai/signin) to sign in, `/regis
 
 **Sharing** — click **Share** in the chat header to generate a read-only link. Anyone with the link can view the conversation (no auth required).
 
-**PDF Export** — after generating an IC Memo or Teaser, click **Download PDF** for a professionally formatted document.
-
-**Shortcuts:** `Enter` to send, `Shift+Enter` for new line. URL param `?role=seller` starts the app in seller mode.
+**PDF Export** — after generating an IC Memo or Teaser, click **Download PDF** for a professionally formatted document. **Shortcuts:** `Enter` to send, `Shift+Enter` for new line. URL param `?role=seller` starts the app in seller mode.
 
 ---
 

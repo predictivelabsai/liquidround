@@ -20,8 +20,9 @@ body {
   line-height: 1.5;
   color: #E5E7EB;
   background: #0B1220;
-  margin: 0;
-  padding: 0;
+  margin: 0 auto;
+  padding: 40px 60px;
+  max-width: 1200px;
 }
 
 /* --- = page break */

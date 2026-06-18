@@ -54,7 +54,7 @@ def url_input_step(tool_name: str, action_url: str):
                     Input(
                         name="url",
                         type="text",
-                        placeholder="e.g. https://floranext.com",
+                        placeholder="e.g. https://meliva.ee",
                         required=True,
                         cls="flex-1 rounded-lg px-4 py-3 text-sm",
                         style=f"background:{BG}; color:{INK}; border:1px solid {LINE}; outline:none;",
