@@ -239,15 +239,20 @@ html, body {
 .welcome-title .accent { color: var(--accent); }
 .welcome-sub { color: var(--ink-muted); font-size: .9rem; margin-top: .5rem; line-height: 1.5; }
 .welcome-sub strong { color: var(--ink); font-weight: 600; }
-.suggestions { display: flex; flex-wrap: wrap; gap: .55rem; justify-content: center; margin-top: 1.8rem; }
+.sugg-section-label {
+    display: block; text-align: center; color: var(--ink-dim); font-size: .68rem;
+    text-transform: uppercase; letter-spacing: .08em; margin-top: 1.4rem; margin-bottom: .4rem;
+}
+.suggestions { display: flex; flex-wrap: wrap; gap: .55rem; justify-content: center; margin-top: .4rem; }
 .suggestion-chip {
     display: flex; align-items: center; gap: .45rem;
     padding: .45rem .75rem; background: var(--bg-elev);
     border: 1px solid var(--line); border-radius: 2rem;
     color: var(--ink-muted); font-size: .76rem;
-    font-family: 'JetBrains Mono', monospace; cursor: pointer; transition: all .15s;
+    cursor: pointer; transition: all .15s;
 }
 .suggestion-chip:hover { border-color: var(--accent); color: var(--accent); }
+.shortcut-chip { font-family: 'JetBrains Mono', monospace; font-size: .72rem; }
 .sugg-icon { color: var(--accent); }
 
 /* Chat input form */

@@ -87,8 +87,18 @@ def sessions_list(sessions: list[dict] | None, current_sid: str = ""):
     return Div(*items, cls="session-list")
 
 
+def _agent_freeform(spec):
+    """Pick the best free-form example for an agent (no prefix)."""
+    for p in spec.example_prompts:
+        if ":" not in p[:12]:
+            return p
+    if spec.example_prompts:
+        return spec.example_prompts[0]
+    return spec.prefix + " "
+
+
 def agent_browser():
-    """All 22 agents grouped by the 5 categories — collapsible."""
+    """All 23 agents grouped by 6 categories — collapsible."""
     groups = []
     for cat in CATEGORIES:
         agents = AGENTS_BY_CATEGORY.get(cat["key"], [])
@@ -98,7 +108,7 @@ def agent_browser():
                 Span(a.name, cls="aitem-name"),
                 Span(a.prefix, cls="aitem-prefix"),
                 cls="agent-item",
-                onclick=f"fillChat({a.prefix + ' '!r})",
+                onclick=f"fillChat({_agent_freeform(a)!r})",
                 title=a.one_liner,
                 type="button",
             )
@@ -305,17 +315,42 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
             ),
             Hr(cls="left-hr"),
             Div(
-                Div(Span("Settings", cls="section-label")),
-                Div(
-                    A(
-                        Span("⚙", cls="bottom-nav-icon"),
-                        Span("Profile / Account", cls="bottom-nav-label"),
-                        href="/profile",
-                        cls=f"bottom-nav-link{' active' if current_path.startswith('/profile') else ''}",
-                    ),
-                    cls="bottom-nav",
+                Button(
+                    Span("?", cls="cat-icon"),
+                    Span("Help", cls="cat-name"),
+                    Span("3", cls="cat-count"),
+                    Span("▸", cls="cat-arrow"),
+                    cls="cat-toggle",
+                    onclick="toggleGroup('sec-help')",
+                    id="btn-sec-help",
+                    type="button",
                 ),
-                cls="config-wrap",
+                Div(
+                    A(Span("⚙", cls="bottom-nav-icon"), Span("Profile / Account", cls="bottom-nav-label"),
+                      href="/profile",
+                      cls=f"bottom-nav-link{' active' if current_path.startswith('/profile') else ''}"),
+                    A(Span("?", cls="bottom-nav-icon"), Span("Help", cls="bottom-nav-label"),
+                      href="/app/help",
+                      cls=f"bottom-nav-link{' active' if current_path.startswith('/app/help') else ''}"),
+                    A(Span("⌨", cls="bottom-nav-icon"), Span("Shortcuts", cls="bottom-nav-label"),
+                      href="#", onclick="toggleGroup('sec-shortcuts'); return false;",
+                      cls="bottom-nav-link"),
+                    cls="agent-list", id="sec-help",
+                ),
+                cls="agent-group",
+            ),
+            Div(
+                Div(
+                    *[A(Span(a.prefix, cls="bottom-nav-icon",
+                          style="font-family:'JetBrains Mono',monospace; font-size:.65rem; width:auto; min-width:3rem;"),
+                        Span(a.name, cls="bottom-nav-label"),
+                        href="#",
+                        onclick=f"fillChat({a.prefix + ' '!r}); return false;",
+                        cls="bottom-nav-link",
+                      ) for a in AGENTS],
+                    cls="agent-list", id="sec-shortcuts",
+                ),
+                cls="agent-group",
             ),
             cls="left-body",
         ),
@@ -327,26 +362,31 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
 # ───── Center pane ───────────────────────────────────────────────────
 
 def welcome_hero(current_role: str = "buyer"):
-    """Empty-state hero with a curated 6-pack of example prompts."""
-    # Prompts tilted to match the active role
+    """Empty-state hero with free-form questions + shortcut examples."""
     if current_role == "seller":
-        prompts = [
-            ("buyers: veterinary clinics EUR 5M revenue, Baltics", "buyer_scanner"),
+        questions = [
+            ("Find strategic buyers for a Baltic veterinary chain", "buyer_scanner"),
+            ("What are the key risks in Lietuvos Veterinarija's data room?", "vdr_auditor"),
+            ("Is Ignitis Group ready for an IPO?", "ipo_readiness"),
+            ("What are the top hedge funds holding healthcare stocks?", "hedge_fund_analyst"),
+        ]
+        shortcuts = [
             ("teaser: blind teaser for Lietuvos Veterinarija", "teaser_designer"),
-            ("ipo: Ignitis Group readiness", "ipo_readiness"),
-            ("legal: open litigation risks for InMedica", "legal_reviewer"),
             ("dcf: Grigeo at 9% WACC", "dcf_valuer"),
             ("research: Baltic healthcare M&A 2026", "research_analyst"),
         ]
-        sub = "Your AI ECM / IB analyst squad for sell-side M&A and IPO readiness. Upload your pitch book and they'll read, cite and draft from it."
+        sub = "Your AI ECM / IB analyst squad for sell-side M&A and IPO readiness."
     else:
-        prompts = [
+        questions = [
+            ("Find founder-owned vet clinics in the Baltics with EUR 4M+ EBITDA", "target_scanner"),
+            ("What's a fair valuation for Grigeo at 9% WACC?", "dcf_valuer"),
+            ("Draft the investment committee memo for InMedica", "ic_memo_writer"),
+            ("Which hedge funds hold the most Apple shares?", "hedge_fund_analyst"),
+        ]
+        shortcuts = [
             ("triage: Baltic vet chain, EUR 4M EBITDA, 25% growth", "deal_triage"),
-            ("profile: GRG1L.VS", "company_profiler"),
-            ("dcf: Grigeo at 9% WACC", "dcf_valuer"),
+            ("dcf: Grigeo at 9% WACC, 2.5% terminal growth", "dcf_valuer"),
             ("memo: draft the IC memo for InMedica", "ic_memo_writer"),
-            ("vdr: audit the data room for Lietuvos Veterinarija", "vdr_auditor"),
-            ("research: Baltic healthcare consolidation", "research_analyst"),
         ]
         sub = "Your AI ECM / IB analyst squad for buy-side M&A. Type a prompt — the router picks the right analyst."
 
@@ -357,15 +397,33 @@ def welcome_hero(current_role: str = "buyer"):
             P(NotStr("<strong>ECM</strong> = Equity Capital Markets. "), sub, cls="welcome-sub"),
             cls="welcome-head",
         ),
+        # Ask a question (free-form)
         Div(
-            *[Button(
-                Span(AGENTS_BY_SLUG[slug].icon if slug in AGENTS_BY_SLUG else "◆", cls="sugg-icon"),
-                Span(text, cls="sugg-text"),
-                cls="suggestion-chip",
-                onclick=f"fillChat({text!r})",
-                type="button",
-            ) for text, slug in prompts],
-            cls="suggestions",
+            Span("Ask a question", cls="sugg-section-label"),
+            Div(
+                *[Button(
+                    Span(AGENTS_BY_SLUG[slug].icon if slug in AGENTS_BY_SLUG else "◆", cls="sugg-icon"),
+                    Span(text, cls="sugg-text"),
+                    cls="suggestion-chip",
+                    onclick=f"fillChat({text!r})",
+                    type="button",
+                ) for text, slug in questions],
+                cls="suggestions",
+            ),
+        ),
+        # Try a shortcut (prefix commands)
+        Div(
+            Span("Try a shortcut", cls="sugg-section-label"),
+            Div(
+                *[Button(
+                    Span(AGENTS_BY_SLUG[slug].icon if slug in AGENTS_BY_SLUG else "◆", cls="sugg-icon"),
+                    Span(text, cls="sugg-text"),
+                    cls="suggestion-chip shortcut-chip",
+                    onclick=f"fillChat({text!r})",
+                    type="button",
+                ) for text, slug in shortcuts],
+                cls="suggestions",
+            ),
         ),
         id="welcome-hero",
         cls="welcome-hero",
@@ -373,19 +431,26 @@ def welcome_hero(current_role: str = "buyer"):
 
 
 def sample_cards(current_agent_slug: str | None = None):
-    """3 example-prompt buttons under the chat input (pehero-style)."""
+    """Example-prompt buttons under the chat input — free-form first, then shortcuts."""
     if current_agent_slug and current_agent_slug in AGENTS_BY_SLUG:
         spec = AGENTS_BY_SLUG[current_agent_slug]
-        prompts = list(spec.example_prompts[:3])
+        # Split into free-form questions and shortcuts
+        freeform = [p for p in spec.example_prompts if ":" not in p[:12]]
+        shortcuts = [p for p in spec.example_prompts if ":" in p[:12]]
         label = f"Try with {spec.name}"
     else:
-        prompts = [
+        freeform = [
+            "Find founder-owned vet clinics in the Baltics",
+            "What's a fair valuation for Grigeo?",
+        ]
+        shortcuts = [
             "triage: Baltic vet chain, EUR 4M EBITDA, 25% growth",
             "dcf: Grigeo at 9% WACC, 2.5% terminal growth",
             "memo: draft the IC memo for InMedica",
         ]
         label = "Try a prompt"
 
+    all_prompts = (freeform[:2] + shortcuts[:2]) if not current_agent_slug else (freeform[:2] + shortcuts[:1])
     chips = [
         Button(
             Span(p, cls="sample-card-text"),
@@ -394,7 +459,7 @@ def sample_cards(current_agent_slug: str | None = None):
             title=p,
             type="button",
         )
-        for p in prompts
+        for p in all_prompts
     ]
     return Div(
         Span(label, cls="sample-cards-label", id="sample-cards-label"),
