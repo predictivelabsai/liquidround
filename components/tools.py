@@ -10,6 +10,23 @@ from components.landing import (
     landing_head, landing_nav, landing_footer,
 )
 
+def _loading_indicator():
+    """Spinner + progress bar shown during HTMX requests."""
+    return Div(
+        Div(cls="animate-spin rounded-full h-8 w-8 border-2 border-t-transparent mx-auto mb-3",
+            style=f"border-color:{CTA}; border-top-color:transparent;"),
+        P("Analyzing...", cls="text-sm mb-2", style=f"color:{INK_MUTED}"),
+        Div(
+            Div(cls="h-full rounded-full animate-pulse", style=f"background:{CTA}; width:60%"),
+            cls="w-48 mx-auto rounded-full h-1.5 overflow-hidden",
+            style=f"background:{LINE}",
+        ),
+        id="loading-indicator",
+        cls="htmx-indicator mt-6 text-center py-4",
+        style=f"color:{CTA}",
+    )
+
+
 # ───── Shared layouts ──────────────────────────────────────────────────
 
 def tool_page(*sections, title: str = "Tool", active: str = "tools", lang: str = "en"):
@@ -76,8 +93,7 @@ def url_input_step(tool_name: str, action_url: str):
             hx_swap="innerHTML",
             hx_indicator="#loading-indicator",
         ),
-        Div(id="loading-indicator", cls="htmx-indicator mt-6 text-center",
-            style=f"color:{CTA}"),
+        _loading_indicator(),
         cls="card rounded-lg p-8 max-w-2xl mx-auto",
     )
 
@@ -202,7 +218,7 @@ def comps_financial_form(profile: dict, action_url: str):
             hx_swap="innerHTML",
             hx_indicator="#loading-indicator",
         ),
-        Div(id="loading-indicator", cls="htmx-indicator mt-4 text-center", style=f"color:{CTA}"),
+        _loading_indicator(),
         cls="card rounded-lg p-6 max-w-3xl mx-auto",
     )
 
@@ -229,7 +245,7 @@ def valuation_financial_form(profile: dict, action_url: str):
             hx_swap="innerHTML",
             hx_indicator="#loading-indicator",
         ),
-        Div(id="loading-indicator", cls="htmx-indicator mt-4 text-center", style=f"color:{CTA}"),
+        _loading_indicator(),
         cls="card rounded-lg p-6 max-w-3xl mx-auto",
     )
 
@@ -282,7 +298,7 @@ def buyer_match_financial_form(profile: dict, action_url: str):
             hx_swap="innerHTML",
             hx_indicator="#loading-indicator",
         ),
-        Div(id="loading-indicator", cls="htmx-indicator mt-4 text-center", style=f"color:{CTA}"),
+        _loading_indicator(),
         cls="card rounded-lg p-6 max-w-3xl mx-auto",
     )
 
