@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Predictive Labs Ltd" />
+  <title>LiquidRound User Guide</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="/home/julian/dev/plai/liquidround/docs/assets/guide.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">LiquidRound User Guide</h1>
+<p class="subtitle">AI-Powered M&amp;A and IPO Platform</p>
+<p class="author">Predictive Labs Ltd</p>
+<p class="date">June 2026</p>
+</header>
+<section id="liquidround" class="cover">
+<h1>◈ LiquidRound</h1>
+<p><strong>AI-Powered M&amp;A and IPO Platform</strong></p>
+<p>Your ECM / IB analyst squad — 22 specialist AI agents across
+sourcing, underwriting, diligence, capital markets, and portfolio
+management.</p>
+<p><em>Version 0.3.0 — June 2026</em></p>
+<p><em>Predictive Labs Ltd</em></p>
+</section>
+<hr />
+<h2 id="getting-started">Getting Started</h2>
+<figure>
+<img src="../screenshots/guide-01-landing.png" alt="Landing page" />
+<figcaption aria-hidden="true">Landing page</figcaption>
+</figure>
+<p>LiquidRound is a dual-mode platform for both sides of M&amp;A and IPO
+deals:</p>
+<ul>
+<li><strong>Buyers</strong> — find acquisition targets, run diligence,
+score deals, and draft IC memos</li>
+<li><strong>Sellers</strong> — prepare for sale (teasers, CIMs),
+identify potential buyers, and assess IPO readiness</li>
+</ul>
+<p><strong>Accessing the Platform:</strong></p>
+<ol type="1">
+<li>Visit <a href="https://liquidround.ai">liquidround.ai</a></li>
+<li>Choose your role: <strong>Buyer-Led</strong> or
+<strong>Seller-Led</strong></li>
+<li>Start chatting with the AI agent squad — no sign-up required for
+basic use</li>
+<li><strong>Sign in</strong> (optional) for persistent conversations,
+sharing, and full features</li>
+</ol>
+<p><strong>Language Support</strong> — four languages via the flag
+dropdown in the top-right corner: 🇬🇧 English (default) · 🇪🇪 Eesti · 🇱🇹
+Lietuvių · 🇱🇻 Latviešu. Click the flag icon to switch. The interface,
+navigation, and tool labels update instantly.</p>
+<hr />
+<h2 id="free-tool-market-comparables">Free Tool: Market Comparables</h2>
+<figure>
+<img src="../screenshots/guide-02-comps-tool.png"
+alt="Market Comps tool" />
+<figcaption aria-hidden="true">Market Comps tool</figcaption>
+</figure>
+<p>The <strong>Market Comparables</strong> tool benchmarks your company
+against industry M&amp;A transaction multiples using Damodaran’s dataset
+(96 revenue sectors, 92 EBITDA sectors). No sign-in required.</p>
+<p><strong>How to use:</strong></p>
+<ol type="1">
+<li>Enter your company website URL and click
+<strong>Analyse</strong></li>
+<li>The AI scrapes your website, identifies your sector, and pre-fills
+company details</li>
+<li>Enter your financials: <strong>Revenue</strong>, <strong>Pre-tax
+Profit</strong>, and <strong>Owner Salary</strong> (EUR)</li>
+<li>Click <strong>Calculate Comparables</strong> to see:
+<ul>
+<li><strong>Sector M&amp;A snapshot</strong> — median EV/Revenue and
+EV/EBITDA multiples for your industry</li>
+<li><strong>Estimated valuation range</strong> — based on your
+financials applied to sector multiples</li>
+<li><strong>Key value drivers</strong> — AI-generated analysis of what
+drives (or discounts) value in your sector</li>
+</ul></li>
+</ol>
+<blockquote>
+<p><strong>Tip:</strong> The tool uses Damodaran’s industry
+classification. If your sector seems off, check that your website
+clearly describes your core business.</p>
+</blockquote>
+<hr />
+<h2 id="free-tool-find-buyers">Free Tool: Find Buyers</h2>
+<figure>
+<img src="../screenshots/guide-03-match-tool.png"
+alt="Find Buyers tool" />
+<figcaption aria-hidden="true">Find Buyers tool</figcaption>
+</figure>
+<p>The <strong>Find Buyers</strong> tool matches your company with
+potential acquirers using a hybrid approach: Baltic company databases
+(Estonia, Lithuania, Latvia) combined with AI-powered web research.</p>
+<p><strong>How to use:</strong></p>
+<ol type="1">
+<li>Enter your company website URL and click
+<strong>Analyse</strong></li>
+<li>Review the AI-extracted company profile (sector, sub-sector,
+products, end markets)</li>
+<li>Click <strong>Find Buyers</strong> to see matched potential
+acquirers:
+<ul>
+<li><strong>3 full buyer profiles</strong> with AI-generated match
+rationale</li>
+<li><strong>Strategic fit analysis</strong> — why each buyer would be
+interested</li>
+<li><strong>Source</strong> — whether the match came from Baltic
+registry data or web research</li>
+</ul></li>
+</ol>
+<p><strong>Data sources:</strong> Estonia (~60K companies), Lithuania
+(~166K), Latvia (~3.6M) — sourced from national business registries.
+Combined with Tavily web research to find both local strategic buyers
+and international PE firms.</p>
+<hr />
+<h2 id="free-tool-business-valuation">Free Tool: Business Valuation</h2>
+<figure>
+<img src="../screenshots/guide-04-valuation-tool.png"
+alt="Valuation tool" />
+<figcaption aria-hidden="true">Valuation tool</figcaption>
+</figure>
+<p>The <strong>Business Valuation</strong> tool provides a multi-method
+valuation estimate using industry-standard approaches. No sign-in
+required.</p>
+<p><strong>How to use:</strong></p>
+<ol type="1">
+<li>Enter your company website URL and click
+<strong>Analyse</strong></li>
+<li>Enter financials: <strong>Revenue</strong>, <strong>Pre-tax
+Profit</strong>, and <strong>Owner Salary</strong> (EUR)</li>
+<li>Click <strong>Calculate Valuation</strong> to see a 3-step
+result:</li>
+</ol>
+<p><strong>Step 1 — Deal Comparables:</strong> Sector transaction
+multiples (EV/Revenue, EV/EBITDA) from Damodaran’s dataset, applied to
+your financials.</p>
+<p><strong>Step 2 — Value Drivers:</strong> AI-identified factors that
+positively or negatively affect your company’s valuation — recurring
+revenue, market position, concentration risk, growth trajectory.</p>
+<p><strong>Step 3 — Valuation Range:</strong> Combined estimate showing
+low/mid/high enterprise values based on multiple methods (SDE, EBITDA
+multiples, revenue multiples).</p>
+<blockquote>
+<p><strong>Tip:</strong> All amounts are in EUR. The valuation is
+indicative — a full engagement produces a detailed report with
+sensitivity analysis.</p>
+</blockquote>
+<hr />
+<h2 id="industry-pages">Industry Pages</h2>
+<figure>
+<img src="../screenshots/guide-05-industries.png"
+alt="Industries overview" />
+<figcaption aria-hidden="true">Industries overview</figcaption>
+</figure>
+<p>LiquidRound provides sector-specific landing pages with tailored
+M&amp;A context, sub-sector breakdowns, and regional advisor
+connections.</p>
+<table>
+<colgroup>
+<col style="width: 43%" />
+<col style="width: 56%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Industry</th>
+<th>Sub-sectors</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Technology &amp; SaaS</strong></td>
+<td>Enterprise SaaS, FinTech, E-Commerce, IT Services</td>
+</tr>
+<tr class="even">
+<td><strong>Manufacturing</strong></td>
+<td>Precision Engineering, Food &amp; Beverage, Building Materials,
+Industrial Automation</td>
+</tr>
+<tr class="odd">
+<td><strong>Healthcare</strong></td>
+<td>HealthTech / Digital, Medical Devices, Pharmaceutical, Clinical
+Services</td>
+</tr>
+<tr class="even">
+<td><strong>Business Services</strong></td>
+<td>Management Consulting, Accounting &amp; Legal, HR &amp; Staffing,
+Marketing &amp; Digital</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Each industry page includes:</strong> sector overview and
+M&amp;A landscape, four sub-sector cards with descriptions, regional
+advisor links (🇱🇹 <a href="https://www.orion.lt">Orion Corporate
+Finance</a> · 🇪🇪 <a href="https://superia.ee">Superia</a>),
+sector-specific FAQs (5 per industry), and an inline buyer search widget
+so visitors can find matched buyers directly from the industry page.</p>
+<hr />
+<h2 id="the-chat-application">The Chat Application</h2>
+<figure>
+<img src="../screenshots/guide-07-app-chat.png"
+alt="App chat interface" />
+<figcaption aria-hidden="true">App chat interface</figcaption>
+</figure>
+<p>The core of LiquidRound is the 3-pane chat application at
+<code>/app</code>:</p>
+<ul>
+<li><strong>Left pane</strong> — Sessions, Agents directory, Tools
+links, Workspace, Configuration</li>
+<li><strong>Center pane</strong> — Chat messages with the AI agent
+squad</li>
+<li><strong>Right pane</strong> — Artifact canvas (Documents, Research,
+Scores, Compare tabs)</li>
+</ul>
+<p><strong>Choosing a Role:</strong> Select <strong>Buyer-Led</strong>
+or <strong>Seller-Led</strong> at entry. This controls which welcome
+cards, suggested prompts, and agent chips appear. Switch anytime via the
+<strong>Configuration</strong> widget (type <code>settings</code> in
+chat).</p>
+<p><strong>Chat Commands</strong> — type a prefix like
+<code>profile:MSFT</code>, <code>financials:AAPL</code>,
+<code>valuation:NVDA</code>, <code>targets industry:fintech</code>,
+<code>score buyer:X target:Y</code>, <code>keyterms report.pdf</code>,
+<code>news:TSLA</code>, <code>buyers sector:saas</code>,
+<code>research</code>, <code>docs</code>, <code>settings</code>,
+<code>help</code>, or <code>clear</code>. Or just use <strong>natural
+language</strong> — the AI router picks the best specialist agent
+automatically.</p>
+<hr />
+<h2 id="ecm-agent-squad-22-agents">ECM Agent Squad (22 Agents)</h2>
+<figure>
+<img src="../screenshots/guide-08-agents.png" alt="Agent directory" />
+<figcaption aria-hidden="true">Agent directory</figcaption>
+</figure>
+<p>LiquidRound’s AI backbone is the <strong>ECM Agent Squad</strong> —
+22 specialist agents organized into 5 categories. Invoke via prefix
+(e.g. <code>scan: find SaaS in Nordics &gt;€5M ARR</code>) or natural
+language.</p>
+<table>
+<colgroup>
+<col style="width: 29%" />
+<col style="width: 20%" />
+<col style="width: 23%" />
+<col style="width: 26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Category</th>
+<th>Agent</th>
+<th>Prefix</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Sourcing</strong></td>
+<td>Deal Scanner</td>
+<td><code>scan:</code></td>
+<td>Screen M&amp;A pipeline, filter by criteria</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Triage Analyst</td>
+<td><code>triage:</code></td>
+<td>Rapid initial assessment of targets</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Intent Mapper</td>
+<td><code>intent:</code></td>
+<td>Map strategic buyer intent and themes</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Comps Analyst</td>
+<td><code>comps:</code></td>
+<td>Comparable transactions analysis</td>
+</tr>
+<tr class="odd">
+<td><strong>Underwriting</strong></td>
+<td>LTM Builder</td>
+<td><code>ltm:</code></td>
+<td>Last-twelve-months financials</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>DCF Modeller</td>
+<td><code>dcf:</code></td>
+<td>Discounted cash flow analysis</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Multiples Analyst</td>
+<td><code>multi:</code></td>
+<td>Trading and transaction multiples</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Synergy Analyst</td>
+<td><code>synergy:</code></td>
+<td>Synergy quantification</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Bid Strategist</td>
+<td><code>bid:</code></td>
+<td>Bid pricing and negotiation strategy</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Integration Planner</td>
+<td><code>integrate:</code></td>
+<td>Post-merger integration planning</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ecm-agent-squad-continued">ECM Agent Squad (continued)</h2>
+<table>
+<colgroup>
+<col style="width: 29%" />
+<col style="width: 20%" />
+<col style="width: 23%" />
+<col style="width: 26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Category</th>
+<th>Agent</th>
+<th>Prefix</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Diligence</strong></td>
+<td>VDR Analyst</td>
+<td><code>vdr:</code></td>
+<td>Virtual data room document review</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Abstract Writer</td>
+<td><code>abstract:</code></td>
+<td>Executive summary generation</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Legal Reviewer</td>
+<td><code>legal:</code></td>
+<td>Legal risk identification</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Ops Analyst</td>
+<td><code>ops:</code></td>
+<td>Operational due diligence</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>ESG Analyst</td>
+<td><code>esg:</code></td>
+<td>ESG and sustainability assessment</td>
+</tr>
+<tr class="even">
+<td><strong>Capital</strong></td>
+<td>IC Memo Writer</td>
+<td><code>memo:</code></td>
+<td>Investment committee memo drafting</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Teaser Builder</td>
+<td><code>teaser:</code></td>
+<td>One-page teaser creation</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>CIM Drafter</td>
+<td>—</td>
+<td>Confidential information memorandum</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>IPO Readiness</td>
+<td>—</td>
+<td>IPO readiness assessment</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Pitch Deck</td>
+<td>—</td>
+<td>Pitch deck content generation</td>
+</tr>
+<tr class="odd">
+<td><strong>Portfolio</strong></td>
+<td>Portfolio Monitor</td>
+<td>—</td>
+<td>Track portfolio company performance</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Exit Planner</td>
+<td>—</td>
+<td>Exit strategy and timing analysis</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="documents-research-scoring">Documents, Research &amp;
+Scoring</h2>
+<p><strong>Uploading Documents</strong> — upload PDFs, Excel, and
+PowerPoint files directly in the chat:</p>
+<ul>
+<li><strong>PDF</strong> — text and table extraction (pdfplumber)</li>
+<li><strong>XLSX</strong> — all sheets parsed (openpyxl)</li>
+<li><strong>PPTX</strong> — slide text and notes (python-pptx)</li>
+</ul>
+<p>Type <code>docs</code> to list uploads,
+<code>keyterms filename.pdf</code> to extract key terms.</p>
+<p><strong>Research Tools</strong> — two integrated engines:</p>
+<ul>
+<li><strong>EXA</strong> — semantic search for conceptually similar
+content</li>
+<li><strong>Tavily</strong> — web search with advanced depth for
+comprehensive coverage</li>
+</ul>
+<p>Type <code>research topic</code> for a deep research pass, or let
+agents invoke tools automatically.</p>
+<p><strong>Deal Scoring</strong> — type
+<code>score buyer:CompanyA target:CompanyB</code> for a 7-dimension
+radar: Strategic Fit · Financial Health · Synergy Potential · Market
+Position · Management Quality · Cultural Fit · Risk Profile.</p>
+<p><strong>In-App Valuation</strong> — type
+<code>valuation:TICKER</code> for multi-method analysis: DCF ·
+EV/Revenue · EV/EBITDA · EV/EBIT — using Damodaran sector data and
+yfinance market data.</p>
+<hr />
+<h2 id="account-sharing-settings">Account, Sharing &amp; Settings</h2>
+<figure>
+<img src="../screenshots/guide-signin.png" alt="Sign-in page" />
+<figcaption aria-hidden="true">Sign-in page</figcaption>
+</figure>
+<p><strong>Sign In</strong> — two authentication methods:</p>
+<ul>
+<li><strong>Google OAuth</strong> — one-click sign-in</li>
+<li><strong>Email + Password</strong> — traditional registration</li>
+</ul>
+<p>Visit <a
+href="https://liquidround.ai/signin">liquidround.ai/signin</a> to sign
+in, <code>/register</code> to create an account, <code>/forgot</code> to
+reset your password.</p>
+<p><strong>Profile Settings</strong> (at <code>/profile</code>):</p>
+<ul>
+<li><strong>Account info</strong> — name, email, company</li>
+<li><strong>M&amp;A preferences</strong> — deal size range, target
+sectors, geographic focus</li>
+<li><strong>Notifications</strong> — daily digest email
+opt-in/opt-out</li>
+</ul>
+<p><strong>Daily Digest</strong> — automated M&amp;A intelligence email
+with featured deals, market insights, and company spotlights.
+Configurable: daily, weekly, or off.</p>
+<p><strong>Sharing</strong> — click <strong>Share</strong> in the chat
+header to generate a read-only link. Anyone with the link can view the
+conversation (no auth required).</p>
+<p><strong>PDF Export</strong> — after generating an IC Memo or Teaser,
+click <strong>Download PDF</strong> for a professionally formatted
+document.</p>
+<p><strong>Shortcuts:</strong> <code>Enter</code> to send,
+<code>Shift+Enter</code> for new line. URL param
+<code>?role=seller</code> starts the app in seller mode.</p>
+<hr />
+<h2 id="support">Support</h2>
+<p><strong>Predictive Labs Ltd</strong></p>
+<ul>
+<li>Website: <a href="https://liquidround.ai">liquidround.ai</a></li>
+<li>Contact: <a
+href="https://liquidround.ai/contact">liquidround.ai/contact</a></li>
+<li>Email: info@liquidround.com</li>
+</ul>
+<p><strong>Regional M&amp;A Advisory:</strong></p>
+<ul>
+<li>🇱🇹 Lithuania: <a href="https://www.orion.lt">Orion Corporate
+Finance</a></li>
+<li>🇪🇪 Estonia: <a href="https://superia.ee">Superia</a></li>
+</ul>
+<hr />
+<section id="thank-you" class="cover">
+<h1>Thank You</h1>
+<p><strong>LiquidRound</strong> — Your AI ECM Agent Squad for M&amp;A
+and IPO</p>
+<p><a href="https://liquidround.ai">liquidround.ai</a></p>
+<p><em>© 2026 Predictive Labs Ltd. All rights reserved.</em></p>
+</section>
+</body>
+</html>

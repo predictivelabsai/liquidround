@@ -6,8 +6,9 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+ROOT="$(pwd)"
 SRC="docs/liquidround_user_guide.md"
-CSS="docs/assets/guide.css"
+CSS="$ROOT/docs/assets/guide.css"
 OUT_HTML="docs/liquidround_user_guide.html"
 OUT_PDF="docs/liquidround_user_guide.pdf"
 
@@ -21,6 +22,6 @@ pandoc "$SRC" \
   -o "$OUT_HTML"
 
 echo "→ Converting HTML to PDF (A4 landscape)..."
-weasyprint "$OUT_HTML" "$OUT_PDF"
+weasyprint "$OUT_HTML" "$OUT_PDF" --base-url "$ROOT/docs/"
 
 echo "✓ Built: $OUT_PDF"
