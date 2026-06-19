@@ -261,7 +261,7 @@ def landing_pricing(sess):
                     P(desc, cls="text-sm mb-5", style=f"color:{INK_MUTED};"),
                     Ul(*[Li(f"✓ {item}", cls="text-sm py-1", style=f"color:{INK};") for item in items],
                        cls="list-none pl-0 mb-6"),
-                    A("Get started →", href="/app?role=buyer",
+                    A("Get started →", href="/signin",
                       cls="block text-center rounded-lg px-4 py-2 text-sm font-semibold text-white no-underline",
                       style=f"background:{CTA if highlight else LINE};"),
                     cls="card rounded-lg p-6" + (" ring-2" if highlight else ""),

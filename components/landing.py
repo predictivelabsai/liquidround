@@ -92,6 +92,14 @@ def landing_nav(active: str = "home", lang: str = "en"):
         cls = "text-sm nav-link " + ("text-white font-medium" if is_active else "text-slate-400")
         return A(label, href=href, cls=cls)
 
+    nav_items = [
+        ("platform", "/platform", t("nav_platform", lang)),
+        ("agents",   "/agents",   t("nav_agents", lang)),
+        ("tools",    None,        t("nav_tools", lang)),  # dropdown, no direct href
+        ("industries", "/industries", t("nav_industries", lang)),
+        ("pricing",  "/pricing",  t("nav_pricing", lang)),
+    ]
+
     tools_active = active == "tools"
     tools_cls = "text-sm nav-link cursor-pointer " + ("text-white font-medium" if tools_active else "text-slate-400")
     tools_dropdown = Div(
@@ -116,13 +124,65 @@ def landing_nav(active: str = "home", lang: str = "en"):
         cls="relative tools-dd",
     )
 
+    # ── Mobile hamburger + drawer (adapted from kanvas) ──
+    bar_cls = f"block w-5 h-0.5 mb-1 transition-all"
+    hamburger = Button(
+        Span(cls=bar_cls, style=f"background:{INK};"),
+        Span(cls=bar_cls, style=f"background:{INK};"),
+        Span(cls=f"block w-5 h-0.5 transition-all", style=f"background:{INK};"),
+        cls="lg:hidden flex flex-col justify-center items-center p-2 bg-transparent border-none cursor-pointer",
+        id="mobile-menu-btn",
+        aria_label="Open menu",
+        onclick="document.getElementById('mobile-menu').classList.toggle('hidden')",
+    )
+
+    mobile_links = []
+    for key, href, label in nav_items:
+        is_active = key == active
+        link_color = INK if is_active else INK_MUTED
+        if key == "tools":
+            mobile_links.append(
+                Div(
+                    Span(label, cls="block px-4 py-3 text-sm font-medium cursor-pointer",
+                         style=f"color:{link_color};",
+                         onclick="this.nextElementSibling.classList.toggle('hidden')"),
+                    Div(
+                        A("Market Comps", href="/tools/comparables",
+                          cls="block px-6 py-2 text-sm no-underline", style=f"color:{INK_MUTED};"),
+                        A("Find Buyers", href="/tools/match",
+                          cls="block px-6 py-2 text-sm no-underline", style=f"color:{INK_MUTED};"),
+                        A("Valuation", href="/tools/valuation",
+                          cls="block px-6 py-2 text-sm no-underline", style=f"color:{INK_MUTED};"),
+                        cls="hidden",
+                    ),
+                )
+            )
+        else:
+            mobile_links.append(
+                A(label, href=href,
+                  cls="block px-4 py-3 text-sm no-underline",
+                  style=f"color:{link_color};")
+            )
+    mobile_links.append(
+        A(t("nav_sign_in", lang), href="/signin",
+          cls="block px-4 py-3 text-sm font-medium no-underline",
+          style=f"color:{CTA};")
+    )
+
+    mobile_menu = Div(
+        *mobile_links,
+        id="mobile-menu",
+        cls="hidden lg:hidden",
+        style=f"background:{BG_ELEV}; border-top:1px solid {LINE};",
+    )
+
     return Div(
         Div(
             A(
                 Div(
                     Span("◈", cls="text-xl mr-2", style=f"color:{CTA}"),
                     Span("LiquidRound", cls="text-base font-semibold tighter"),
-                    Span(f"v{VERSION}", cls="ml-2 text-[10px] px-1.5 py-0.5 rounded mono", style=f"color:#64748b; background:transparent;"),
+                    Span(f"v{VERSION}", cls="ml-2 text-[10px] px-1.5 py-0.5 rounded mono hidden sm:inline", style=f"color:#64748b; background:transparent;"),
                     cls="flex items-center",
                 ),
                 href="/", cls="text-white no-underline",
@@ -139,12 +199,14 @@ def landing_nav(active: str = "home", lang: str = "en"):
                 _lang_dropdown(lang),
                 A(t("nav_sign_in", lang),
                   href="/signin",
-                  cls="text-sm px-3 py-1.5 rounded-md font-medium cursor-pointer no-underline ml-3",
+                  cls="hidden sm:inline-flex text-sm px-3 py-1.5 rounded-md font-medium cursor-pointer no-underline ml-3",
                   style=f"background:{BG_ELEV}; color:{INK}; border:1px solid {LINE};"),
-                cls="flex items-center",
+                hamburger,
+                cls="flex items-center gap-2",
             ),
             cls="max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-6 py-4",
         ),
+        mobile_menu,
         cls="border-b sticky top-0 z-40 backdrop-blur",
         style=f"border-color:{LINE}; background: rgba(11,18,32,0.85);",
     )
@@ -168,7 +230,7 @@ def landing_footer():
                 A("Industries", href="/industries", cls="text-xs text-slate-400 nav-link"),
                 Span("·", cls="text-xs text-slate-600 mx-2"),
                 A("ECM Squad", href="/agents", cls="text-xs text-slate-400 nav-link"),
-                cls="flex items-center",
+                cls="flex items-center flex-wrap gap-y-1 justify-center sm:justify-end",
             ),
             cls="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3",
         ),
@@ -240,7 +302,7 @@ def hero():
             # Sub-CTA text
             P(
                 "Same app, different default view. Switch anytime in ",
-                A("Configuration", href="/app?role=buyer#settings", style=f"color:{CTA}"),
+                A("Configuration", href="/signin", style=f"color:{CTA}"),
                 ".",
                 cls="text-center text-xs mb-16",
                 style=f"color:{INK_MUTED};",
