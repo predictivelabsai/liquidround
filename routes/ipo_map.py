@@ -163,8 +163,35 @@ def render_ipo_map_body(filters: dict) -> Div:
         )
         fig.update_traces(textinfo="label+value")
         j = apply_dark_layout(fig, height=560)
+        ipo_legend = Div(
+            Div(
+                Span("How to read this treemap", cls="text-xs font-semibold", style="color:#F8FAFC"),
+                cls="mb-1",
+            ),
+            Div(
+                Div(
+                    Div(style="width:40px;height:12px;border-radius:2px;background:linear-gradient(90deg,#EF4444,#FBBF24,#22C55E);flex-shrink:0"),
+                    Span("Color = performance since IPO (red = negative, yellow = flat, green = positive)", cls="text-xs", style="color:#94A3B8"),
+                    cls="flex items-center gap-2",
+                ),
+                Div(
+                    Div(style="width:12px;height:12px;border-radius:2px;border:1px solid #1E293B;background:#111827;flex-shrink:0"),
+                    Span("Size = market cap in USD (larger cell = larger company)", cls="text-xs", style="color:#94A3B8"),
+                    cls="flex items-center gap-2",
+                ),
+                Div(
+                    Span("Hierarchy: All IPOs → Region → Country → Sector → Ticker", cls="text-xs", style="color:#94A3B8"),
+                    cls="flex items-center gap-2 ml-[20px]",
+                ),
+                cls="flex flex-col gap-1",
+            ),
+            cls="mt-2 p-3 rounded-lg",
+            style="background:#111827; border:1px solid #1E293B",
+        )
         charts.append(Div(H3("Performance treemap", cls="ipo-section-title"),
-                          PlotlyDiv("ipo-treemap", j["data"], j["layout"]), cls="ipo-card"))
+                          PlotlyDiv("ipo-treemap", j["data"], j["layout"]),
+                          ipo_legend,
+                          cls="ipo-card"))
 
     # Histogram + sector bar side by side
     hfig = px.histogram(df, x="price_change_since_ipo", nbins=20,

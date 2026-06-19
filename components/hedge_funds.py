@@ -78,6 +78,33 @@ def hedge_fund_page_content():
             id="treemap-container",
             style=f"background:{BG_CARD}; border:1px solid {BORDER}; border-radius:8px; min-height:500px; padding:8px;",
         ),
+        # Legend
+        Div(
+            Div(
+                Span("How to read this treemap", cls="text-xs font-semibold", style=f"color:{INK}"),
+                cls="mb-1",
+            ),
+            Div(
+                Div(
+                    Div(style=f"width:12px;height:12px;border-radius:2px;background:linear-gradient(135deg,#F59E0B,#3B82F6,#10B981,#8B5CF6);flex-shrink:0"),
+                    Span("Color = fund manager (each fund gets a distinct color)", cls="text-xs", style=f"color:{INK_MUTED}"),
+                    cls="flex items-center gap-2",
+                ),
+                Div(
+                    Div(style=f"width:12px;height:12px;border-radius:2px;border:1px solid {BORDER};background:{BG_CARD};flex-shrink:0;display:flex;align-items:center;justify-content:center"),
+                    Span("Size = position value in USD (larger cell = larger holding)", cls="text-xs", style=f"color:{INK_MUTED}"),
+                    cls="flex items-center gap-2",
+                ),
+                Div(
+                    Div(style=f"width:12px;height:12px;border-radius:2px;background:{AMBER};flex-shrink:0"),
+                    Span("Data: SEC Form 13F quarterly filings (institutional managers with $100M+ AUM)", cls="text-xs", style=f"color:{INK_MUTED}"),
+                    cls="flex items-center gap-2",
+                ),
+                cls="flex flex-col gap-1",
+            ),
+            cls="mt-3 p-3 rounded-lg",
+            style=f"background:{BG_CARD}; border:1px solid {BORDER}",
+        ),
         # Stats row
         Div(id="hf-stats", cls="mt-3 text-xs", style=f"color:{INK_MUTED}"),
         # Plotly CDN + loader script
@@ -134,8 +161,7 @@ def hedge_fund_page_content():
                     textinfo: 'text',
                     hovertemplate: '%{label}<br>%{text}<br>Parent: %{parent}<extra></extra>',
                     marker: {
-                        colorscale: [[0, '#1E293B'], [0.5, '#F59E0B'], [1, '#EF4444']],
-                        colors: values,
+                        depthfade: 'reversed',
                     },
                     pathbar: {visible: true},
                 };

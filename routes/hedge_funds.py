@@ -1,7 +1,8 @@
-"""Hedge fund routes — treemap page + JSON data API."""
+"""Hedge fund routes — treemap page + JSON data API with in-memory cache."""
 from __future__ import annotations
 
 import logging
+import time
 
 from fasthtml.common import *
 from fasthtml.core import APIRouter
@@ -11,6 +12,9 @@ from components.hedge_funds import hedge_fund_page_content
 
 log = logging.getLogger(__name__)
 ar = APIRouter()
+
+_cache: dict[str, tuple[float, list]] = {}
+_CACHE_TTL = 600  # 10 minutes
 
 
 @ar("/app/hedgefunds")
@@ -66,9 +70,14 @@ def hedge_funds_data(request):
     fund = params.get("fund", "")
     min_value = int(params.get("min_value", 0))
     limit = min(int(params.get("limit", 500)), 2000)
+    cache_key = f"{fund}:{min_value}:{limit}"
+    now = time.time()
+    if cache_key in _cache and now - _cache[cache_key][0] < _CACHE_TTL:
+        return JSONResponse(_cache[cache_key][1])
     try:
         from utils.hedge_fund_db import get_treemap_data
         data = get_treemap_data(min_value=min_value, fund_filter=fund, limit=limit)
+        _cache[cache_key] = (now, data)
         return JSONResponse(data)
     except Exception as e:
         log.error("Treemap data error: %s", e)
