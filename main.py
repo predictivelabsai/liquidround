@@ -53,6 +53,11 @@ app, rt = fast_app(
     secret_key=os.getenv("SESSION_SECRET", "liquidround-dev-secret-change-me"),
 )
 
+# Serve user-guide images at /docs/img/
+from starlette.routing import Mount as _Mount
+from starlette.staticfiles import StaticFiles as _StaticFiles
+app.routes.insert(0, _Mount("/docs/img", app=_StaticFiles(directory="docs/img"), name="docs-img"))
+
 # Register landing-page routes FIRST so `/` resolves to the landing, not the chat
 from routes.landing import ar as landing_router
 landing_router.to_app(app)
@@ -242,6 +247,7 @@ DOC_FOLDERS = [DOCS_DATA_DIR, DOCS_DIR, UPLOAD_DIR]
 # ---------------------------------------------------------------------------
 # Document serving routes
 # ---------------------------------------------------------------------------
+
 @rt("/doc/view")
 async def doc_view(fn: str = ""):
     """Serve a document file (PDF, etc.) from docs/ or uploads/."""

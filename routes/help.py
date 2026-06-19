@@ -41,6 +41,7 @@ def _build_toc(toc: list[tuple[str, str]]) -> Nav:
 
 def _md_to_components(md: str) -> list:
     import html as _html
+    from fasthtml.common import Blockquote
 
     elements = []
     lines = md.split("\n")
@@ -51,6 +52,8 @@ def _md_to_components(md: str) -> list:
     list_items = []
     in_code = False
     code_lines = []
+    in_quote = False
+    quote_lines = []
     skip_toc = False
 
     while i < len(lines):
@@ -144,6 +147,19 @@ def _md_to_components(md: str) -> list:
             list_items = []
             in_list = False
 
+        if stripped.startswith("> "):
+            if not in_quote:
+                in_quote = True
+                quote_lines = []
+            quote_lines.append(stripped[2:])
+            i += 1
+            continue
+        if in_quote:
+            elements.append(Blockquote(P(NotStr(_inline_md(" ".join(quote_lines))), cls="guide-p"),
+                                       cls="guide-quote"))
+            quote_lines = []
+            in_quote = False
+
         if stripped.startswith("# ") and not stripped.startswith("## "):
             elements.append(H1(stripped[2:], cls="guide-h1"))
         elif stripped.startswith("### "):
@@ -166,6 +182,9 @@ def _md_to_components(md: str) -> list:
 
         i += 1
 
+    if in_quote:
+        elements.append(Blockquote(P(NotStr(_inline_md(" ".join(quote_lines))), cls="guide-p"),
+                                   cls="guide-quote"))
     if in_list:
         elements.append(Ul(*list_items, cls="guide-list"))
     if in_table and table_rows:
@@ -195,8 +214,7 @@ def _slugify(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
 
 
-@ar("/app/help")
-def help_page(session):
+def _render_guide(session, current_path="/app/user-guide"):
     from components.chat_shell import left_pane, right_pane
 
     user = session.get("user")
@@ -218,14 +236,14 @@ def help_page(session):
     content = _md_to_components(md)
 
     return (
-        Title("Help · LiquidRound"),
+        Title("User Guide · LiquidRound"),
         Div(cls="left-overlay", id="left-overlay", onclick="toggleLeftPane()"),
         Div(
             left_pane(
                 user_email=email,
                 sessions=sessions_list,
                 current_sid="",
-                current_path="/app/help",
+                current_path=current_path,
                 current_currency=session.get("currency", "EUR"),
                 current_role=session.get("role", "buyer"),
             ),
@@ -233,7 +251,9 @@ def help_page(session):
                 Div(
                     Div(
                         Button("☰", cls="mobile-menu-btn", onclick="toggleLeftPane()", type="button"),
-                        Span("Help", cls="chat-header-title"),
+                        Span("User Guide", cls="chat-header-title"),
+                        Span("·", cls="chat-header-dot"),
+                        Span("LiquidRound", cls="chat-header-agent"),
                         cls="chat-header-left",
                     ),
                     cls="chat-header",
@@ -250,3 +270,13 @@ def help_page(session):
         ),
         Script(src="/chat.js"),
     )
+
+
+@ar("/app/user-guide")
+def user_guide_page(session):
+    return _render_guide(session, current_path="/app/user-guide")
+
+
+@ar("/app/help")
+def help_page(session):
+    return _render_guide(session, current_path="/app/help")

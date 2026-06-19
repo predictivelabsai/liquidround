@@ -141,7 +141,7 @@ _WORKSPACE_ITEMS = [
     ("Documents",    "/page/documents",    "▦"),
     ("Deal history", "/page/deals",        "∑"),
     ("Instructions", "/app/instructions",  "✎"),
-    ("Help",         "/app/help",          "?"),
+    ("User Guide",   "/app/user-guide",    "?"),
 ]
 
 
@@ -332,9 +332,9 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
                     A(Span("⚙", cls="bottom-nav-icon"), Span("Profile / Account", cls="bottom-nav-label"),
                       href="/profile",
                       cls=f"bottom-nav-link{' active' if current_path.startswith('/profile') else ''}"),
-                    A(Span("?", cls="bottom-nav-icon"), Span("Help", cls="bottom-nav-label"),
-                      href="/app/help",
-                      cls=f"bottom-nav-link{' active' if current_path.startswith('/app/help') else ''}"),
+                    A(Span("?", cls="bottom-nav-icon"), Span("User Guide", cls="bottom-nav-label"),
+                      href="/app/user-guide",
+                      cls=f"bottom-nav-link{' active' if current_path.startswith('/app/user-guide') or current_path.startswith('/app/help') else ''}"),
                     A(Span("⌨", cls="bottom-nav-icon"), Span("Shortcuts", cls="bottom-nav-label"),
                       href="#", onclick="toggleGroup('sec-shortcuts'); return false;",
                       cls="bottom-nav-link"),
