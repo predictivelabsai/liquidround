@@ -139,9 +139,11 @@ _SPAC_MARKERS = ("acquisition corp", "acquisition co", "acquisition company",
                  "blank check", "spac")
 
 
-def _is_spac(name: str) -> bool:
+def is_spac(name: str) -> bool:
     n = (name or "").lower()
     return any(m in n for m in _SPAC_MARKERS)
+
+_is_spac = is_spac  # backward compat
 
 
 def fetch_nasdaq_pipeline(months: int = 4, session: Optional[requests.Session] = None,

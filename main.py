@@ -125,6 +125,10 @@ prospectus_router.to_app(app)
 from routes.hedge_funds import ar as hedge_funds_router
 hedge_funds_router.to_app(app)
 
+# Register SPAC tracker (/app/spacs)
+from routes.spacs import ar as spacs_router
+spacs_router.to_app(app)
+
 # Register help page (/app/help)
 from routes.help import ar as help_router
 help_router.to_app(app)

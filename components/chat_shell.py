@@ -228,7 +228,7 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
                 Button(
                     Span("◧", cls="cat-icon"),
                     Span("Public Markets", cls="cat-name"),
-                    Span("3", cls="cat-count"),
+                    Span("4", cls="cat-count"),
                     Span("▸", cls="cat-arrow"),
                     cls="cat-toggle",
                     onclick="toggleGroup('sec-public-markets')",
@@ -242,6 +242,9 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
                     A(Span("◨", cls="bottom-nav-icon"), Span("IPO Pipeline", cls="bottom-nav-label"),
                       href="/app/ipo-pipeline",
                       cls=f"bottom-nav-link{' active' if current_path.startswith('/app/ipo-pipeline') else ''}"),
+                    A(Span("◇", cls="bottom-nav-icon"), Span("SPACs", cls="bottom-nav-label"),
+                      href="/app/spacs",
+                      cls=f"bottom-nav-link{' active' if current_path.startswith('/app/spacs') else ''}"),
                     A(Span("◰", cls="bottom-nav-icon"), Span("Prospectus", cls="bottom-nav-label"),
                       href="/app/prospectus",
                       cls=f"bottom-nav-link{' active' if current_path.startswith('/app/prospectus') else ''}"),
