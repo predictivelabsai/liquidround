@@ -26,9 +26,12 @@ FRAMES = [
     ("10-chat-triage.png",     3200),  # triage
     ("11-chat-dcf.png",        3200),  # DCF
     ("12-chat-memo.png",       3400),  # IC memo
+    ("15-ipo-map.png",         3200),  # IPO global heatmap
+    ("16-hedgefunds.png",      3200),  # hedge fund treemap
+    ("17-spacs.png",           3200),  # SPAC tracker dashboard
     ("08-app-seller.png",      2000),  # seller default view
     ("13-chat-ipo.png",        3200),  # IPO readiness
-    ("14-settings.png",        2400),  # profile & preferences
+    ("18-signin.png",          2400),  # sign in (Google + email)
 ]
 
 TARGET_W = 1200

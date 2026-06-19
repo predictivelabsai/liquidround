@@ -46,8 +46,12 @@ TOUR = [
     ("12-chat-memo.png",       "/app?role=buyer",    "#chat-input",                      False, "memo"),
     # Seller
     ("13-chat-ipo.png",        "/app?role=seller",   "#chat-input",                      False, "ipo"),
-    # Settings / Profile
-    ("14-settings.png",        "/profile",           "text=Profile",                     True,  None),
+    # Public markets dashboards
+    ("15-ipo-map.png",         "/app/ipo-map",       "text=Global IPO heatmap",          False, None),
+    ("16-hedgefunds.png",      "/app/hedgefunds",    "text=Hedge Fund Treemap",          False, "wait_treemap"),
+    ("17-spacs.png",           "/app/spacs",         "text=SPAC Tracker",                False, None),
+    # Sign in
+    ("18-signin.png",          "/signin",            "text=Sign In",                     False, None),
 ]
 
 
@@ -105,6 +109,8 @@ def main() -> None:
 
             if action == "expand_agents":
                 _expand_all_agent_groups(page)
+            elif action == "wait_treemap":
+                time.sleep(20)
             elif action and action in CHAT_MSGS:
                 _run_chat(page, CHAT_MSGS[action])
 
