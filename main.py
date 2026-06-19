@@ -32,9 +32,11 @@ _start_scheduler()
 # ---------------------------------------------------------------------------
 # App setup — NO auth beforeware (login is optional)
 # ---------------------------------------------------------------------------
+_OG_DESC = "AI-powered M&A, IPO readiness, and public markets intelligence. A squad of specialist AI analysts in one chat-first workspace."
 app, rt = fast_app(
     pico=False,
     hdrs=(
+        Title("LiquidRound"),
         Script(src="https://cdn.tailwindcss.com"),
         Script(src="https://cdn.plot.ly/plotly-2.32.0.min.js"),
         Link(rel="stylesheet", href="/app.css"),
@@ -48,6 +50,15 @@ app, rt = fast_app(
         Meta(name="apple-mobile-web-app-capable", content="yes"),
         Meta(name="apple-mobile-web-app-status-bar-style", content="default"),
         Meta(name="theme-color", content="#2563eb"),
+        Meta(name="description", content=_OG_DESC),
+        Meta(property="og:type", content="website"),
+        Meta(property="og:site_name", content="LiquidRound"),
+        Meta(property="og:title", content="LiquidRound — AI ECM Agent Squad"),
+        Meta(property="og:description", content=_OG_DESC),
+        Meta(property="og:image", content="https://liquidround.ai/og-image.png"),
+        Meta(name="twitter:card", content="summary_large_image"),
+        Meta(name="twitter:title", content="LiquidRound — AI ECM Agent Squad"),
+        Meta(name="twitter:description", content=_OG_DESC),
     ),
     static_path="static",
     secret_key=os.getenv("SESSION_SECRET", "liquidround-dev-secret-change-me"),
@@ -1074,7 +1085,7 @@ def app_shell(session, role: str = "", sid: str = ""):
     user_email = user.get("email") if user else None
 
     return (
-        Title("LiquidRound — App"),
+        Title("LiquidRound — AI ECM Agent Squad"),
         # Mount a hidden sign-in overlay so the "Sign in" button can open it
         Div(cls="left-overlay", id="left-overlay", onclick="toggleLeftPane()"),
         Div(

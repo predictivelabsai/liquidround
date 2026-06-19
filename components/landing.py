@@ -21,6 +21,8 @@ LINE      = "#1E293B"   # slate-800
 
 # ───── Shared chrome ────────────────────────────────────────────────────
 
+_OG_DESC = "AI-powered M&A, IPO readiness, and public markets intelligence. A squad of specialist AI analysts in one chat-first workspace."
+
 def landing_head(title: str = "LiquidRound"):
     """<head> contents for all landing pages."""
     return (
@@ -28,6 +30,15 @@ def landing_head(title: str = "LiquidRound"):
         Meta(charset="utf-8"),
         Meta(name="viewport", content="width=device-width, initial-scale=1"),
         Meta(name="theme-color", content=BG),
+        Meta(name="description", content=_OG_DESC),
+        Meta(property="og:type", content="website"),
+        Meta(property="og:site_name", content="LiquidRound"),
+        Meta(property="og:title", content=title),
+        Meta(property="og:description", content=_OG_DESC),
+        Meta(property="og:image", content="https://liquidround.ai/og-image.png"),
+        Meta(name="twitter:card", content="summary_large_image"),
+        Meta(name="twitter:title", content=title),
+        Meta(name="twitter:description", content=_OG_DESC),
         Link(rel="icon", type="image/svg+xml", href="/favicon.svg"),
         Link(rel="icon", type="image/png", sizes="32x32", href="/favicon.png"),
         Link(rel="alternate icon", type="image/x-icon", href="/favicon.ico"),
