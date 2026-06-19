@@ -54,9 +54,11 @@ app, rt = fast_app(
 )
 
 # Serve user-guide images at /docs/img/
-from starlette.routing import Mount as _Mount
-from starlette.staticfiles import StaticFiles as _StaticFiles
-app.routes.insert(0, _Mount("/docs/img", app=_StaticFiles(directory="docs/img"), name="docs-img"))
+_docs_img_dir = Path("docs/img")
+if _docs_img_dir.is_dir():
+    from starlette.routing import Mount as _Mount
+    from starlette.staticfiles import StaticFiles as _StaticFiles
+    app.routes.insert(0, _Mount("/docs/img", app=_StaticFiles(directory=str(_docs_img_dir)), name="docs-img"))
 
 # Register landing-page routes FIRST so `/` resolves to the landing, not the chat
 from routes.landing import ar as landing_router

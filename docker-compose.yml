@@ -24,7 +24,6 @@ services:
       - CH_API_KEY=${CH_API_KEY:-}
     volumes:
       - ./uploads:/app/uploads
-      - ./docs:/app/docs
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5007/')"]
       interval: 30s
