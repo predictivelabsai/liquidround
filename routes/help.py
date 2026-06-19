@@ -175,7 +175,7 @@ def _md_to_components(md: str) -> list:
             if m:
                 alt, src = m.group(1), m.group(2)
                 if not src.startswith("http"):
-                    src = f"/docs/{src}"
+                    src = f"/{src}"
                 elements.append(Div(Img(src=src, alt=alt, cls="guide-img"), cls="guide-img-wrap"))
         elif stripped:
             elements.append(P(NotStr(_inline_md(stripped)), cls="guide-p"))
