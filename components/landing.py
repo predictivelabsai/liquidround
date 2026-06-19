@@ -267,7 +267,7 @@ def hero():
             P(
                 Span("ECM = ", cls="mono", style=f"color:{CTA};"),
                 Span("Equity Capital Markets", cls="mono", style=f"color:{INK};"),
-                Span(". 22 specialist AI analysts — ",
+                Span(". A squad of specialist AI analysts — ",
                      style=f"color:{INK_MUTED};"),
                 Span("buyer-led ", style=f"color:{BUY};"),
                 Span("sourcing and diligence, ", style=f"color:{INK_MUTED};"),
@@ -331,7 +331,7 @@ def hero():
 
 def stats_bar():
     items = [
-        ("22", "in the ECM squad"),
+        ("AI Squad", "specialist analysts"),
         ("2", "sides of every deal"),
         ("M&A + IPO", "buyer and seller"),
         ("BYOD", "bring your own pitch books"),
@@ -437,7 +437,7 @@ def agent_grid_section():
             H2("Every role already defined.",
                cls="text-3xl md:text-4xl font-bold tightest text-center mb-4",
                style=f"color:{INK};"),
-            P("22 AI ECM / IB analysts — each with a defined role and a one-word prefix. Talk to them directly or let the router pick.",
+            P("A squad of AI ECM / IB analysts — each with a defined role and a one-word prefix. Talk to them directly or let the router pick.",
               cls="text-center mb-12", style=f"color:{INK_MUTED};"),
             *sections,
             cls="max-w-6xl mx-auto px-4 sm:px-6 py-14 md:py-20",

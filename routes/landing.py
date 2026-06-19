@@ -55,7 +55,7 @@ def landing_platform(sess):
                 H1("The platform.",
                    cls="text-4xl md:text-5xl font-bold tightest text-center mb-4",
                    style=f"color:{INK};"),
-                P("Your AI ECM / IB analyst squad — 22 specialists across 5 workflow categories (sourcing, underwriting, diligence, capital, portfolio). ECM stands for Equity Capital Markets. Same app for buyers and sellers.",
+                P("Your AI ECM / IB analyst squad — specialists across 5 workflow categories (sourcing, underwriting, diligence, capital, portfolio). ECM stands for Equity Capital Markets. Same app for buyers and sellers.",
                   cls="text-lg text-center max-w-2xl mx-auto mb-12",
                   style=f"color:{INK_MUTED};"),
                 cls="max-w-4xl mx-auto px-6 pt-20 pb-8 text-center",
@@ -115,7 +115,7 @@ def landing_agents(sess):
                cls="text-4xl md:text-5xl font-bold tightest text-center mb-4",
                style=f"color:{INK};"),
             P(
-                "22 AI ECM / IB analysts — M&A and IPO, buyer and seller. Click any card for details and example prompts.",
+                "AI ECM / IB analysts — M&A and IPO, buyer and seller. Click any card for details and example prompts.",
                 cls="text-center mb-4 max-w-2xl mx-auto", style=f"color:{INK_MUTED};",
             ),
             cls="max-w-4xl mx-auto px-6",
@@ -239,7 +239,7 @@ def landing_pricing(sess):
     lang = get_lang(sess)
     tiers = [
         ("Starter", "Free", "For solo advisors exploring LiquidRound.",
-         ["Full ECM Agent Squad (22 analysts)", "Real-time market data & research", "Up to 20 queries / day", "Community support"], False),
+         ["Full ECM Agent Squad", "Real-time market data & research", "Up to 20 queries / day", "Community support"], False),
         ("Team", "From $499 / month", "For boutique M&A and IB teams.",
          ["Everything in Starter", "Unlimited queries", "BYOD: pitch books, CIMs, term sheets", "Memo + pitch-deck drafting", "Team pipelines", "Priority support"], True),
         ("Enterprise", "Contact us", "For institutional platforms.",
