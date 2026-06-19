@@ -1,168 +1,120 @@
-# LiquidRound - Multi-Agent M&A and IPO Deal Flow System
+# LiquidRound
 
-**Predictive Labs Ltd**
+**AI ECM Agent Squad for M&A, IPO & Public Markets**
 
-LiquidRound is an advanced multi-agent system designed to streamline M&A and IPO deal flow processes using LangGraph and Streamlit. The system provides intelligent workflow orchestration for buyer-led M&A, seller-led M&A, and IPO transactions.
+[liquidround.ai](https://liquidround.ai) · Predictive Labs Ltd
 
-## Features
+![LiquidRound Demo](docs/liquidround.gif)
 
-- **Multi-Agent Architecture**: Specialized agents for different aspects of deal flow
-- **Intelligent Workflow Routing**: Automatic classification of user queries into appropriate workflows
-- **Interactive Chat Interface**: Streamlit-based UI with suggested queries
-- **Comprehensive Logging**: Detailed logging and tracing of agent activities
-- **Extensible Design**: Modular architecture for easy addition of new agents and workflows
+LiquidRound is an AI-powered chat-first workspace for investment banking and equity capital markets. A squad of specialist AI agents covers the full deal lifecycle — buyer-led sourcing and diligence, seller-led positioning and IPO readiness, and public markets intelligence.
 
-## System Architecture
+## What it does
 
-### Core Agents
+- **Buy-side M&A** — find acquisition targets, run diligence, score matches, build IC memos
+- **Sell-side M&A** — prepare teasers / CIMs, identify buyers, assess IPO readiness
+- **Public Markets** — IPO tracking (map, pipeline, prospectus), SPAC lifecycle dashboard
+- **Hedge Fund Intelligence** — SEC 13F institutional holdings, fund AUM rankings, activist filings
+- **BYOD** — upload pitch books, CIMs, term sheets; agents read, cite, and draft from them
 
-1. **Orchestrator Agent**: Routes queries to appropriate workflows
-2. **Target Finder Agent**: Identifies acquisition targets based on criteria
-3. **Valuer Agent**: Performs financial analysis and valuation
-4. **Synergy Analyst**: Analyzes potential synergies
-5. **Bid Strategist**: Develops bidding strategies
-6. **Seller Prep Agent**: Prepares companies for sale
-7. **Market Outreach Agent**: Identifies potential buyers
-8. **IPO Readiness Assessor**: Evaluates IPO readiness
-9. **Memo Writer**: Creates investment committee memoranda
+## AI Agent Squad
 
-### Workflows
+Six workflow categories with 23 specialist agents:
 
-- **Buyer-Led M&A**: Target identification → Valuation → Synergy analysis → Bid strategy
-- **Seller-Led M&A**: Seller preparation → Market outreach → Buyer identification
-- **IPO**: Readiness assessment → Underwriter selection → Process planning
+| Category | Agents | Examples |
+|----------|--------|----------|
+| Deal Sourcing & Screening | 4 | Target Scanner, Buyer Scanner, Deal Triage, Seller Intent |
+| Valuation & Underwriting | 6 | Company Profiler, DCF, Comps, LTM, Multiples, Synergy |
+| Due Diligence Stack | 5 | VDR Auditor, Contract Abstractor, Legal, Operational, ESG |
+| Deal Execution & Capital | 5 | IC Memo, Teaser, Bid Strategy, IPO Readiness, Integration |
+| Research & Post-Deal | 2 | Research Analyst, Match Scorer |
+| Public Markets | 1 | Hedge Fund Analyst (13F, AUM, activist filings) |
 
-## Installation
+Type a natural-language question and the auto-router picks the right agent, or use a prefix shortcut (`scan:`, `dcf:`, `memo:`, `hedgefunds:`, etc.) to route directly.
 
-1. Clone the repository:
+## Key Features
+
+### Chat Interface
+Three-pane layout: left nav (sessions, agents, workspace), center chat with streaming responses, right artifact canvas (tables, charts, PDF previews).
+
+### Public Markets Dashboard
+- **IPO Map** — global treemap sized by market cap, colored by post-IPO performance (RdYlGn)
+- **IPO Pipeline** — upcoming US IPOs from NASDAQ calendar, private mega-caps by sector
+- **SPAC Tracker** — KPI cards, annual IPO chart, status donut, searchable table with 13F cross-reference
+- **Prospectus Builder** — analyze IPO prospectus documents
+
+### Hedge Fund Treemap
+Interactive Plotly treemap of SEC 13F institutional holdings. Filter by fund, min value, and position count. 10K+ funds, 7M+ holdings.
+
+### Workspace
+Companies directory, deal pipelines (kanban), daily AI-curated digest, valuation simulator (DCF + multiples), text-to-SQL analytics, virtual data room, document management, deal history.
+
+### Free Tools (no sign-in)
+- Market Comparables — sector M&A benchmarks
+- Business Valuation — indicative range with AI value drivers
+- Find Buyers — strategic and financial buyer matching
+
+### Exports
+- **XLSX** — agent tables as formatted spreadsheets
+- **DOCX** — IC memos and teasers as Word documents
+- **PDF** — memo preview in-app, company cards as branded PDFs
+
+## Quick Start
+
 ```bash
-git clone https://github.com/kaljuvee/liquidround.git
-cd liquidround
+uv pip install -r requirements.txt
+python main.py                    # starts on port 5007
 ```
 
-2. Install dependencies:
+Or with Docker:
+
 ```bash
-pip install -r requirements.txt
+docker compose up --build
 ```
 
-3. Set up environment variables:
-```bash
-cp .env.template .env
-# Edit .env with your API keys
+### Environment
+
+```
+XAI_API_KEY=...          # primary LLM (Grok via x.ai)
+OPENAI_API_KEY=...       # fallback LLM
+EXA_API_KEY=...          # semantic search
+TAVILY_API_KEY=...       # web search
+DB_URL=postgresql://...  # PostgreSQL
+SESSION_SECRET=...       # session cookie signing
 ```
 
-4. Run the application:
-```bash
-streamlit run Home.py
-```
-
-**Note**: The main application files are now organized in the `agents/` directory for better structure.
-
-## Configuration
-
-The system requires the following environment variables:
-
-- `OPENAI_API_KEY`: OpenAI API key for LLM interactions
-- `POLYGON_API_KEY`: (Optional) Polygon.io API key for financial data
-- `EXA_API_KEY`: (Optional) Exa API key for enhanced search
-
-## Usage
-
-1. **Start the Application**: Run `streamlit run Home.py`
-2. **Select Query Type**: Choose from suggested queries or enter your own
-3. **Review Results**: The system will automatically route your query and execute the appropriate workflow
-4. **Analyze Output**: Review agent results, financial analysis, and recommendations
-
-### Example Queries
-
-**Buyer-Led M&A:**
-- "Find fintech acquisition targets with $10-50M revenue"
-- "Looking to acquire a SaaS company in healthcare"
-
-**Seller-Led M&A:**
-- "Preparing to sell our B2B software company"
-- "Need help finding buyers for our logistics business"
-
-**IPO:**
-- "Assessing IPO readiness for our tech company"
-- "Planning to go public in the next 18 months"
+At least one of `XAI_API_KEY` or `OPENAI_API_KEY` is required.
 
 ## Testing
 
-Run the test suite:
 ```bash
-pytest
+pytest -q                              # unit tests (125 cases)
+pytest -q tests/test_registry.py       # agent registry integrity
+pytest -m e2e                          # Playwright E2E (requires server on :5007)
 ```
 
-Test specific components:
+## Tech Stack
+
+- **Backend** — Python, FastHTML, HTMX, LangGraph, LangChain
+- **LLM** — Grok (x.ai) or OpenAI via `utils/llm_factory`
+- **Database** — PostgreSQL (`liquidround` + `hedgefolio` schemas)
+- **Charts** — Plotly.js (treemaps, bar, donut, histograms)
+- **Styling** — Tailwind CSS (CDN), custom dark navy + amber palette
+- **Data** — yfinance, SEC EDGAR, Exa, Tavily, NASDAQ calendar
+- **Deploy** — Docker Compose on Coolify, Postmark for email
+
+## Data Pipelines
+
 ```bash
-pytest tests/test_agents.py
-pytest tests/test_state.py
+python -m scripts.sync_spacs --enrich       # SPAC data (NASDAQ + EDGAR + yfinance)
+python -m scripts.download_sec_13f          # quarterly 13F institutional holdings
+python -m scripts.sync_activist             # daily 13D/G activist filings
+python -m scripts.daily_deals --all         # send daily digest to opted-in users
 ```
-
-## Project Structure
-
-```
-liquidround/
-├── Home.py                 # Main application entry point
-├── agents/                # Core application and agent implementations
-│   ├── Home.py            # Streamlit application
-│   ├── workflow.py        # LangGraph workflow definition
-│   ├── base_agent.py      # Base agent class
-│   ├── orchestrator.py    # Workflow orchestrator
-│   ├── target_finder.py   # Target identification agent
-│   └── valuer.py          # Financial valuation agent
-├── prompts/               # Agent system prompts (Markdown format)
-│   ├── orchestrator.md
-│   ├── target_finder.md
-│   ├── valuer.md
-│   └── ...
-├── utils/                 # Utility modules
-│   ├── state.py
-│   ├── logging.py
-│   └── config.py
-├── tests/                 # Test suite
-├── test-data/            # Test data files
-├── logs/                 # Application logs
-└── db/                   # Database files
-```
-
-## Development
-
-### Adding New Agents
-
-1. Create agent class in `agents/` directory
-2. Add system prompt in `prompts/` directory
-3. Update workflow in `workflow.py`
-4. Add tests in `tests/` directory
-
-### Customizing Prompts
-
-Agent prompts are stored in the `prompts/` directory as `.md` (Markdown) files. Edit these files to customize agent behavior. The Markdown format allows for better formatting and documentation of prompts.
-
-### Logging
-
-The system provides comprehensive logging:
-- Application logs in `logs/liquidround.log`
-- Agent-specific logs in `logs/agent_*.log`
-- Trace logs for detailed debugging
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
-
-## Support
-
-For questions or support, please open an issue on GitHub.
+Proprietary — Predictive Labs Ltd. All rights reserved.
 
 ---
 
-**Predictive Labs Ltd** - Advanced M&A and IPO Advisory Services
+**Predictive Labs Ltd** · [liquidround.ai](https://liquidround.ai)
