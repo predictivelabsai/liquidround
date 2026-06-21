@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import threading
 import time
 
 from fasthtml.common import *
@@ -14,7 +15,22 @@ log = logging.getLogger(__name__)
 ar = APIRouter()
 
 _cache: dict[str, tuple[float, list]] = {}
-_CACHE_TTL = 600  # 10 minutes
+_CACHE_TTL = 3600  # 1 hour — data changes daily via batch job, not in real time
+
+
+def _warm_cache():
+    """Pre-load the default treemap view at import time (background thread)."""
+    try:
+        from utils.hedge_fund_db import get_treemap_data
+        t0 = time.time()
+        data = get_treemap_data(min_value=0, fund_filter="", limit=500)
+        _cache[":0:500"] = (time.time(), data)
+        log.info("Hedge fund cache warmed: %d rows in %.1fs", len(data), time.time() - t0)
+    except Exception as e:
+        log.warning("Hedge fund cache warm failed: %s", e)
+
+
+threading.Thread(target=_warm_cache, daemon=True, name="hf-cache-warm").start()
 
 
 @ar("/app/hedgefunds")
