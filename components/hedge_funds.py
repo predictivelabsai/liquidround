@@ -78,29 +78,37 @@ def hedge_fund_page_content():
             id="treemap-container",
             style=f"background:{BG_CARD}; border:1px solid {BORDER}; border-radius:8px; min-height:500px; padding:8px;",
         ),
-        # Legend
+        # Finviz-style gradient legend bar
         Div(
             Div(
-                Span("How to read this treemap", cls="text-xs font-semibold", style=f"color:{INK}"),
-                cls="mb-1",
+                # Gradient bar
+                Div(
+                    style="height:14px;border-radius:3px;"
+                          "background:linear-gradient(90deg,"
+                          "#67000d,#a50f15,#cb181d,#ef3b2c,#fb6a4a,"
+                          "#374151,"
+                          "#74c476,#41ab5d,#238b45,#006d2c,#00441b);"
+                          "flex:1;",
+                ),
+                cls="flex items-center gap-2",
             ),
+            # Tick labels
             Div(
-                Div(
-                    Div(style=f"width:12px;height:12px;border-radius:2px;background:linear-gradient(135deg,#F59E0B,#3B82F6,#10B981,#8B5CF6);flex-shrink:0"),
-                    Span("Color = fund manager (each fund gets a distinct color)", cls="text-xs", style=f"color:{INK_MUTED}"),
-                    cls="flex items-center gap-2",
-                ),
-                Div(
-                    Div(style=f"width:12px;height:12px;border-radius:2px;border:1px solid {BORDER};background:{BG_CARD};flex-shrink:0;display:flex;align-items:center;justify-content:center"),
-                    Span("Size = position value in USD (larger cell = larger holding)", cls="text-xs", style=f"color:{INK_MUTED}"),
-                    cls="flex items-center gap-2",
-                ),
-                Div(
-                    Div(style=f"width:12px;height:12px;border-radius:2px;background:{AMBER};flex-shrink:0"),
-                    Span("Data: SEC Form 13F quarterly filings (institutional managers with $100M+ AUM)", cls="text-xs", style=f"color:{INK_MUTED}"),
-                    cls="flex items-center gap-2",
-                ),
-                cls="flex flex-col gap-1",
+                Span("-50%", cls="text-xs", style=f"color:{INK_MUTED}"),
+                Span("-25%", cls="text-xs", style=f"color:{INK_MUTED}"),
+                Span("0%", cls="text-xs font-semibold", style=f"color:{INK}"),
+                Span("+25%", cls="text-xs", style=f"color:{INK_MUTED}"),
+                Span("+50%", cls="text-xs", style=f"color:{INK_MUTED}"),
+                cls="flex justify-between mt-1",
+            ),
+            # Description
+            Div(
+                Span("Color = YTD return", cls="text-xs font-medium", style=f"color:{INK}"),
+                Span(" · ", cls="text-xs", style=f"color:{INK_MUTED}"),
+                Span("Size = position value (USD)", cls="text-xs", style=f"color:{INK_MUTED}"),
+                Span(" · ", cls="text-xs", style=f"color:{INK_MUTED}"),
+                Span("Data: SEC 13F filings", cls="text-xs", style=f"color:{INK_MUTED}"),
+                cls="mt-1",
             ),
             cls="mt-3 p-3 rounded-lg",
             style=f"background:{BG_CARD}; border:1px solid {BORDER}",
@@ -117,6 +125,32 @@ def hedge_fund_page_content():
             if (v >= 1e3) return '$' + (v/1e3).toFixed(0) + 'K';
             return '$' + v.toFixed(0);
         }
+        function fmtPct(v) {
+            if (v == null) return '';
+            return (v >= 0 ? '+' : '') + (v * 100).toFixed(1) + '%';
+        }
+        // Red-green color scale matching finviz: deep red -> grey -> deep green
+        function ytdColor(v) {
+            if (v == null) return '#374151'; // grey for unknown
+            // Clamp to [-0.5, 0.5] for color mapping
+            var t = Math.max(-0.5, Math.min(0.5, v));
+            var norm = (t + 0.5); // 0..1
+            if (norm < 0.5) {
+                // Red side: interpolate from deep red to grey
+                var r2 = norm / 0.5;
+                var r = Math.round(103 + (55 - 103) * r2);
+                var g = Math.round(0 + (65 - 0) * r2);
+                var b = Math.round(13 + (81 - 13) * r2);
+                return 'rgb(' + r + ',' + g + ',' + b + ')';
+            } else {
+                // Green side: interpolate from grey to deep green
+                var r2 = (norm - 0.5) / 0.5;
+                var r = Math.round(55 + (0 - 55) * r2);
+                var g = Math.round(65 + (68 - 65) * r2);
+                var b = Math.round(81 + (27 - 81) * r2);
+                return 'rgb(' + r + ',' + g + ',' + b + ')';
+            }
+        }
         async function loadTreemap() {
             const fund = document.getElementById('hf-fund-filter').value;
             const minVal = document.getElementById('hf-min-value').value;
@@ -132,14 +166,13 @@ def hedge_fund_page_content():
                     return;
                 }
                 const uniqueFunds = [...new Set(data.map(d => d.fund))];
-                // ids must be unique — use fund/security composite for children
                 const ids = [
                     ...uniqueFunds,
                     ...data.map(d => d.fund + '/' + d.security),
                 ];
                 const labels = [
                     ...uniqueFunds,
-                    ...data.map(d => d.security),
+                    ...data.map(d => d.ticker || d.security),
                 ];
                 const parentIds = [
                     ...uniqueFunds.map(() => ''),
@@ -149,7 +182,28 @@ def hedge_fund_page_content():
                     ...uniqueFunds.map(() => 0),
                     ...data.map(d => d.value),
                 ];
-                const textLabels = labels.map((l, i) => values[i] > 0 ? l + '\\n' + fmtMoney(values[i]) : l);
+                // Build color array: fund-level grey, leaf-level by YTD return
+                const colors = [
+                    ...uniqueFunds.map(() => '#1E293B'),
+                    ...data.map(d => ytdColor(d.return_ytd)),
+                ];
+                const textLabels = labels.map((l, i) => {
+                    if (values[i] <= 0) return l;
+                    const idx = i - uniqueFunds.length;
+                    if (idx >= 0 && data[idx].return_ytd != null) {
+                        return l + '\\n' + fmtPct(data[idx].return_ytd);
+                    }
+                    return l + '\\n' + fmtMoney(values[i]);
+                });
+                const hoverTexts = labels.map((l, i) => {
+                    if (i < uniqueFunds.length) return l;
+                    const idx = i - uniqueFunds.length;
+                    const d = data[idx];
+                    var parts = [d.security, fmtMoney(d.value)];
+                    if (d.ticker) parts.push(d.ticker);
+                    if (d.return_ytd != null) parts.push('YTD: ' + fmtPct(d.return_ytd));
+                    return parts.join('<br>');
+                });
                 const trace = {
                     type: 'treemap',
                     ids: ids,
@@ -159,26 +213,28 @@ def hedge_fund_page_content():
                     branchvalues: 'remainder',
                     text: textLabels,
                     textinfo: 'text',
-                    hovertemplate: '%{label}<br>%{text}<br>Parent: %{parent}<extra></extra>',
+                    hovertext: hoverTexts,
+                    hoverinfo: 'text',
                     marker: {
-                        depthfade: 'reversed',
+                        colors: colors,
+                        line: {width: 1, color: '#1E293B'},
                     },
+                    textfont: {color: '#F8FAFC'},
                     pathbar: {visible: true},
                 };
                 const layout = {
                     margin: {t: 30, l: 5, r: 5, b: 5},
                     paper_bgcolor: '#111827',
                     font: {color: '#F8FAFC', size: 10},
-                    treemapcolorway: ['#F59E0B', '#3B82F6', '#10B981', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#F97316'],
                 };
                 Plotly.newPlot(container, [trace], layout, {responsive: true});
+                const withReturns = data.filter(d => d.return_ytd != null).length;
                 document.getElementById('hf-stats').textContent =
-                    `Showing ${data.length} positions across ${uniqueFunds.length} funds`;
+                    `Showing ${data.length} positions across ${uniqueFunds.length} funds · ${withReturns} with YTD returns`;
             } catch(e) {
                 container.innerHTML = '<div class="flex items-center justify-center h-96"><p style="color:#EF4444">Error loading data.</p></div>';
             }
         }
-        // Auto-load on page render
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', loadTreemap);
         } else {

@@ -154,14 +154,17 @@ def register(session, email: str = "", password: str = "", display_name: str = "
 
 
 @ar("/signin")
-def signin(session, email: str = "", password: str = "", role: str = "", error: str = "", msg: str = ""):
-    redirect_to = f"/app?role={role}" if role else "/app"
+def signin(session, request, email: str = "", password: str = "", role: str = "", error: str = "", msg: str = "", next: str = ""):
+    next_url = next or request.query_params.get("next", "")
+    redirect_to = next_url if next_url.startswith("/app") else (f"/app?role={role}" if role else "/app")
     # POST
     if email and password:
         from utils.auth import authenticate
         user = authenticate(email, password)
         if not user:
             qs = f"error=Invalid+email+or+password&role={role}" if role else "error=Invalid+email+or+password"
+            if next_url:
+                qs += f"&next={next_url}"
             return RedirectResponse(f"/signin?{qs}", status_code=303)
         _session_login(session, user)
         return RedirectResponse(redirect_to, status_code=303)
@@ -177,7 +180,12 @@ def signin(session, email: str = "", password: str = "", role: str = "", error: 
     if _oauth_enabled:
         parts.append(_google_btn("Sign in with Google"))
         parts.append(_divider())
-    action = f"/signin?role={role}" if role else "/signin"
+    action_params = []
+    if role:
+        action_params.append(f"role={role}")
+    if next_url:
+        action_params.append(f"next={next_url}")
+    action = "/signin?" + "&".join(action_params) if action_params else "/signin"
     parts.append(
         Form(
             _text_input("email", "Email", input_type="email", required=True, autofocus=True),

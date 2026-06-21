@@ -59,8 +59,16 @@ def _run_digest():
     log.info("Digest result: sent=%s/%s", result.get("sent"), result.get("total"))
 
 
+def _run_security_returns():
+    from scripts.sync_security_returns import main as sync_returns
+    result = sync_returns(limit=2000)
+    log.info("Security returns: resolved=%s, skipped=%s, errors=%s",
+             result.get("resolved"), result.get("skipped"), result.get("errors"))
+
+
 JOBS = {
     "digest": _run_digest,
+    "security_returns": _run_security_returns,
 }
 
 

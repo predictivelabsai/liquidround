@@ -297,7 +297,11 @@ def activist_stats(days: int = 30) -> dict:
 
 
 def get_treemap_data(min_value: int = 0, fund_filter: str = "", limit: int = 500) -> list[dict]:
-    """Top holdings for the Plotly treemap — grouped by fund → security."""
+    """Top holdings for the Plotly treemap — grouped by fund → security.
+
+    Includes YTD return from liquidround.security_returns (populated by
+    scripts/sync_security_returns.py) when available.
+    """
     s = get_session()
     try:
         where = ["s.table_value_total IS NOT NULL"]
@@ -311,15 +315,27 @@ def get_treemap_data(min_value: int = 0, fund_filter: str = "", limit: int = 500
         rows = s.execute(text(f"""
             SELECT c.filingmanager_name AS fund,
                    i.name_of_issuer AS security,
-                   SUM(i.value) AS total_value
+                   SUM(i.value) AS total_value,
+                   sr.return_ytd,
+                   sr.ticker
             FROM {SCHEMA}.infotable i
             JOIN {SCHEMA}.coverpage c ON i.accession_number = c.accession_number
             JOIN {SCHEMA}.summarypage s ON c.accession_number = s.accession_number
+            LEFT JOIN liquidround.security_returns sr ON i.cusip = sr.cusip
             WHERE {' AND '.join(where)}
-            GROUP BY c.filingmanager_name, i.name_of_issuer
+            GROUP BY c.filingmanager_name, i.name_of_issuer, sr.return_ytd, sr.ticker
             ORDER BY SUM(i.value) DESC
             LIMIT :lim
         """), params).fetchall()
-        return [{"fund": r[0], "security": r[1], "value": float(r[2])} for r in rows]
+        return [
+            {
+                "fund": r[0],
+                "security": r[1],
+                "value": float(r[2]),
+                "return_ytd": float(r[3]) if r[3] is not None else None,
+                "ticker": r[4],
+            }
+            for r in rows
+        ]
     finally:
         s.close()

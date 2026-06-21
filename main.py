@@ -30,7 +30,7 @@ from utils.scheduler import start as _start_scheduler
 _start_scheduler()
 
 # ---------------------------------------------------------------------------
-# App setup — NO auth beforeware (login is optional)
+# App setup — auth gate on /app/* routes
 # ---------------------------------------------------------------------------
 _OG_DESC = "AI-powered M&A, IPO readiness, and public markets intelligence. A squad of specialist AI analysts in one chat-first workspace."
 app, rt = fast_app(
@@ -64,6 +64,24 @@ app, rt = fast_app(
     secret_key=os.getenv("SESSION_SECRET", "liquidround-dev-secret-change-me"),
 )
 
+
+# ---------------------------------------------------------------------------
+# Auth gate: redirect unauthenticated users on /app/* to /signin
+# Shared chat links (/app/s/*) are exempt (read-only, no LLM cost).
+# ---------------------------------------------------------------------------
+_AUTH_EXEMPT_PREFIXES = ("/app/s/", "/app/news")
+
+
+def _auth_gate(req, session):
+    path = req.url.path
+    if path.startswith("/app"):
+        if not any(path.startswith(p) for p in _AUTH_EXEMPT_PREFIXES):
+            user = session.get("user")
+            if not user:
+                return RedirectResponse(f"/signin?next={path}", status_code=302)
+
+
+app.before.append(_auth_gate)
 
 # Register landing-page routes FIRST so `/` resolves to the landing, not the chat
 from routes.landing import ar as landing_router

@@ -27,6 +27,10 @@ python -m scripts.daily_deals                    # send to TO_EMAIL
 python -m scripts.daily_deals --all              # send to all opted-in users
 python -m scripts.daily_deals --dry-run          # print HTML, don't send
 
+# Sync YTD security returns for hedge fund treemap coloring
+python -m scripts.sync_security_returns           # top 2000 CUSIPs -> yfinance YTD
+python -m scripts.sync_security_returns --limit 500 --dry-run  # preview only
+
 # Regenerate landing-page demo GIF (server must be running on :5007)
 python -m scripts.capture_screenshots   # -> screenshots/*.png (14 frames)
 python -m scripts.make_gif              # -> docs/liquidround.gif + static/liquidround.gif
