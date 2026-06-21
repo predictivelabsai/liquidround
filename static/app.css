@@ -450,6 +450,9 @@ html, body {
 .artifact-table th { color: var(--ink-dim); font-weight: 500; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: .08em; font-size: .62rem; }
 .artifact-table a { color: var(--accent); text-decoration: none; }
 .artifact-table a:hover { text-decoration: underline; }
+.table-scroll { overflow-x: auto; max-width: 100%; }
+.inline-artifact { margin-top: .6rem; padding: .6rem; background: var(--bg); border: 1px solid var(--line); border-radius: .5rem; }
+.inline-artifact-title { color: var(--accent); font-size: .72rem; font-weight: 600; margin-bottom: .4rem; text-transform: uppercase; letter-spacing: .06em; }
 
 /* Tool-call log */
 .tool-log { font-family: 'JetBrains Mono', monospace; font-size: .68rem; color: var(--ink-dim); margin-top: .35rem; padding-left: .8rem; border-left: 2px solid var(--line-br); }

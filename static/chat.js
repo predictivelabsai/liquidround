@@ -78,10 +78,38 @@
             .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
             .replace(/```([\s\S]*?)```/g, "<pre>$1</pre>")
             .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+        // Auto-link URLs (SEC/EDGAR, etc.) — open in new tab
+        out = out.replace(
+            /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+            '<a href="$2" target="_blank" rel="noopener" style="color:#F59E0B;text-decoration:underline;">$1</a>'
+        );
+        out = out.replace(
+            /(^|[\s(])(https?:\/\/[^\s<)]+)/g,
+            '$1<a href="$2" target="_blank" rel="noopener" style="color:#F59E0B;text-decoration:underline;">$2</a>'
+        );
         const lines = out.split("\n");
         const html = [];
         let inList = false;
+        let inTable = false;
+        let tableRows = [];
         for (const l of lines) {
+            const trimmed = l.trim();
+            // Markdown table row detection
+            if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
+                if (inList) { html.push("</ul>"); inList = false; }
+                // Skip separator rows (|---|---|)
+                if (/^\|[\s\-:|]+\|$/.test(trimmed)) continue;
+                const cells = trimmed.slice(1, -1).split("|").map(c => c.trim());
+                tableRows.push(cells);
+                inTable = true;
+                continue;
+            }
+            // Flush table if we were in one
+            if (inTable) {
+                html.push(_renderMarkdownTable(tableRows));
+                tableRows = [];
+                inTable = false;
+            }
             if (l.match(/^- /)) {
                 if (!inList) { html.push("<ul>"); inList = true; }
                 html.push(`<li>${l.slice(2)}</li>`);
@@ -90,8 +118,22 @@
                 html.push(l || "<br>");
             }
         }
+        if (inTable) html.push(_renderMarkdownTable(tableRows));
         if (inList) html.push("</ul>");
         return html.join("\n");
+    }
+
+    function _renderMarkdownTable(rows) {
+        if (!rows.length) return "";
+        const header = rows[0];
+        const body = rows.slice(1);
+        let h = '<div class="table-scroll"><table class="artifact-table"><thead><tr>' +
+            header.map(c => `<th>${c}</th>`).join("") + '</tr></thead><tbody>';
+        for (const row of body) {
+            h += '<tr>' + row.map(c => `<td>${c}</td>`).join("") + '</tr>';
+        }
+        h += '</tbody></table></div>';
+        return h;
     }
 
     /* ── Thinking indicator ────────────────────────────────────── */
@@ -345,6 +387,7 @@
         let buffer = "";
         let bubble = null;
         let accumulated = "";
+        let pendingArtifacts = null;
 
         while (true) {
             const { value, done } = await reader.read();
@@ -378,6 +421,12 @@
                         // no-op for now (thinking label stays on tool name)
                     } else if (type === "artifact_show") {
                         showArtifact(payload);
+                        if (!bubble) bubble = addBubble("assistant", "", currentAgentSlug || "");
+                        // Queue table artifacts for inline rendering after all tokens
+                        if (payload.kind === "table" && Array.isArray(payload.rows) && payload.rows.length) {
+                            if (!pendingArtifacts) pendingArtifacts = [];
+                            pendingArtifacts.push(payload);
+                        }
                     } else if (type === "error") {
                         hideThinking();
                         if (!bubble) bubble = addBubble("assistant", "", "");
@@ -387,6 +436,16 @@
                     } else if (type === "done") {
                         hideThinking();
                         if (bubble) bubble.classList.remove("streaming");
+                        if (bubble && pendingArtifacts) {
+                            for (const art of pendingArtifacts) {
+                                const tbl = document.createElement("div");
+                                tbl.className = "inline-artifact";
+                                tbl.innerHTML = '<div class="inline-artifact-title">' + escapeHtml(art.title || "") + '</div>' + renderArtifactHTML(art);
+                                tbl.appendChild(_exportButtons(art));
+                                bubble.appendChild(tbl);
+                            }
+                            scrollMessagesBottom();
+                        }
                         maybeAppendFollowUp(bubble, accumulated);
                         maybeAppendMemoPreviewButton(bubble, accumulated, payload.slug || currentAgentSlug);
                     }
@@ -430,11 +489,67 @@
         card.querySelector(".meta").textContent = kind;
         card.querySelector("h4").textContent = title;
         card.querySelector(".body").innerHTML = renderArtifactHTML(payload);
+        if (kind === "table" && Array.isArray(payload.rows) && payload.rows.length) {
+            card.querySelector(".body").appendChild(_exportButtons(payload));
+        }
         body.prepend(card);
 
         document.querySelector(".app").classList.remove("pane-closed");
         $("#right-pane").classList.add("open");
         $("#artifact-btn").classList.add("active");
+    }
+
+    function _exportButtons(payload) {
+        const wrap = document.createElement("div");
+        wrap.style.cssText = "display:flex;gap:6px;margin-top:8px;";
+        const cols = payload.columns || Object.keys(payload.rows[0] || {});
+        const dataJson = JSON.stringify({columns: cols, rows: payload.rows, title: payload.title || "export"});
+
+        function makeBtn(label, format) {
+            const btn = document.createElement("button");
+            btn.textContent = label;
+            btn.style.cssText = "font-size:11px;padding:3px 10px;border-radius:4px;border:1px solid #1E293B;background:#111827;color:#94A3B8;cursor:pointer;";
+            btn.onmouseenter = () => btn.style.color = "#F59E0B";
+            btn.onmouseleave = () => btn.style.color = "#94A3B8";
+            btn.onclick = () => _downloadExport(dataJson, format, payload.title || "export");
+            return btn;
+        }
+        wrap.appendChild(makeBtn("⬇ XLSX", "xlsx"));
+        wrap.appendChild(makeBtn("⬇ CSV", "csv"));
+        return wrap;
+    }
+
+    async function _downloadExport(dataJson, format, title) {
+        if (format === "csv") {
+            const parsed = JSON.parse(dataJson);
+            const cols = parsed.columns;
+            const rows = parsed.rows;
+            const csvLines = [cols.join(",")];
+            for (const r of rows) {
+                csvLines.push(cols.map(c => {
+                    let v = r[c];
+                    if (v === null || v === undefined) v = "";
+                    v = String(v).replace(/"/g, '""');
+                    return v.includes(",") || v.includes('"') || v.includes("\n") ? `"${v}"` : v;
+                }).join(","));
+            }
+            const blob = new Blob([csvLines.join("\n")], {type: "text/csv"});
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = (title || "export").replace(/[^a-zA-Z0-9]/g, "_") + ".csv";
+            a.click();
+            return;
+        }
+        // XLSX via server endpoint
+        const form = new FormData();
+        form.append("data", dataJson);
+        const resp = await fetch("/app/export/xlsx", {method: "POST", body: form});
+        if (!resp.ok) { alert("Export failed"); return; }
+        const blob = await resp.blob();
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = (title || "export").replace(/[^a-zA-Z0-9]/g, "_") + ".xlsx";
+        a.click();
     }
 
     function renderArtifactHTML(p) {
@@ -461,7 +576,11 @@
         if (v === null || v === undefined) return "—";
         if (typeof v === "number") return v.toLocaleString();
         if (typeof v === "object") return JSON.stringify(v);
-        return String(v);
+        const s = String(v);
+        if (/^https?:\/\//.test(s)) {
+            return `<a href="${s}" target="_blank" rel="noopener" style="color:#F59E0B;">link ↗</a>`;
+        }
+        return s;
     }
 
     function escapeHtml(s) {

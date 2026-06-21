@@ -63,7 +63,7 @@ def spacs_page(session, request):
             right_pane(),
             cls="app pane-closed",
         ),
-        Script(src="/chat.js"),
+        Script(src="/chat.js?v=2"),
     )
 
 

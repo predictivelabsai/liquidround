@@ -296,7 +296,7 @@ def analytics_page(session):
             }
             window.runAnalytics = runAnalytics;
         """)),
-        Script(src="/chat.js"),
+        Script(src="/chat.js?v=2"),
         Script(src="/copilot.js"),
     )
 

@@ -234,7 +234,7 @@ def dataroom_home(session):
             right_pane(),
             cls="app pane-closed",
         ),
-        Script(src="/chat.js"),
+        Script(src="/chat.js?v=2"),
     )
 
 

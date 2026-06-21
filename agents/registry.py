@@ -365,8 +365,10 @@ AGENTS: tuple[AgentSpec, ...] = (
         example_prompts=(
             "hedgefunds: top 20 funds by AUM",
             "hedgefunds: what does Berkshire Hathaway hold?",
-            "hedgefunds: which funds own Apple?",
-            "hedgefunds: recent activist filings",
+            "hedgefunds: which funds own Apple and what are they long vs short?",
+            "hedgefunds: recent 13D activist filings — any new campaigns worth watching?",
+            "hedgefunds: most concentrated portfolios — which funds have the highest conviction bets?",
+            "hedgefunds: what are the most popular tech stocks among hedge funds?",
         ),
     ),
 )

@@ -321,7 +321,7 @@ def ipo_map_page(session, request: Request):
             right_pane(),
             cls="app pane-closed",
         ),
-        Script(src="/chat.js"),
+        Script(src="/chat.js?v=2"),
     )
 
 

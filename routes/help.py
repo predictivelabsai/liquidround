@@ -268,7 +268,7 @@ def _render_guide(session, current_path="/app/user-guide"):
             right_pane(),
             cls="app pane-closed",
         ),
-        Script(src="/chat.js"),
+        Script(src="/chat.js?v=2"),
     )
 
 

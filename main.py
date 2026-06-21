@@ -67,9 +67,10 @@ app, rt = fast_app(
 
 # ---------------------------------------------------------------------------
 # Auth gate: redirect unauthenticated users on /app/* to /signin
-# Shared chat links (/app/s/*) are exempt (read-only, no LLM cost).
+# After sign-in, users are redirected back to their original URL (including
+# shared chat links /app/s/*).
 # ---------------------------------------------------------------------------
-_AUTH_EXEMPT_PREFIXES = ("/app/s/", "/app/news")
+_AUTH_EXEMPT_PREFIXES = ("/app/news",)
 
 
 def _auth_gate(req, session):
@@ -1122,7 +1123,7 @@ def app_shell(session, role: str = "", sid: str = ""):
             right_pane(),
             cls="app pane-closed",
         ),
-        Script(src="/chat.js"),
+        Script(src="/chat.js?v=2"),
     )
 
 

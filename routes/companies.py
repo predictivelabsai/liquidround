@@ -228,7 +228,7 @@ def companies_search(sess, name: str = "", sector: str = ""):
             page_name="Companies",
             page_context={"page": "Companies", "capabilities": "search, filter, browse company directory"},
         ),
-        Script(src="/chat.js"),
+        Script(src="/chat.js?v=2"),
         Script(src="/copilot.js"),
         cls="lr-dark app pane-closed pipeline-app",
         style="background:#0B1220;color:#E5E7EB;",
@@ -274,7 +274,7 @@ def company_detail(slug: str, sess):
                 ),
                 cls="center-pane pipeline-center",
             ),
-            Script(src="/chat.js"),
+            Script(src="/chat.js?v=2"),
             cls="lr-dark app pipeline-app",
             style="background:#0B1220;color:#E5E7EB;",
         )
@@ -432,7 +432,7 @@ def company_detail(slug: str, sess):
         ),
         center,
         right,
-        Script(src="/chat.js"),
+        Script(src="/chat.js?v=2"),
         cls="lr-dark app pipeline-app",
         style="background:#0B1220;color:#E5E7EB;",
     )

@@ -180,7 +180,7 @@ def instructions_home(session):
             right_pane(),
             cls="app pane-closed",
         ),
-        Script(src="/chat.js"),
+        Script(src="/chat.js?v=2"),
     )
 
 
@@ -281,7 +281,7 @@ def instruction_edit(session, slug: str):
             right_pane(),
             cls="app pane-closed",
         ),
-        Script(src="/chat.js"),
+        Script(src="/chat.js?v=2"),
         Script(src="/instructions.js"),
     )
 
