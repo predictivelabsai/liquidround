@@ -70,7 +70,7 @@ def filter_bar():
                 cls="w-full text-xs rounded px-2 py-1.5 border focus:outline-none",
                 style=f"background:{BG_CARD}; color:{INK}; border-color:{BORDER}",
             ),
-            cls="w-36",
+            cls="flex-1 min-w-[120px]",
         ),
         Div(
             Label("Min Trust", cls="text-xs font-medium block mb-1", style=f"color:{INK_MUTED}"),
@@ -84,7 +84,7 @@ def filter_bar():
                 cls="w-full text-xs rounded px-2 py-1.5 border focus:outline-none",
                 style=f"background:{BG_CARD}; color:{INK}; border-color:{BORDER}",
             ),
-            cls="w-36",
+            cls="flex-1 min-w-[120px]",
         ),
         Div(
             Label("Search", cls="text-xs font-medium block mb-1", style=f"color:{INK_MUTED}"),
@@ -94,12 +94,12 @@ def filter_bar():
                 cls="w-full text-xs rounded px-2 py-1.5 border focus:outline-none",
                 style=f"background:{BG_CARD}; color:{INK}; border-color:{BORDER}",
             ),
-            cls="flex-1",
+            cls="flex-1 min-w-[160px]",
         ),
         Button(
             "Apply",
             onclick="loadSpacTable()",
-            cls="text-xs font-medium px-4 py-1.5 rounded self-end cursor-pointer",
+            cls="text-xs font-medium px-4 py-1.5 rounded self-end cursor-pointer w-full sm:w-auto",
             style=f"background:{AMBER}; color:{BG}",
         ),
         cls="flex flex-wrap gap-3 items-end mb-4",

@@ -31,7 +31,7 @@ def hedge_fund_page_content():
                     cls="w-full text-xs rounded px-2 py-1.5 border focus:outline-none focus:ring-1",
                     style=f"background:{BG_CARD}; color:{INK}; border-color:{BORDER}; focus:ring-color:{AMBER}",
                 ),
-                cls="flex-1",
+                cls="flex-1 min-w-[160px]",
             ),
             Div(
                 Label("Min Value ($)", cls="text-xs font-medium block mb-1", style=f"color:{INK_MUTED}"),
@@ -46,7 +46,7 @@ def hedge_fund_page_content():
                     cls="w-full text-xs rounded px-2 py-1.5 border focus:outline-none",
                     style=f"background:{BG_CARD}; color:{INK}; border-color:{BORDER}",
                 ),
-                cls="w-36",
+                cls="flex-1 min-w-[120px]",
             ),
             Div(
                 Label("Limit", cls="text-xs font-medium block mb-1", style=f"color:{INK_MUTED}"),
@@ -59,15 +59,15 @@ def hedge_fund_page_content():
                     cls="w-full text-xs rounded px-2 py-1.5 border focus:outline-none",
                     style=f"background:{BG_CARD}; color:{INK}; border-color:{BORDER}",
                 ),
-                cls="w-24",
+                cls="flex-1 min-w-[80px]",
             ),
             Button(
                 "Apply",
                 onclick="loadTreemap()",
-                cls="text-xs font-medium px-4 py-1.5 rounded self-end cursor-pointer",
+                cls="text-xs font-medium px-4 py-1.5 rounded self-end cursor-pointer w-full sm:w-auto",
                 style=f"background:{AMBER}; color:{BG}",
             ),
-            cls="flex gap-3 items-end mb-4",
+            cls="flex flex-wrap gap-3 items-end mb-4",
         ),
         # Treemap container
         Div(
