@@ -23,26 +23,32 @@ LINE      = "#1E293B"   # slate-800
 
 _OG_DESC = "AI-powered M&A, IPO readiness, and public markets intelligence. A squad of specialist AI analysts in one chat-first workspace."
 
-def landing_head(title: str = "LiquidRound"):
+def landing_head(title: str = "LiquidRound", description: str | None = None, canonical: str | None = None):
     """<head> contents for all landing pages."""
+    desc = description or _OG_DESC
+    extra = []
+    if canonical:
+        extra.append(Link(rel="canonical", href=canonical))
     return (
         Title(title),
         Meta(charset="utf-8"),
         Meta(name="viewport", content="width=device-width, initial-scale=1"),
         Meta(name="theme-color", content=BG),
-        Meta(name="description", content=_OG_DESC),
+        Meta(name="description", content=desc),
         Meta(property="og:type", content="website"),
         Meta(property="og:site_name", content="LiquidRound"),
         Meta(property="og:title", content=title),
-        Meta(property="og:description", content=_OG_DESC),
+        Meta(property="og:description", content=desc),
         Meta(property="og:image", content="https://liquidround.ai/og-image.png"),
         Meta(name="twitter:card", content="summary_large_image"),
         Meta(name="twitter:title", content=title),
-        Meta(name="twitter:description", content=_OG_DESC),
+        Meta(name="twitter:description", content=desc),
         Link(rel="icon", type="image/svg+xml", href="/favicon.svg"),
         Link(rel="icon", type="image/png", sizes="32x32", href="/favicon.png"),
         Link(rel="alternate icon", type="image/x-icon", href="/favicon.ico"),
         Link(rel="apple-touch-icon", sizes="180x180", href="/apple-touch-icon.png"),
+        Link(rel="alternate", type="application/rss+xml", title="LiquidRound Blog", href="/blog/rss"),
+        *extra,
         Script(src="https://cdn.tailwindcss.com"),
         Link(rel="preconnect", href="https://fonts.googleapis.com"),
         Link(rel="preconnect", href="https://fonts.gstatic.com", crossorigin=""),
@@ -109,6 +115,7 @@ def landing_nav(active: str = "home", lang: str = "en"):
         ("tools",    None,        t("nav_tools", lang)),  # dropdown, no direct href
         ("industries", "/industries", t("nav_industries", lang)),
         ("pricing",  "/pricing",  t("nav_pricing", lang)),
+        ("blog",     "/blog",     t("nav_blog", lang)),
     ]
 
     tools_active = active == "tools"
@@ -241,6 +248,8 @@ def landing_footer():
                 A("Industries", href="/industries", cls="text-xs text-slate-400 nav-link"),
                 Span("·", cls="text-xs text-slate-600 mx-2"),
                 A("ECM Squad", href="/agents", cls="text-xs text-slate-400 nav-link"),
+                Span("·", cls="text-xs text-slate-600 mx-2"),
+                A("Blog", href="/blog", cls="text-xs text-slate-400 nav-link"),
                 cls="flex items-center flex-wrap gap-y-1 justify-center sm:justify-end",
             ),
             cls="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3",
@@ -514,10 +523,11 @@ def cta_section():
 
 # ───── Page shells ──────────────────────────────────────────────────────
 
-def landing_page(*sections, active: str = "home", title: str = "LiquidRound", lang: str = "en"):
+def landing_page(*sections, active: str = "home", title: str = "LiquidRound",
+                  lang: str = "en", description: str | None = None, canonical: str | None = None):
     """Wrap sections with head + nav + footer."""
     return (
-        *landing_head(title),
+        *landing_head(title, description=description, canonical=canonical),
         landing_nav(active=active, lang=lang),
         Main(*sections),
         landing_footer(),

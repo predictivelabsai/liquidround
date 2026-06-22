@@ -92,6 +92,10 @@ landing_router.to_app(app)
 from routes.tools import ar as tools_router
 tools_router.to_app(app)
 
+# Register public blog routes (/blog, /blog/{slug}, /blog/rss)
+from routes.blog import ar as blog_router
+blog_router.to_app(app)
+
 # Register auth routes (login/register still available)
 from routes.auth import ar as auth_router
 auth_router.to_app(app)

@@ -494,6 +494,179 @@ def get_cached_digest() -> dict | None:
         return None
 
 
+# ── Digest archive (DB persistence for blog) ────────────────────────
+
+def _blog_title(digest_date: str) -> str:
+    from datetime import datetime as _dt
+    try:
+        d = _dt.strptime(str(digest_date)[:10], "%Y-%m-%d")
+        return f"Baltic Daily Digest — {d.strftime('%-d %b %Y')}"
+    except (ValueError, TypeError):
+        return f"Baltic Daily Digest — {digest_date}"
+
+
+def _country_flag_tw(country: str) -> str:
+    flags = {"Lithuania": "\U0001f1f1\U0001f1f9", "Estonia": "\U0001f1ea\U0001f1ea",
+             "Latvia": "\U0001f1f1\U0001f1fb"}
+    return flags.get(country, "")
+
+
+def render_blog_html(digest: dict) -> str:
+    """Render digest dict as Tailwind-styled blog HTML (not email HTML)."""
+    import markdown2
+    companies = digest.get("companies", [])
+    featured = digest.get("featured", {})
+    deep_dive_md = digest.get("deep_dive", "")
+
+    cards_html = ""
+    for c in companies:
+        is_featured = c.get("name") == featured.get("name")
+        badge = ('<span class="ml-2 text-[10px] px-1.5 py-0.5 rounded font-semibold" '
+                 f'style="background:#F59E0B;color:#0B1220;">DEEP DIVE</span>'
+                 if is_featured else "")
+        flag = _country_flag_tw(c.get("country", ""))
+        deal_size = c.get("deal_size_estimate", "")
+        size_part = f" &middot; {deal_size}" if deal_size and deal_size != "undisclosed" else ""
+
+        cards_html += f"""
+        <div class="p-4 rounded-lg mb-3" style="background:#111A2E;border:1px solid #1E293B;">
+          <div class="flex items-baseline justify-between flex-wrap gap-1">
+            <span class="font-semibold text-sm" style="color:#E5E7EB;">
+              {flag} {c.get('name', 'N/A')}{badge}
+            </span>
+          </div>
+          <div class="text-xs mt-1" style="color:#94A3B8;">
+            {c.get('sector', '')} &middot; {c.get('country', '')}{size_part}
+          </div>
+          <div class="text-sm mt-2" style="color:#CBD5E1;">
+            {c.get('description', '')}
+          </div>
+          <div class="text-xs mt-2 inline-block px-2 py-1 rounded" style="background:#1E293B;color:#94A3B8;">
+            <strong>Deal angle:</strong> {c.get('deal_context', '')}
+          </div>
+          <div class="text-sm mt-2 p-3 rounded" style="background:#0B1220;border-left:3px solid #F59E0B;color:#CBD5E1;line-height:1.6;">
+            <strong style="color:#E5E7EB;">Thesis:</strong> {c.get('thesis', '')}
+          </div>
+        </div>"""
+
+    deep_dive_html = markdown2.markdown(deep_dive_md, extras=["fenced-code-blocks", "tables"])
+
+    return f"""
+    <div class="mb-8">
+      <div class="text-xs font-semibold uppercase tracking-wider mb-3" style="color:#F59E0B;">
+        Daily Company Scan — {len(companies)} Companies
+      </div>
+      {cards_html}
+    </div>
+
+    <div class="rounded-lg overflow-hidden" style="background:#111A2E;border:1px solid #1E293B;">
+      <div class="p-4" style="border-bottom:2px solid #F59E0B;">
+        <div class="text-xs font-bold uppercase tracking-wider mb-1" style="color:#F59E0B;">
+          Deep Dive
+        </div>
+        <div class="text-lg font-bold" style="color:#E5E7EB;">
+          {_country_flag_tw(featured.get('country', ''))} {featured.get('name', 'N/A')}
+        </div>
+        <div class="text-xs mt-1" style="color:#94A3B8;">
+          {featured.get('sector', '')} &middot; {featured.get('country', '')} &middot; {featured.get('deal_context', '')}
+        </div>
+      </div>
+      <div class="p-5 blog-deep-dive" style="color:#CBD5E1;font-size:14px;line-height:1.7;">
+        {deep_dive_html}
+      </div>
+    </div>"""
+
+
+def archive_digest(digest: dict, blog_html: str) -> bool:
+    import logging
+    log = logging.getLogger(__name__)
+    try:
+        from utils.database import get_conn
+        d = str(digest.get("date", date.today().isoformat()))[:10]
+        title = _blog_title(d)
+        featured = digest.get("featured", {})
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO liquidround.digest_archive
+                    (digest_date, slug, title, digest_json, blog_html, company_count,
+                     featured_company, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
+                ON CONFLICT (digest_date) DO UPDATE SET
+                    title = EXCLUDED.title,
+                    digest_json = EXCLUDED.digest_json,
+                    blog_html = EXCLUDED.blog_html,
+                    company_count = EXCLUDED.company_count,
+                    featured_company = EXCLUDED.featured_company
+            """, (d, d, title, json.dumps(digest, default=str),
+                  blog_html, len(digest.get("companies", [])),
+                  featured.get("name")))
+        log.info("Digest archived for %s", d)
+        return True
+    except Exception:
+        log.exception("Failed to archive digest")
+        return False
+
+
+def get_archived_digest(slug: str) -> dict | None:
+    try:
+        from utils.database import get_conn
+        from psycopg2.extras import RealDictCursor
+        with get_conn() as conn:
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            cur.execute("""
+                SELECT slug, title, digest_date, digest_json, blog_html,
+                       company_count, featured_company, beehiiv_url, created_at
+                FROM liquidround.digest_archive WHERE slug = %s
+            """, (slug,))
+            row = cur.fetchone()
+            return dict(row) if row else None
+    except Exception:
+        return None
+
+
+def get_archived_digests(page: int = 1, per_page: int = 12) -> tuple[list[dict], int]:
+    try:
+        from utils.database import get_conn
+        from psycopg2.extras import RealDictCursor
+        with get_conn() as conn:
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            cur.execute("SELECT count(*) FROM liquidround.digest_archive")
+            total = cur.fetchone()["count"]
+            cur.execute("""
+                SELECT slug, title, digest_date, company_count, featured_company, created_at
+                FROM liquidround.digest_archive
+                ORDER BY digest_date DESC
+                LIMIT %s OFFSET %s
+            """, (per_page, (page - 1) * per_page))
+            return [dict(r) for r in cur.fetchall()], total
+    except Exception:
+        return [], 0
+
+
+def update_beehiiv_info(slug: str, post_id: str, web_url: str) -> None:
+    try:
+        from utils.database import get_conn
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                UPDATE liquidround.digest_archive
+                SET beehiiv_post_id = %s, beehiiv_url = %s
+                WHERE slug = %s
+            """, (post_id, web_url, slug))
+    except Exception:
+        logging.getLogger(__name__).exception("Failed to update Beehiiv info")
+
+
+def backfill_archive_from_cache() -> bool:
+    cached = get_cached_digest()
+    if not cached or not cached.get("digest"):
+        return False
+    digest = cached["digest"]
+    blog_html = render_blog_html(digest)
+    return archive_digest(digest, blog_html)
+
+
 # ── Email sending ─────────────────────────────────────────────────────
 
 
@@ -541,6 +714,24 @@ def send_digest_to_all() -> dict:
     digest = build_digest(n_companies=10)
     html = render_email_html(digest)
     cache_digest(digest, html)
+
+    # Archive to DB + render blog
+    blog_html = render_blog_html(digest)
+    archive_digest(digest, blog_html)
+
+    # Beehiiv syndication (optional — skips if no API key)
+    try:
+        from utils.beehiiv import publish_to_beehiiv
+        title = _blog_title(digest.get("date", ""))
+        subtitle = f"{len(digest.get('companies', []))} Baltic M&A companies with investment theses"
+        bh = publish_to_beehiiv(title, blog_html, subtitle=subtitle)
+        if bh.get("ok"):
+            update_beehiiv_info(digest.get("date", ""), bh["post_id"], bh["web_url"])
+            log.info("Beehiiv published: %s", bh.get("web_url"))
+        elif not bh.get("skipped"):
+            log.warning("Beehiiv publish failed: %s", bh.get("error"))
+    except Exception:
+        log.exception("Beehiiv syndication error (non-fatal)")
 
     results = []
     sent = 0

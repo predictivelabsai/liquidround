@@ -160,12 +160,14 @@ async def deals_page(session):
 @ar("/app/deals/generate", methods=["POST"])
 async def deals_generate():
     """Build digest on demand, cache it, return JSON."""
-    from utils.digest import build_digest, render_email_html, cache_digest
+    from utils.digest import build_digest, render_email_html, cache_digest, render_blog_html, archive_digest
 
     try:
         digest = build_digest(n_companies=10)
         html = render_email_html(digest)
         cache_digest(digest, html)
+        blog_html = render_blog_html(digest)
+        archive_digest(digest, blog_html)
         n = len(digest.get("companies", []))
         return JSONResponse({"ok": True, "companies": n})
     except Exception as e:

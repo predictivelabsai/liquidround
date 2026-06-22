@@ -25,6 +25,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
     "nav_tools":        {"en": "Tools",       "et": "Tööriistad",   "lt": "Įrankiai",     "lv": "Rīki"},
     "nav_industries":   {"en": "Industries",  "et": "Tööstused",    "lt": "Pramonės",     "lv": "Nozares"},
     "nav_pricing":      {"en": "Pricing",     "et": "Hinnakiri",    "lt": "Kainos",       "lv": "Cenas"},
+    "nav_blog":         {"en": "Blog",        "et": "Blogi",        "lt": "Tinklaraštis", "lv": "Emuārs"},
     "nav_sign_in":      {"en": "Sign in",     "et": "Logi sisse",   "lt": "Prisijungti",  "lv": "Pieslēgties"},
 
     # ── Landing hero ──
