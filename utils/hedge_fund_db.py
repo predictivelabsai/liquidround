@@ -339,3 +339,45 @@ def get_treemap_data(min_value: int = 0, fund_filter: str = "", limit: int = 500
         ]
     finally:
         s.close()
+
+
+def get_fund_returns_ranked(top_n: int = 50, min_aum_thousands: int = 100000,
+                            min_coverage_pct: float = 0.3) -> list[dict]:
+    """Portfolio-weighted YTD return per fund, ranked best to worst.
+
+    Each fund's return = sum(position_value * security_ytd_return) / sum(position_value).
+    Only includes funds with AUM > min_aum_thousands and where at least
+    min_coverage_pct of portfolio value has return data.
+    """
+    s = get_session()
+    try:
+        rows = s.execute(text(f"""
+            SELECT c.filingmanager_name,
+                   SUM(i.value) AS aum,
+                   SUM(CASE WHEN sr.return_ytd IS NOT NULL THEN i.value ELSE 0 END) AS covered_value,
+                   SUM(i.value * COALESCE(sr.return_ytd, 0)) / NULLIF(SUM(i.value), 0) AS portfolio_return,
+                   COUNT(*) AS positions,
+                   COUNT(sr.return_ytd) AS with_returns
+            FROM {SCHEMA}.infotable i
+            JOIN {SCHEMA}.coverpage c ON i.accession_number = c.accession_number
+            LEFT JOIN liquidround.security_returns sr ON i.cusip = sr.cusip
+            GROUP BY c.filingmanager_name
+            HAVING SUM(i.value) > :min_aum
+               AND SUM(CASE WHEN sr.return_ytd IS NOT NULL THEN i.value ELSE 0 END)::float
+                   / NULLIF(SUM(i.value), 0) >= :min_cov
+            ORDER BY SUM(i.value * COALESCE(sr.return_ytd, 0)) / NULLIF(SUM(i.value), 0) DESC
+            LIMIT :lim
+        """), {"min_aum": min_aum_thousands, "min_cov": min_coverage_pct, "lim": top_n}).fetchall()
+        return [
+            {
+                "fund": r[0],
+                "aum": int(r[1]) * 1000 if r[1] else 0,
+                "coverage_pct": round(float(r[2]) / float(r[1]) * 100, 1) if r[1] else 0,
+                "portfolio_return_ytd": round(float(r[3]) * 100, 2) if r[3] else 0,
+                "positions": int(r[4]),
+                "positions_with_returns": int(r[5]),
+            }
+            for r in rows
+        ]
+    finally:
+        s.close()

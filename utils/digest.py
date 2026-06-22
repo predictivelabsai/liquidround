@@ -289,12 +289,54 @@ def build_digest(n_companies: int = 10) -> dict:
     featured = _pick_featured(companies)
     deep_dive = _generate_deep_dive(featured, comps)
 
+    # Hedge fund spotlight — rotate daily through top performers
+    hedge_fund = _pick_daily_fund()
+
     return {
         "companies": companies,
         "featured": featured,
         "deep_dive": deep_dive,
+        "hedge_fund": hedge_fund,
         "date": date.today().isoformat(),
     }
+
+
+# ── Hedge fund spotlight ─────────────────────────────────────────────
+
+def _pick_daily_fund() -> dict | None:
+    """Pick one hedge fund to feature, rotating daily through the top 10 by YTD return."""
+    try:
+        from utils.hedge_fund_db import get_fund_returns_ranked, get_fund_holdings
+        top = get_fund_returns_ranked(top_n=10, min_aum_thousands=500000, min_coverage_pct=0.4)
+        if not top:
+            return None
+        day_of_year = date.today().timetuple().tm_yday
+        pick = top[day_of_year % len(top)]
+        holdings = get_fund_holdings(pick["fund"], limit=5)
+        top_holdings = []
+        if not holdings.empty:
+            for _, row in holdings.iterrows():
+                top_holdings.append({
+                    "security": row.get("NAMEOFISSUER", ""),
+                    "value": int(row.get("VALUE", 0)) * 1000,
+                    "pct": round(float(row.get("portfolio_pct", 0)), 1),
+                })
+        pick["top_holdings"] = top_holdings
+        pick["rank"] = (day_of_year % len(top)) + 1
+        pick["total_ranked"] = len(top)
+        return pick
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception("Failed to pick daily fund")
+        return None
+
+
+def _fmt_money(v: int | float) -> str:
+    if v >= 1e12: return f"${v/1e12:.1f}T"
+    if v >= 1e9: return f"${v/1e9:.1f}B"
+    if v >= 1e6: return f"${v/1e6:.1f}M"
+    if v >= 1e3: return f"${v/1e3:.0f}K"
+    return f"${v:.0f}"
 
 
 # ── Email rendering ───────────────────────────────────────────────────
@@ -326,6 +368,7 @@ def render_email_html(digest: dict) -> str:
     companies = digest.get("companies", [])
     featured = digest.get("featured", {})
     deep_dive_md = digest.get("deep_dive", "")
+    hedge_fund = digest.get("hedge_fund")
 
     company_cards = ""
     for i, c in enumerate(companies):
@@ -413,6 +456,8 @@ def render_email_html(digest: dict) -> str:
       </div>
     </div>
 
+    {_render_hedge_fund_email(hedge_fund)}
+
     <!-- Footer -->
     <div style="text-align:center;padding:16px 0;border-top:1px solid #e2e8f0;margin-top:4px;">
       <p style="color:#6B7280;font-size:11px;margin:0 0 4px;">
@@ -432,6 +477,56 @@ def render_email_html(digest: dict) -> str:
   </div>
 </body>
 </html>"""
+
+
+def _render_hedge_fund_email(hf: dict | None) -> str:
+    if not hf:
+        return ""
+    ret = hf.get("portfolio_return_ytd", 0)
+    ret_color = "#10B981" if ret >= 0 else "#EF4444"
+    ret_sign = "+" if ret >= 0 else ""
+    holdings_rows = ""
+    for h in hf.get("top_holdings", [])[:5]:
+        holdings_rows += f"""
+            <tr>
+              <td style="padding:4px 8px;font-size:12px;color:#334155;border-bottom:1px solid #e2e8f0;">{h['security']}</td>
+              <td style="padding:4px 8px;font-size:12px;color:#334155;border-bottom:1px solid #e2e8f0;text-align:right;">{_fmt_money(h['value'])}</td>
+              <td style="padding:4px 8px;font-size:12px;color:#334155;border-bottom:1px solid #e2e8f0;text-align:right;">{h['pct']:.1f}%</td>
+            </tr>"""
+    return f"""
+    <!-- Hedge Fund Spotlight -->
+    <div style="padding:0 0 16px;">
+      <div style="background:#0B1220;border-radius:8px;overflow:hidden;">
+        <div style="padding:12px 16px;border-bottom:2px solid #3B82F6;">
+          <div style="font-size:11px;font-weight:700;color:#3B82F6;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">
+            Hedge Fund Spotlight
+          </div>
+          <div style="font-size:16px;font-weight:700;color:#e2e8f0;">
+            {hf.get('fund', 'N/A')}
+          </div>
+          <div style="font-size:11px;color:#94a3b8;margin-top:2px;">
+            AUM {_fmt_money(hf.get('aum', 0))} &middot; {hf.get('positions', 0)} positions &middot;
+            <span style="color:{ret_color};font-weight:600;">{ret_sign}{ret:.1f}% YTD</span>
+          </div>
+        </div>
+        <div style="padding:12px 16px;">
+          <div style="font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:6px;">Top 5 Holdings</div>
+          <table style="width:100%;border-collapse:collapse;">
+            <tr style="background:#f1f5f9;">
+              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:left;">Security</th>
+              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:right;">Value</th>
+              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:right;">Weight</th>
+            </tr>
+            {holdings_rows}
+          </table>
+          <div style="font-size:10px;color:#94a3b8;margin-top:8px;">
+            <a href="https://liquidround.ai/app/hedgefunds?fund={hf.get('fund', '').replace(' ', '+')}" style="color:#F59E0B;text-decoration:none;">
+              View full portfolio on LiquidRound →
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>"""
 
 
 def _markdown_to_email_html(md: str) -> str:
@@ -517,6 +612,7 @@ def render_blog_html(digest: dict) -> str:
     companies = digest.get("companies", [])
     featured = digest.get("featured", {})
     deep_dive_md = digest.get("deep_dive", "")
+    hedge_fund = digest.get("hedge_fund")
 
     cards_html = ""
     for c in companies:
@@ -573,6 +669,53 @@ def render_blog_html(digest: dict) -> str:
       </div>
       <div class="p-5 blog-deep-dive" style="color:#CBD5E1;font-size:14px;line-height:1.7;">
         {deep_dive_html}
+      </div>
+    </div>
+
+    {_render_hedge_fund_blog(hedge_fund)}"""
+
+
+def _render_hedge_fund_blog(hf: dict | None) -> str:
+    if not hf:
+        return ""
+    ret = hf.get("portfolio_return_ytd", 0)
+    ret_color = "#10B981" if ret >= 0 else "#EF4444"
+    ret_sign = "+" if ret >= 0 else ""
+    holdings_rows = ""
+    for h in hf.get("top_holdings", [])[:5]:
+        holdings_rows += f"""
+          <tr>
+            <td class="text-sm py-1 px-2" style="color:#CBD5E1;border-bottom:1px solid #1E293B;">{h['security']}</td>
+            <td class="text-sm py-1 px-2 text-right" style="color:#CBD5E1;border-bottom:1px solid #1E293B;">{_fmt_money(h['value'])}</td>
+            <td class="text-sm py-1 px-2 text-right" style="color:#CBD5E1;border-bottom:1px solid #1E293B;">{h['pct']:.1f}%</td>
+          </tr>"""
+    from urllib.parse import quote_plus
+    fund_url = f"/app/hedgefunds?fund={quote_plus(hf.get('fund', ''))}"
+    return f"""
+    <div class="mt-8 rounded-lg overflow-hidden" style="background:#111A2E;border:1px solid #1E293B;">
+      <div class="p-4" style="border-bottom:2px solid #3B82F6;">
+        <div class="text-xs font-bold uppercase tracking-wider mb-1" style="color:#3B82F6;">
+          Hedge Fund Spotlight
+        </div>
+        <div class="text-lg font-bold" style="color:#E5E7EB;">{hf.get('fund', 'N/A')}</div>
+        <div class="text-xs mt-1" style="color:#94A3B8;">
+          AUM {_fmt_money(hf.get('aum', 0))} &middot; {hf.get('positions', 0)} positions &middot;
+          <span style="color:{ret_color};font-weight:600;">{ret_sign}{ret:.1f}% YTD</span>
+        </div>
+      </div>
+      <div class="p-4">
+        <div class="text-xs font-semibold mb-2" style="color:#94A3B8;">Top 5 Holdings</div>
+        <table class="w-full" style="border-collapse:collapse;">
+          <tr style="background:#0B1220;">
+            <th class="text-xs py-1 px-2 text-left" style="color:#64748B;">Security</th>
+            <th class="text-xs py-1 px-2 text-right" style="color:#64748B;">Value</th>
+            <th class="text-xs py-1 px-2 text-right" style="color:#64748B;">Weight</th>
+          </tr>
+          {holdings_rows}
+        </table>
+        <div class="text-xs mt-3">
+          <a href="{fund_url}" style="color:#F59E0B;text-decoration:none;">View full portfolio on LiquidRound →</a>
+        </div>
       </div>
     </div>"""
 

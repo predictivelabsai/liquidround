@@ -85,6 +85,67 @@ def blog_post(slug: str):
     )
 
 
+@ar("/sitemap.xml")
+def sitemap():
+    from utils.digest import get_archived_digests
+    base = "https://liquidround.ai"
+    today = datetime.utcnow().strftime("%Y-%m-%d")
+
+    static_pages = [
+        ("/", "1.0", "weekly"),
+        ("/platform", "0.8", "monthly"),
+        ("/agents", "0.8", "monthly"),
+        ("/pricing", "0.7", "monthly"),
+        ("/contact", "0.5", "monthly"),
+        ("/how-it-works", "0.7", "monthly"),
+        ("/industries", "0.7", "monthly"),
+        ("/tools/comparables", "0.6", "monthly"),
+        ("/tools/match", "0.6", "monthly"),
+        ("/tools/valuation", "0.6", "monthly"),
+        ("/blog", "0.9", "daily"),
+        ("/blog/rss", "0.3", "daily"),
+    ]
+
+    urls = []
+    for path, priority, freq in static_pages:
+        urls.append(f"""  <url>
+    <loc>{base}{path}</loc>
+    <lastmod>{today}</lastmod>
+    <changefreq>{freq}</changefreq>
+    <priority>{priority}</priority>
+  </url>""")
+
+    # Agent detail pages
+    try:
+        from agents.registry import AGENTS
+        for spec in AGENTS:
+            urls.append(f"""  <url>
+    <loc>{base}/agents/{spec.slug}</loc>
+    <lastmod>{today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>""")
+    except Exception:
+        pass
+
+    # Blog post pages
+    digests, _ = get_archived_digests(page=1, per_page=100)
+    for d in digests:
+        post_date = str(d.get("digest_date", today))[:10]
+        urls.append(f"""  <url>
+    <loc>{base}/blog/{d.get('slug', '')}</loc>
+    <lastmod>{post_date}</lastmod>
+    <changefreq>never</changefreq>
+    <priority>0.7</priority>
+  </url>""")
+
+    xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{chr(10).join(urls)}
+</urlset>"""
+    return Response(content=xml, media_type="application/xml")
+
+
 def _xml_escape(s: str) -> str:
     return (s.replace("&", "&amp;").replace("<", "&lt;")
              .replace(">", "&gt;").replace('"', "&quot;"))
