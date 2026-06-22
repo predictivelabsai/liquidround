@@ -494,11 +494,38 @@ def get_cached_digest() -> dict | None:
 # ── Email sending ─────────────────────────────────────────────────────
 
 
+def _acquire_digest_lock() -> bool:
+    """Try to claim today's digest slot via DB advisory lock.
+    Returns True if this process should send, False if another already did."""
+    from datetime import date
+    try:
+        from utils.database import get_conn
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO liquidround.workflows (user_query, workflow_type, status, created_at)
+                SELECT %s, 'digest_lock', 'completed', NOW()
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM liquidround.workflows
+                    WHERE workflow_type = 'digest_lock'
+                      AND user_query = %s
+                )
+            """, (str(date.today()), str(date.today())))
+            return cur.rowcount > 0
+    except Exception as e:
+        logging.getLogger(__name__).warning("Digest lock check failed: %s", e)
+        return True  # fail open — better to send twice than not at all
+
+
 def send_digest_to_all() -> dict:
     """Build the digest once, then send to every opted-in user.
     Returns summary with counts and per-recipient results."""
     import logging
     log = logging.getLogger(__name__)
+
+    if not _acquire_digest_lock():
+        log.info("Daily digest: another instance already sent today, skipping")
+        return {"ok": True, "sent": 0, "skipped": 0, "dedup": True, "recipients": []}
 
     from utils.preferences import get_digest_recipients
 
