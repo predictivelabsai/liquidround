@@ -93,8 +93,10 @@ from routes.tools import ar as tools_router
 tools_router.to_app(app)
 
 # Register public blog routes (/blog, /blog/{slug}, /blog/rss)
-from routes.blog import ar as blog_router
+from routes.blog import ar as blog_router, regenerate_sitemap
 blog_router.to_app(app)
+try: regenerate_sitemap()
+except Exception: pass
 
 # Register auth routes (login/register still available)
 from routes.auth import ar as auth_router

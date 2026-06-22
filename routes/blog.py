@@ -85,8 +85,9 @@ def blog_post(slug: str):
     )
 
 
-@ar("/sitemap.xml")
-def sitemap():
+def regenerate_sitemap():
+    """Write sitemap.xml to static/ so it's served as a static file."""
+    import os
     from utils.digest import get_archived_digests
     base = "https://liquidround.ai"
     today = datetime.utcnow().strftime("%Y-%m-%d")
@@ -115,7 +116,6 @@ def sitemap():
     <priority>{priority}</priority>
   </url>""")
 
-    # Agent detail pages
     try:
         from agents.registry import AGENTS
         for spec in AGENTS:
@@ -128,7 +128,6 @@ def sitemap():
     except Exception:
         pass
 
-    # Blog post pages
     digests, _ = get_archived_digests(page=1, per_page=100)
     for d in digests:
         post_date = str(d.get("digest_date", today))[:10]
@@ -143,7 +142,9 @@ def sitemap():
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 {chr(10).join(urls)}
 </urlset>"""
-    return Response(content=xml, media_type="application/xml")
+    static_dir = os.path.join(os.path.dirname(__file__), "..", "static")
+    with open(os.path.join(static_dir, "sitemap.xml"), "w") as f:
+        f.write(xml)
 
 
 def _xml_escape(s: str) -> str:

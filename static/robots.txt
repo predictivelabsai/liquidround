@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /app/
+Disallow: /signin
+Disallow: /register
+Disallow: /login
+Disallow: /logout
+Disallow: /profile
+
+Sitemap: https://liquidround.ai/sitemap.xml

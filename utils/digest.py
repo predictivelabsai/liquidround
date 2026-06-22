@@ -745,6 +745,11 @@ def archive_digest(digest: dict, blog_html: str) -> bool:
                   blog_html, len(digest.get("companies", [])),
                   featured.get("name")))
         log.info("Digest archived for %s", d)
+        try:
+            from routes.blog import regenerate_sitemap
+            regenerate_sitemap()
+        except Exception:
+            pass
         return True
     except Exception:
         log.exception("Failed to archive digest")
