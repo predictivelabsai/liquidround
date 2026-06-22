@@ -424,6 +424,9 @@ def render_email_html(digest: dict) -> str:
       <p style="color:#cbd5e1;font-size:10px;margin:0;">
         AI-generated analysis for informational purposes only. Not investment advice.
       </p>
+      <p style="margin:8px 0 0;">
+        <a href="https://liquidround.ai/profile" style="color:#94a3b8;font-size:10px;text-decoration:underline;">Unsubscribe</a>
+      </p>
     </div>
 
   </div>
