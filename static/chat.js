@@ -496,7 +496,82 @@
 
         document.querySelector(".app").classList.remove("pane-closed");
         $("#right-pane").classList.add("open");
-        $("#artifact-btn").classList.add("active");
+
+        // For hedge fund tables, open News tab with contextual search instead
+        const isHfTable = _isHedgeFundArtifact(payload);
+        if (isHfTable) {
+            switchRightTab("news");
+            const nb = $("#news-btn"); if (nb) nb.classList.add("active");
+            const ab = $("#artifact-btn"); if (ab) ab.classList.remove("active");
+            _loadContextualNews(payload);
+        } else {
+            $("#artifact-btn").classList.add("active");
+        }
+    }
+
+    function _isHedgeFundArtifact(p) {
+        if (p.kind !== "table") return false;
+        const t = (p.title || "").toLowerCase();
+        return t.includes("hedge fund") || t.includes("activist") || t.includes("beneficial")
+            || t.includes("popular securities") || t.includes("top fund")
+            || t.includes("holdings") || t.includes("13f") || t.includes("13d");
+    }
+
+    async function _loadContextualNews(payload) {
+        const newsBody = $("#news-body");
+        if (!newsBody) return;
+        // Extract entity names from artifact for contextual search
+        const entities = _extractEntities(payload);
+        if (!entities.length) return; // fall back to default RSS news
+        const q = entities.slice(0, 3).join(" ") + " hedge fund SEC filing";
+        newsBody.innerHTML = '<div style="color:var(--ink-dim);font-size:.78rem;padding:1rem;">Searching news for: <strong style="color:var(--accent)">' + escapeHtml(q) + '</strong>...</div>';
+        try {
+            const resp = await fetch("/app/news/search?" + new URLSearchParams({q}));
+            const data = await resp.json();
+            if (!data.articles || !data.articles.length) {
+                newsBody.innerHTML = '<div style="color:var(--ink-dim);font-size:.78rem;padding:1rem;">No contextual news found. Showing general feed.</div>';
+                // Reload default news after a beat
+                setTimeout(() => { const nb = $("#news-body"); if(nb) nb.setAttribute("hx-get", "/app/news/html"); htmx.trigger(nb, "load"); }, 2000);
+                return;
+            }
+            newsBody.innerHTML = _renderNewsItems(data.articles, q);
+        } catch(e) {
+            console.error("contextual news error", e);
+        }
+    }
+
+    function _extractEntities(payload) {
+        const entities = [];
+        if (!payload.rows) return entities;
+        // Look for fund names, filer names, subject names, security names
+        for (const col of ["filer", "fund", "subject", "security", "name"]) {
+            for (const r of payload.rows.slice(0, 5)) {
+                const v = r[col];
+                if (v && typeof v === "string" && v.length > 2 && v.length < 60 && !v.startsWith("http")) {
+                    if (!entities.includes(v)) entities.push(v);
+                }
+                if (entities.length >= 3) break;
+            }
+            if (entities.length >= 3) break;
+        }
+        return entities;
+    }
+
+    function _renderNewsItems(articles, query) {
+        if (!articles.length) return '<div style="color:var(--ink-dim);font-size:.78rem;padding:1rem;">No results.</div>';
+        let html = '<div style="padding:0 .5rem .5rem;"><div style="color:var(--accent);font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem;">Related News</div>';
+        for (const a of articles) {
+            html += `<a href="${a.url}" target="_blank" rel="noopener" class="news-item">
+                <div class="news-item-header">
+                    <span class="news-source">${escapeHtml(a.source || a.icon || "WEB")}</span>
+                    ${a.published ? '<span class="news-time">' + escapeHtml(a.published) + '</span>' : ''}
+                </div>
+                <div class="news-item-title">${escapeHtml(a.title)}</div>
+                ${a.summary ? '<div class="news-item-summary">' + escapeHtml(a.summary).slice(0, 150) + '</div>' : ''}
+            </a>`;
+        }
+        html += '</div>';
+        return html;
     }
 
     function _exportButtons(payload) {

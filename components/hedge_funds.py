@@ -67,7 +67,30 @@ def hedge_fund_page_content():
                 cls="text-xs font-medium px-4 py-1.5 rounded self-end cursor-pointer w-full sm:w-auto",
                 style=f"background:{AMBER}; color:{BG}",
             ),
+            Button(
+                "Share ↗",
+                onclick="copyTreemapUrl()",
+                cls="text-xs font-medium px-4 py-1.5 rounded self-end cursor-pointer w-full sm:w-auto",
+                style=f"border:1px solid {AMBER}; color:{AMBER}; background:transparent",
+                id="hf-share-btn",
+            ),
+            Button(
+                "★ Bookmark",
+                onclick="bookmarkCurrentFund()",
+                id="hf-bookmark-btn",
+                cls="text-xs font-medium px-4 py-1.5 rounded self-end cursor-pointer w-full sm:w-auto",
+                style=f"border:1px solid {AMBER}; color:{AMBER}; background:transparent; opacity:0.4",
+                disabled=True,
+            ),
             cls="flex flex-wrap gap-3 items-end mb-4",
+        ),
+        # Bookmarks section (hidden until JS populates it)
+        Div(
+            Span("★ Bookmarks", cls="text-xs font-semibold", style=f"color:{AMBER}"),
+            Div(id="hf-bookmarks", cls="flex flex-wrap gap-2 mt-1"),
+            id="hf-bookmarks-section",
+            cls="mb-3",
+            style="display:none",
         ),
         # Treemap container
         Div(
@@ -151,11 +174,81 @@ def hedge_fund_page_content():
                 return 'rgb(' + r + ',' + g + ',' + b + ')';
             }
         }
+        // ---- Bookmark helpers ----
+        async function loadBookmarks() {
+            try {
+                const resp = await fetch('/app/hedgefunds/bookmarks');
+                const names = await resp.json();
+                const section = document.getElementById('hf-bookmarks-section');
+                const container = document.getElementById('hf-bookmarks');
+                if (!names.length) { section.style.display = 'none'; container.innerHTML = ''; return; }
+                section.style.display = '';
+                container.innerHTML = names.map(function(name) {
+                    var safe = name.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                    var enc = encodeURIComponent(name);
+                    return '<span style="border:1px solid #F59E0B;color:#F59E0B;border-radius:9999px;padding:2px 10px;font-size:0.75rem;cursor:pointer;display:inline-flex;align-items:center;gap:4px"' +
+                        ' onclick="loadFundFromBookmark(decodeURIComponent(' + "'" + enc + "'" + '))">' +
+                        safe +
+                        '<span onclick="event.stopPropagation();removeBookmark(decodeURIComponent(' + "'" + enc + "'" + '))" ' +
+                        'style="cursor:pointer;margin-left:2px;opacity:0.7" title="Remove bookmark">&times;</span></span>';
+                }).join('');
+            } catch(e) { /* ignore for guests */ }
+        }
+        function bookmarkCurrentFund() {
+            var fund = document.getElementById('hf-fund-filter').value.trim();
+            if (!fund) return;
+            bookmarkFund(fund);
+        }
+        async function bookmarkFund(name) {
+            try {
+                await fetch('/app/hedgefunds/bookmark', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({fund: name}),
+                });
+                loadBookmarks();
+            } catch(e) { console.error('Bookmark error', e); }
+        }
+        async function removeBookmark(name) {
+            try {
+                await fetch('/app/hedgefunds/bookmark', {
+                    method: 'DELETE',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({fund: name}),
+                });
+                loadBookmarks();
+            } catch(e) { console.error('Remove bookmark error', e); }
+        }
+        function loadFundFromBookmark(name) {
+            document.getElementById('hf-fund-filter').value = name;
+            updateBookmarkBtn();
+            loadTreemap();
+        }
+        function updateBookmarkBtn() {
+            var btn = document.getElementById('hf-bookmark-btn');
+            var fund = document.getElementById('hf-fund-filter').value.trim();
+            if (fund) { btn.disabled = false; btn.style.opacity = '1'; }
+            else { btn.disabled = true; btn.style.opacity = '0.4'; }
+        }
+        // Track fund filter changes to enable/disable bookmark button
+        document.addEventListener('DOMContentLoaded', function() {
+            var fi = document.getElementById('hf-fund-filter');
+            if (fi) { fi.addEventListener('input', updateBookmarkBtn); }
+        });
+        // ---- End bookmark helpers ----
+
         async function loadTreemap() {
             const fund = document.getElementById('hf-fund-filter').value;
             const minVal = document.getElementById('hf-min-value').value;
             const limit = document.getElementById('hf-limit').value;
             const params = new URLSearchParams({fund, min_value: minVal, limit});
+            // Push filter state to browser URL so the link is shareable
+            const _url = new URL(window.location);
+            _url.search = '';
+            if (fund) _url.searchParams.set('fund', fund);
+            if (minVal !== '0') _url.searchParams.set('min_value', minVal);
+            if (limit !== '500') _url.searchParams.set('limit', limit);
+            history.replaceState(null, '', _url);
             const container = document.getElementById('treemap-container');
             container.innerHTML = '<div class="flex items-center justify-center h-96"><p style="color:#94A3B8">Loading...</p></div>';
             try {
@@ -235,10 +328,27 @@ def hedge_fund_page_content():
                 container.innerHTML = '<div class="flex items-center justify-center h-96"><p style="color:#EF4444">Error loading data.</p></div>';
             }
         }
+        function copyTreemapUrl() {
+            navigator.clipboard.writeText(window.location.href).then(function() {
+                var btn = document.getElementById('hf-share-btn');
+                var orig = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(function() { btn.textContent = orig; }, 1500);
+            });
+        }
+        // On page load, read URL params and populate filter controls
+        (function initFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('fund')) document.getElementById('hf-fund-filter').value = params.get('fund');
+            if (params.get('min_value')) document.getElementById('hf-min-value').value = params.get('min_value');
+            if (params.get('limit')) document.getElementById('hf-limit').value = params.get('limit');
+            updateBookmarkBtn();
+        })();
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', loadTreemap);
+            document.addEventListener('DOMContentLoaded', function() { loadTreemap(); loadBookmarks(); });
         } else {
             loadTreemap();
+            loadBookmarks();
         }
         """),
         cls="w-full",

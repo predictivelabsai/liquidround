@@ -220,6 +220,43 @@ async def news_feed_html():
     return Div(*items)
 
 
+@rt("/app/news/search")
+async def news_search(q: str = ""):
+    """Tavily-powered contextual news search — returns JSON articles."""
+    if not q or len(q) < 3:
+        return JSONResponse({"articles": []})
+    try:
+        from utils.research_tools import research_tools
+        result = await research_tools.tavily_search(q)
+        articles = []
+        for r in result.get("results", []):
+            source = "WEB"
+            url = r.get("url", "")
+            if "bloomberg" in url:
+                source = "BBG"
+            elif "ft.com" in url:
+                source = "FT"
+            elif "reuters" in url:
+                source = "RTR"
+            elif "wsj.com" in url:
+                source = "WSJ"
+            elif "sec.gov" in url:
+                source = "SEC"
+            elif "cnbc" in url:
+                source = "CNBC"
+            articles.append({
+                "title": r.get("title", ""),
+                "url": url,
+                "summary": (r.get("content") or "")[:200],
+                "source": source,
+                "published": "",
+            })
+        return JSONResponse({"articles": articles})
+    except Exception as e:
+        log.warning("Tavily news search failed: %s", e)
+        return JSONResponse({"articles": []})
+
+
 # ---------------------------------------------------------------------------
 # Daily deals email routes
 # ---------------------------------------------------------------------------

@@ -80,6 +80,76 @@ def hedge_funds_page(session, request):
     )
 
 
+@ar("/app/hedgefunds/bookmarks")
+def hedge_funds_bookmarks(session):
+    """Return the current user's bookmarked fund names as a JSON array."""
+    user = session.get("user")
+    if not user or not user.get("user_id"):
+        return JSONResponse([])
+    try:
+        from utils.database import get_conn
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT fund_name FROM liquidround.fund_bookmarks WHERE user_id = %s ORDER BY created_at",
+                (user["user_id"],),
+            )
+            names = [r[0] for r in cur.fetchall()]
+        return JSONResponse(names)
+    except Exception as e:
+        log.error("Bookmark list error: %s", e)
+        return JSONResponse([])
+
+
+@ar("/app/hedgefunds/bookmark", methods=["POST"])
+async def hedge_funds_bookmark_add(session, request):
+    """Bookmark a fund for the logged-in user."""
+    user = session.get("user")
+    if not user or not user.get("user_id"):
+        return JSONResponse({"error": "Login required"}, status_code=401)
+    body = await request.json()
+    fund = (body.get("fund") or "").strip()
+    if not fund:
+        return JSONResponse({"error": "fund is required"}, status_code=400)
+    try:
+        from utils.database import get_conn
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "INSERT INTO liquidround.fund_bookmarks (user_id, fund_name) VALUES (%s, %s) "
+                "ON CONFLICT (user_id, fund_name) DO NOTHING",
+                (user["user_id"], fund),
+            )
+        return JSONResponse({"ok": True})
+    except Exception as e:
+        log.error("Bookmark add error: %s", e)
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@ar("/app/hedgefunds/bookmark", methods=["DELETE"])
+async def hedge_funds_bookmark_remove(session, request):
+    """Remove a fund bookmark for the logged-in user."""
+    user = session.get("user")
+    if not user or not user.get("user_id"):
+        return JSONResponse({"error": "Login required"}, status_code=401)
+    body = await request.json()
+    fund = (body.get("fund") or "").strip()
+    if not fund:
+        return JSONResponse({"error": "fund is required"}, status_code=400)
+    try:
+        from utils.database import get_conn
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "DELETE FROM liquidround.fund_bookmarks WHERE user_id = %s AND fund_name = %s",
+                (user["user_id"], fund),
+            )
+        return JSONResponse({"ok": True})
+    except Exception as e:
+        log.error("Bookmark remove error: %s", e)
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
 @ar("/app/hedgefunds/data")
 def hedge_funds_data(request):
     params = request.query_params
