@@ -1191,13 +1191,15 @@ def backfill_archive_from_cache() -> bool:
 
 
 def _acquire_digest_lock() -> bool:
-    """Try to claim today's digest slot via DB advisory lock.
+    """Try to claim today's digest slot via pg_advisory_xact_lock + unique insert.
     Returns True if this process should send, False if another already did."""
     from datetime import date
     try:
         from utils.database import get_conn
         with get_conn() as conn:
             cur = conn.cursor()
+            # Serialise competing containers with a transaction-scoped advisory lock
+            cur.execute("SELECT pg_advisory_xact_lock(hashtext('digest_daily'))")
             cur.execute("""
                 INSERT INTO liquidround.workflows (user_query, workflow_type, status, created_at)
                 SELECT %s, 'digest_lock', 'completed', NOW()
