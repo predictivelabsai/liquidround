@@ -30,7 +30,7 @@ def main():
     parser.add_argument("--to", default=os.getenv("TO_EMAIL", "kaljuvee@gmail.com"))
     parser.add_argument("--all", action="store_true", help="Send to all opted-in users")
     parser.add_argument("--dry-run", action="store_true", help="Print HTML without sending")
-    parser.add_argument("--companies", type=int, default=10, help="Number of companies")
+    parser.add_argument("--companies", type=int, default=5, help="Number of companies")
     args = parser.parse_args()
 
     if args.all and not args.dry_run:

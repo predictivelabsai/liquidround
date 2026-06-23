@@ -163,7 +163,7 @@ async def deals_generate():
     from utils.digest import build_digest, render_email_html, cache_digest, render_blog_html, archive_digest
 
     try:
-        digest = build_digest(n_companies=10)
+        digest = build_digest()
         html = render_email_html(digest)
         cache_digest(digest, html)
         blog_html = render_blog_html(digest)
@@ -474,7 +474,7 @@ async def digest_preview():
     """Generate and preview the daily digest (takes ~30-60s for LLM calls)."""
     from utils.digest import build_digest, render_email_html
 
-    digest = build_digest(n_companies=10)
+    digest = build_digest()
     html = render_email_html(digest)
 
     n = len(digest.get("companies", []))
@@ -547,13 +547,18 @@ async function sendDigest() {
 
 
 @ar("/app/digest/send", methods=["POST"])
-async def digest_send():
-    """Regenerate + send the digest via email."""
+async def digest_send(request):
+    """Regenerate + send the digest via email to a specific address."""
     from utils.digest import build_digest, render_email_html, send_digest_email
 
-    digest = build_digest(n_companies=10)
+    body = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
+    to_email = body.get("email")
+    if not to_email:
+        return JSONResponse({"ok": False, "error": "email required"}, status_code=400)
+
+    digest = build_digest()
     html = render_email_html(digest)
-    result = send_digest_email(html)
+    result = send_digest_email(html, to_email=to_email)
     return JSONResponse(result)
 
 

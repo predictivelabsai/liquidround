@@ -89,12 +89,13 @@ def get_digest_recipients() -> list[Dict]:
     with get_conn() as conn:
         cur = conn.cursor(cursor_factory=RealDictCursor)
         cur.execute("""
-            SELECT u.user_id, u.email, u.display_name
+            SELECT DISTINCT ON (u.email) u.user_id, u.email, u.display_name
             FROM liquidround.users u
             LEFT JOIN liquidround.user_preferences p ON p.user_id = u.user_id
             WHERE COALESCE(p.notify_weekly_digest, TRUE) = TRUE
               AND u.email IS NOT NULL
               AND u.email != ''
+            ORDER BY u.email, u.id
         """)
         return [dict(r) for r in cur.fetchall()]
 

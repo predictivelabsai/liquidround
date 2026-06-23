@@ -90,7 +90,7 @@ def _fetch_comps_summary() -> str:
 EXTRACT_SYSTEM = """You are a senior Baltic ECM / M&A analyst.
 
 Given web research results about Lithuanian and Estonian companies and deals,
-extract exactly 10 distinct real PRIVATE companies that are involved in or
+extract up to 8 distinct real PRIVATE companies that are involved in or
 suitable for M&A activity (acquisitions, divestitures, growth equity, buyouts).
 
 For EACH company return a JSON object:
@@ -116,7 +116,7 @@ RULES:
 - Good sources: Baltic startup ecosystem, PE/VC portfolio companies, founder-led
   SMEs, niche tech/SaaS, deep-tech, fintech, healthtech, agritech, logistics
   startups, craft manufacturers.
-- If the research doesn't have 10, fill remaining slots with real LT/EE startups
+- If the research doesn't have 8, fill remaining slots with real LT/EE startups
   or SMEs that have a credible M&A angle.
 
 Return ONLY a JSON array, no markdown fencing."""
@@ -214,7 +214,7 @@ def _extract_companies(research: list[dict]) -> list[dict]:
     filtered = [c for c in companies
                 if not _is_public(c) and not _revenue_over_limit(c)]
 
-    return filtered[:10]
+    return filtered[:8]
 
 
 def _generate_thesis(company: dict, comps: str) -> str:
@@ -264,18 +264,121 @@ def _generate_deep_dive(company: dict, comps: str) -> str:
     return resp.content.strip()
 
 
-def build_digest(n_companies: int = 10) -> dict:
-    """Build the full daily digest:
-    1. Tavily researches real LT/EE deals
-    2. LLM extracts 10 companies
-    3. yfinance provides Baltic comps context
-    4. LLM generates unique thesis per company
-    5. LLM picks best company for deep dive
-    6. LLM generates detailed triage analysis
-    """
-    research = _research_companies()
+def _get_pool_candidates(n: int = 8) -> list[dict]:
+    """Draw candidates from the deal_candidates pool, avoiding recently featured."""
+    try:
+        from utils.database import get_conn
+        from psycopg2.extras import RealDictCursor
+        with get_conn() as conn:
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            cur.execute("""
+                SELECT company_name, country, sector, description, deal_context,
+                       deal_size_estimate, source
+                FROM liquidround.deal_candidates
+                WHERE is_active = TRUE
+                  AND (last_featured IS NULL
+                       OR last_featured < CURRENT_DATE - INTERVAL '14 days')
+                ORDER BY
+                    last_featured NULLS FIRST,
+                    discovered_at DESC
+                LIMIT %s
+            """, (n,))
+            rows = cur.fetchall()
+            return [
+                {"name": r["company_name"], "country": r["country"],
+                 "sector": r["sector"] or "", "description": r["description"] or "",
+                 "deal_context": r["deal_context"] or "",
+                 "deal_size_estimate": r["deal_size_estimate"] or "undisclosed",
+                 "source": r["source"] or ""}
+                for r in rows
+            ]
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception("Failed to query deal_candidates pool")
+        return []
 
-    companies = _extract_companies(research)
+
+def _mark_featured(companies: list[dict]) -> None:
+    """Update last_featured and feature_count for the selected companies."""
+    try:
+        from utils.database import get_conn
+        with get_conn() as conn:
+            cur = conn.cursor()
+            for c in companies:
+                cur.execute("""
+                    UPDATE liquidround.deal_candidates
+                    SET last_featured = CURRENT_DATE,
+                        feature_count = feature_count + 1
+                    WHERE company_name = %s
+                """, (c.get("name", ""),))
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception("Failed to mark featured candidates")
+
+
+def _get_top_funds(n: int = 10) -> list[dict]:
+    """Get top hedge funds ranked by portfolio-weighted YTD return."""
+    try:
+        from utils.hedge_fund_db import get_fund_returns_ranked
+        return get_fund_returns_ranked(top_n=n, min_aum_thousands=500000, min_coverage_pct=0.4)
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception("Failed to get fund rankings")
+        return []
+
+
+def _get_ipo_snapshot() -> dict | None:
+    """Get upcoming IPOs and pre-IPO mega-caps from the pipeline table."""
+    try:
+        from utils.database import get_conn
+        from psycopg2.extras import RealDictCursor
+        with get_conn() as conn:
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            cur.execute("""
+                SELECT company_name, ticker, exchange, expected_date, deal_value
+                FROM liquidround.ipo_pipeline
+                WHERE kind != 'private' AND status != 'completed'
+                ORDER BY expected_date ASC NULLS LAST
+                LIMIT 5
+            """)
+            upcoming = [dict(r) for r in cur.fetchall()]
+            cur.execute("""
+                SELECT company_name, sector, last_valuation
+                FROM liquidround.ipo_pipeline
+                WHERE kind = 'private'
+                ORDER BY last_valuation DESC NULLS LAST
+                LIMIT 3
+            """)
+            privates = [dict(r) for r in cur.fetchall()]
+        if not upcoming and not privates:
+            return None
+        return {"upcoming": upcoming, "private": privates}
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception("Failed to get IPO snapshot")
+        return None
+
+
+def build_digest(n_companies: int = 5) -> dict:
+    """Build the full daily digest:
+    1. Draw from deal_candidates pool (fallback: fresh Tavily research)
+    2. yfinance provides Baltic comps context
+    3. LLM generates unique thesis per company
+    4. LLM picks best company for deep dive
+    5. LLM generates detailed triage analysis
+    6. Top hedge funds leaderboard + daily spotlight
+    7. IPO pipeline snapshot
+    """
+    # Try pool first, fall back to live research
+    pool = _get_pool_candidates(n=n_companies + 3)
+    if len(pool) >= n_companies:
+        companies = pool[:n_companies]
+        from_pool = True
+    else:
+        research = _research_companies()
+        companies = _extract_companies(research)
+        from_pool = False
+
     if not companies:
         return {"companies": [], "deep_dive": "", "featured": None,
                 "date": date.today().isoformat()}
@@ -286,17 +389,24 @@ def build_digest(n_companies: int = 10) -> dict:
         c["thesis"] = _generate_thesis(c, comps)
 
     companies = companies[:n_companies]
+
+    if from_pool:
+        _mark_featured(companies)
+
     featured = _pick_featured(companies)
     deep_dive = _generate_deep_dive(featured, comps)
 
-    # Hedge fund spotlight — rotate daily through top performers
     hedge_fund = _pick_daily_fund()
+    top_funds = _get_top_funds(n=10)
+    ipo_snapshot = _get_ipo_snapshot()
 
     return {
         "companies": companies,
         "featured": featured,
         "deep_dive": deep_dive,
         "hedge_fund": hedge_fund,
+        "top_funds": top_funds,
+        "ipo_snapshot": ipo_snapshot,
         "date": date.today().isoformat(),
     }
 
@@ -369,6 +479,8 @@ def render_email_html(digest: dict) -> str:
     featured = digest.get("featured", {})
     deep_dive_md = digest.get("deep_dive", "")
     hedge_fund = digest.get("hedge_fund")
+    top_funds = digest.get("top_funds", [])
+    ipo_snapshot = digest.get("ipo_snapshot")
 
     company_cards = ""
     for i, c in enumerate(companies):
@@ -456,7 +568,11 @@ def render_email_html(digest: dict) -> str:
       </div>
     </div>
 
+    {_render_top_funds_email(top_funds)}
+
     {_render_hedge_fund_email(hedge_fund)}
+
+    {_render_ipo_email(ipo_snapshot)}
 
     <!-- Footer -->
     <div style="text-align:center;padding:16px 0;border-top:1px solid #e2e8f0;margin-top:4px;">
@@ -613,6 +729,8 @@ def render_blog_html(digest: dict) -> str:
     featured = digest.get("featured", {})
     deep_dive_md = digest.get("deep_dive", "")
     hedge_fund = digest.get("hedge_fund")
+    top_funds = digest.get("top_funds", [])
+    ipo_snapshot = digest.get("ipo_snapshot")
 
     cards_html = ""
     for c in companies:
@@ -672,7 +790,11 @@ def render_blog_html(digest: dict) -> str:
       </div>
     </div>
 
-    {_render_hedge_fund_blog(hedge_fund)}"""
+    {_render_top_funds_blog(top_funds)}
+
+    {_render_hedge_fund_blog(hedge_fund)}
+
+    {_render_ipo_blog(ipo_snapshot)}"""
 
 
 def _render_hedge_fund_blog(hf: dict | None) -> str:
@@ -715,6 +837,256 @@ def _render_hedge_fund_blog(hf: dict | None) -> str:
         </table>
         <div class="text-xs mt-3">
           <a href="{fund_url}" style="color:#F59E0B;text-decoration:none;">View full portfolio on LiquidRound →</a>
+        </div>
+      </div>
+    </div>"""
+
+
+def _render_top_funds_email(top_funds: list[dict]) -> str:
+    if not top_funds:
+        return ""
+    rows = ""
+    for i, f in enumerate(top_funds, 1):
+        ret = f.get("portfolio_return_ytd", 0)
+        ret_color = "#10B981" if ret >= 0 else "#EF4444"
+        ret_sign = "+" if ret >= 0 else ""
+        name = f.get("fund", "N/A")
+        if len(name) > 35:
+            name = name[:33] + "…"
+        rows += f"""
+            <tr>
+              <td style="padding:4px 8px;font-size:12px;color:#334155;border-bottom:1px solid #e2e8f0;text-align:center;">{i}</td>
+              <td style="padding:4px 8px;font-size:12px;color:#334155;border-bottom:1px solid #e2e8f0;">{name}</td>
+              <td style="padding:4px 8px;font-size:12px;color:#334155;border-bottom:1px solid #e2e8f0;text-align:right;">{_fmt_money(f.get('aum', 0))}</td>
+              <td style="padding:4px 8px;font-size:12px;border-bottom:1px solid #e2e8f0;text-align:right;color:{ret_color};font-weight:600;">{ret_sign}{ret:.1f}%</td>
+              <td style="padding:4px 8px;font-size:12px;color:#334155;border-bottom:1px solid #e2e8f0;text-align:right;">{f.get('positions', 0)}</td>
+            </tr>"""
+    return f"""
+    <!-- Top Hedge Funds -->
+    <div style="padding:0 0 16px;">
+      <div style="background:#0B1220;border-radius:8px;overflow:hidden;">
+        <div style="padding:12px 16px;border-bottom:2px solid #3B82F6;">
+          <div style="font-size:11px;font-weight:700;color:#3B82F6;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">
+            Top Hedge Funds by YTD Return
+          </div>
+        </div>
+        <div style="padding:12px 16px;">
+          <table style="width:100%;border-collapse:collapse;">
+            <tr style="background:#f1f5f9;">
+              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:center;">#</th>
+              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:left;">Fund</th>
+              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:right;">AUM</th>
+              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:right;">YTD</th>
+              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:right;">Positions</th>
+            </tr>
+            {rows}
+          </table>
+          <div style="font-size:10px;color:#94a3b8;margin-top:8px;">
+            <a href="https://liquidround.ai/app/hedgefunds" style="color:#F59E0B;text-decoration:none;">
+              View full leaderboard on LiquidRound →
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>"""
+
+
+def _render_top_funds_blog(top_funds: list[dict]) -> str:
+    if not top_funds:
+        return ""
+    rows = ""
+    for i, f in enumerate(top_funds, 1):
+        ret = f.get("portfolio_return_ytd", 0)
+        ret_color = "#10B981" if ret >= 0 else "#EF4444"
+        ret_sign = "+" if ret >= 0 else ""
+        name = f.get("fund", "N/A")
+        if len(name) > 35:
+            name = name[:33] + "…"
+        rows += f"""
+          <tr>
+            <td class="text-sm py-1 px-2 text-center" style="color:#CBD5E1;border-bottom:1px solid #1E293B;">{i}</td>
+            <td class="text-sm py-1 px-2" style="color:#CBD5E1;border-bottom:1px solid #1E293B;">{name}</td>
+            <td class="text-sm py-1 px-2 text-right" style="color:#CBD5E1;border-bottom:1px solid #1E293B;">{_fmt_money(f.get('aum', 0))}</td>
+            <td class="text-sm py-1 px-2 text-right" style="color:{ret_color};font-weight:600;border-bottom:1px solid #1E293B;">{ret_sign}{ret:.1f}%</td>
+            <td class="text-sm py-1 px-2 text-right" style="color:#CBD5E1;border-bottom:1px solid #1E293B;">{f.get('positions', 0)}</td>
+          </tr>"""
+    return f"""
+    <div class="mt-8 rounded-lg overflow-hidden" style="background:#111A2E;border:1px solid #1E293B;">
+      <div class="p-4" style="border-bottom:2px solid #3B82F6;">
+        <div class="text-xs font-bold uppercase tracking-wider mb-1" style="color:#3B82F6;">
+          Top Hedge Funds by YTD Return
+        </div>
+      </div>
+      <div class="p-4">
+        <table class="w-full" style="border-collapse:collapse;">
+          <tr style="background:#0B1220;">
+            <th class="text-xs py-1 px-2 text-center" style="color:#64748B;">#</th>
+            <th class="text-xs py-1 px-2 text-left" style="color:#64748B;">Fund</th>
+            <th class="text-xs py-1 px-2 text-right" style="color:#64748B;">AUM</th>
+            <th class="text-xs py-1 px-2 text-right" style="color:#64748B;">YTD</th>
+            <th class="text-xs py-1 px-2 text-right" style="color:#64748B;">Positions</th>
+          </tr>
+          {rows}
+        </table>
+        <div class="text-xs mt-3">
+          <a href="/app/hedgefunds" style="color:#F59E0B;text-decoration:none;">View full leaderboard on LiquidRound →</a>
+        </div>
+      </div>
+    </div>"""
+
+
+def _render_ipo_email(snapshot: dict | None) -> str:
+    if not snapshot:
+        return ""
+    upcoming = snapshot.get("upcoming", [])
+    privates = snapshot.get("private", [])
+    if not upcoming and not privates:
+        return ""
+
+    upcoming_rows = ""
+    for r in upcoming:
+        deal_val = _fmt_money(r["deal_value"]) if r.get("deal_value") else "—"
+        exp_date = str(r.get("expected_date", ""))[:10] if r.get("expected_date") else "TBD"
+        upcoming_rows += f"""
+            <tr>
+              <td style="padding:4px 8px;font-size:12px;color:#334155;border-bottom:1px solid #e2e8f0;">{r.get('company_name', '')}</td>
+              <td style="padding:4px 8px;font-size:12px;color:#334155;border-bottom:1px solid #e2e8f0;">{r.get('ticker', '')}</td>
+              <td style="padding:4px 8px;font-size:12px;color:#334155;border-bottom:1px solid #e2e8f0;">{r.get('exchange', '')}</td>
+              <td style="padding:4px 8px;font-size:12px;color:#334155;border-bottom:1px solid #e2e8f0;text-align:right;">{exp_date}</td>
+              <td style="padding:4px 8px;font-size:12px;color:#334155;border-bottom:1px solid #e2e8f0;text-align:right;">{deal_val}</td>
+            </tr>"""
+
+    upcoming_section = ""
+    if upcoming:
+        upcoming_section = f"""
+          <div style="font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:6px;">Upcoming IPOs</div>
+          <table style="width:100%;border-collapse:collapse;">
+            <tr style="background:#f1f5f9;">
+              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:left;">Company</th>
+              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:left;">Ticker</th>
+              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:left;">Exchange</th>
+              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:right;">Expected</th>
+              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:right;">Deal Value</th>
+            </tr>
+            {upcoming_rows}
+          </table>"""
+
+    private_rows = ""
+    for r in privates:
+        val = _fmt_money(r["last_valuation"]) if r.get("last_valuation") else "—"
+        private_rows += f"""
+            <tr>
+              <td style="padding:4px 8px;font-size:12px;color:#334155;border-bottom:1px solid #e2e8f0;">{r.get('company_name', '')}</td>
+              <td style="padding:4px 8px;font-size:12px;color:#334155;border-bottom:1px solid #e2e8f0;">{r.get('sector', '')}</td>
+              <td style="padding:4px 8px;font-size:12px;color:#334155;border-bottom:1px solid #e2e8f0;text-align:right;">{val}</td>
+            </tr>"""
+
+    private_section = ""
+    if privates:
+        private_section = f"""
+          <div style="font-size:11px;font-weight:600;color:#94a3b8;margin:12px 0 6px;">Pre-IPO Watchlist</div>
+          <table style="width:100%;border-collapse:collapse;">
+            <tr style="background:#f1f5f9;">
+              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:left;">Company</th>
+              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:left;">Sector</th>
+              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:right;">Valuation</th>
+            </tr>
+            {private_rows}
+          </table>"""
+
+    return f"""
+    <!-- IPO Pipeline Snapshot -->
+    <div style="padding:0 0 16px;">
+      <div style="background:#0B1220;border-radius:8px;overflow:hidden;">
+        <div style="padding:12px 16px;border-bottom:2px solid #10B981;">
+          <div style="font-size:11px;font-weight:700;color:#10B981;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">
+            IPO Pipeline Snapshot
+          </div>
+        </div>
+        <div style="padding:12px 16px;">
+          {upcoming_section}
+          {private_section}
+          <div style="font-size:10px;color:#94a3b8;margin-top:8px;">
+            <a href="https://liquidround.ai/app/ipo-pipeline" style="color:#F59E0B;text-decoration:none;">
+              View full IPO pipeline on LiquidRound →
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>"""
+
+
+def _render_ipo_blog(snapshot: dict | None) -> str:
+    if not snapshot:
+        return ""
+    upcoming = snapshot.get("upcoming", [])
+    privates = snapshot.get("private", [])
+    if not upcoming and not privates:
+        return ""
+
+    upcoming_rows = ""
+    for r in upcoming:
+        deal_val = _fmt_money(r["deal_value"]) if r.get("deal_value") else "—"
+        exp_date = str(r.get("expected_date", ""))[:10] if r.get("expected_date") else "TBD"
+        upcoming_rows += f"""
+          <tr>
+            <td class="text-sm py-1 px-2" style="color:#CBD5E1;border-bottom:1px solid #1E293B;">{r.get('company_name', '')}</td>
+            <td class="text-sm py-1 px-2" style="color:#CBD5E1;border-bottom:1px solid #1E293B;">{r.get('ticker', '')}</td>
+            <td class="text-sm py-1 px-2" style="color:#CBD5E1;border-bottom:1px solid #1E293B;">{r.get('exchange', '')}</td>
+            <td class="text-sm py-1 px-2 text-right" style="color:#CBD5E1;border-bottom:1px solid #1E293B;">{exp_date}</td>
+            <td class="text-sm py-1 px-2 text-right" style="color:#CBD5E1;border-bottom:1px solid #1E293B;">{deal_val}</td>
+          </tr>"""
+
+    upcoming_section = ""
+    if upcoming:
+        upcoming_section = f"""
+        <div class="text-xs font-semibold mb-2" style="color:#94A3B8;">Upcoming IPOs</div>
+        <table class="w-full" style="border-collapse:collapse;">
+          <tr style="background:#0B1220;">
+            <th class="text-xs py-1 px-2 text-left" style="color:#64748B;">Company</th>
+            <th class="text-xs py-1 px-2 text-left" style="color:#64748B;">Ticker</th>
+            <th class="text-xs py-1 px-2 text-left" style="color:#64748B;">Exchange</th>
+            <th class="text-xs py-1 px-2 text-right" style="color:#64748B;">Expected</th>
+            <th class="text-xs py-1 px-2 text-right" style="color:#64748B;">Deal Value</th>
+          </tr>
+          {upcoming_rows}
+        </table>"""
+
+    private_rows = ""
+    for r in privates:
+        val = _fmt_money(r["last_valuation"]) if r.get("last_valuation") else "—"
+        private_rows += f"""
+          <tr>
+            <td class="text-sm py-1 px-2" style="color:#CBD5E1;border-bottom:1px solid #1E293B;">{r.get('company_name', '')}</td>
+            <td class="text-sm py-1 px-2" style="color:#CBD5E1;border-bottom:1px solid #1E293B;">{r.get('sector', '')}</td>
+            <td class="text-sm py-1 px-2 text-right" style="color:#CBD5E1;border-bottom:1px solid #1E293B;">{val}</td>
+          </tr>"""
+
+    private_section = ""
+    if privates:
+        private_section = f"""
+        <div class="text-xs font-semibold mt-4 mb-2" style="color:#94A3B8;">Pre-IPO Watchlist</div>
+        <table class="w-full" style="border-collapse:collapse;">
+          <tr style="background:#0B1220;">
+            <th class="text-xs py-1 px-2 text-left" style="color:#64748B;">Company</th>
+            <th class="text-xs py-1 px-2 text-left" style="color:#64748B;">Sector</th>
+            <th class="text-xs py-1 px-2 text-right" style="color:#64748B;">Valuation</th>
+          </tr>
+          {private_rows}
+        </table>"""
+
+    return f"""
+    <div class="mt-8 rounded-lg overflow-hidden" style="background:#111A2E;border:1px solid #1E293B;">
+      <div class="p-4" style="border-bottom:2px solid #10B981;">
+        <div class="text-xs font-bold uppercase tracking-wider mb-1" style="color:#10B981;">
+          IPO Pipeline Snapshot
+        </div>
+      </div>
+      <div class="p-4">
+        {upcoming_section}
+        {private_section}
+        <div class="text-xs mt-3">
+          <a href="/app/ipo-pipeline" style="color:#F59E0B;text-decoration:none;">View full IPO pipeline on LiquidRound →</a>
         </div>
       </div>
     </div>"""
@@ -854,12 +1226,20 @@ def send_digest_to_all() -> dict:
     from utils.preferences import get_digest_recipients
 
     recipients = get_digest_recipients()
+    seen_emails = set()
+    unique_recipients = []
+    for r in recipients:
+        e = r["email"].lower().strip()
+        if e not in seen_emails:
+            seen_emails.add(e)
+            unique_recipients.append(r)
+    recipients = unique_recipients
     if not recipients:
         log.info("Daily digest: no opted-in recipients, skipping")
         return {"ok": True, "sent": 0, "skipped": 0, "recipients": []}
 
     log.info(f"Daily digest: building for {len(recipients)} recipient(s)")
-    digest = build_digest(n_companies=10)
+    digest = build_digest()
     html = render_email_html(digest)
     cache_digest(digest, html)
 

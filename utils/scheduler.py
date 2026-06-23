@@ -66,9 +66,19 @@ def _run_security_returns():
              result.get("resolved"), result.get("skipped"), result.get("errors"))
 
 
+def _run_deal_candidates():
+    from scripts.sync_deal_candidates import main as sync_candidates
+    result = sync_candidates()
+    log.info("Deal candidates: inserted=%s, updated=%s, total=%s",
+             result.get("inserted"), result.get("updated"), result.get("total"))
+
+
+CANDIDATE_HOUR = max(HOUR - 2, 0)
+
 JOBS = {
-    "digest": _run_digest,
-    "security_returns": _run_security_returns,
+    "digest":           {"fn": _run_digest,           "hour": HOUR},
+    "security_returns": {"fn": _run_security_returns, "hour": HOUR},
+    "deal_candidates":  {"fn": _run_deal_candidates,  "hour": CANDIDATE_HOUR},
 }
 
 
@@ -107,9 +117,9 @@ def start():
     log.info("Scheduler starting: DIGEST_FREQUENCY=%s DIGEST_HOUR_UTC=%s DIGEST_WEEKDAY=%s",
              FREQ, HOUR, WEEKDAY)
 
-    for name, fn in JOBS.items():
+    for name, cfg in JOBS.items():
         t = threading.Thread(
-            target=_loop, args=(name, fn, FREQ, HOUR, WEEKDAY),
+            target=_loop, args=(name, cfg["fn"], FREQ, cfg["hour"], WEEKDAY),
             daemon=True, name=f"sched-{name}",
         )
         t.start()
