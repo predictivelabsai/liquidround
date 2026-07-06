@@ -8,6 +8,41 @@
 
 LiquidRound is an AI-powered chat-first workspace for investment banking and equity capital markets. A squad of specialist AI agents covers the full deal lifecycle — buyer-led sourcing and diligence, seller-led positioning and IPO readiness, and public markets intelligence.
 
+## Architecture
+
+```mermaid
+flowchart TB
+    USER(["User"]) -->|HTTPS| SERVER
+
+    subgraph SERVER["FastHTML Process · port 5007"]
+        LANDING["Landing & Blog\n/, /blog, /agents"]
+        APP["Chat App\n/app — 3-pane shell\nSSE streaming"]
+        SCHED["Scheduler\ndigest · candidates\nsecurity returns"]
+    end
+
+    subgraph DATA["PostgreSQL"]
+        LR[("liquidround\nusers · workflows · messages\nipo_pipeline · deal_candidates")]
+        HF[("hedgefolio\n13F holdings · 10K funds\n3.4M positions · $71T AUM")]
+    end
+
+    subgraph EXT["External APIs"]
+        XAI[["Grok LLM\napi.x.ai"]]
+        TAVILY[["Tavily"]]
+        EXA[["EXA"]]
+        YF[["yfinance"]]
+        PM[["Postmark"]]
+    end
+
+    APP --> LR
+    APP --> HF
+    APP --> XAI
+    APP --> TAVILY
+    APP --> EXA
+    APP --> YF
+    SCHED --> PM
+    SCHED --> LR
+```
+
 ## What it does
 
 - **Buy-side M&A** — find acquisition targets, run diligence, score matches, build IC memos
@@ -18,18 +53,89 @@ LiquidRound is an AI-powered chat-first workspace for investment banking and equ
 
 ## AI Agent Squad
 
-Six workflow categories with 23 specialist agents:
+23 specialist agents across 6 categories. The auto-router picks the right agent from natural language, or use a prefix shortcut (`scan:`, `dcf:`, `memo:`, `hedgefunds:`, etc.).
 
-| Category | Agents | Examples |
-|----------|--------|----------|
-| Deal Sourcing & Screening | 4 | Target Scanner, Buyer Scanner, Deal Triage, Seller Intent |
-| Valuation & Underwriting | 6 | Company Profiler, DCF, Comps, LTM, Multiples, Synergy |
-| Due Diligence Stack | 5 | VDR Auditor, Contract Abstractor, Legal, Operational, ESG |
-| Deal Execution & Capital | 5 | IC Memo, Teaser, Bid Strategy, IPO Readiness, Integration |
-| Research & Post-Deal | 2 | Research Analyst, Match Scorer |
-| Public Markets | 1 | Hedge Fund Analyst (13F, AUM, activist filings) |
+```mermaid
+flowchart TD
+    MSG["User Message"] --> ROUTER["Router\nagents/router.py"]
+    ROUTER -->|"scan: triage:\nintent: buyer:"| SRC["Deal Sourcing"]
+    ROUTER -->|"comps: ltm: dcf:\nmulti: synergy:"| UND["Valuation"]
+    ROUTER -->|"vdr: abstract:\nlegal: ops: esg:"| DIG["Due Diligence"]
+    ROUTER -->|"memo: teaser:\nbid: ipo: score:"| CAP["Capital"]
+    ROUTER -->|"research:\nintegrate:"| PORT["Portfolio"]
+    ROUTER -->|"hedgefunds:"| PUB["Public Markets"]
 
-Type a natural-language question and the auto-router picks the right agent, or use a prefix shortcut (`scan:`, `dcf:`, `memo:`, `hedgefunds:`, etc.) to route directly.
+    style ROUTER fill:#F59E0B,color:#0B1220,stroke:#D97706
+    style SRC fill:#3B82F6,color:#fff
+    style UND fill:#8B5CF6,color:#fff
+    style DIG fill:#EC4899,color:#fff
+    style CAP fill:#10B981,color:#fff
+    style PORT fill:#F97316,color:#fff
+    style PUB fill:#06B6D4,color:#fff
+```
+
+<table>
+<tr>
+<td width="33%">
+
+**🔍 Deal Sourcing** (4)
+- Target Scanner
+- Buyer Scanner
+- Deal Triage
+- Seller Intent
+
+</td>
+<td width="33%">
+
+**📊 Valuation & Underwriting** (6)
+- Company Profiler
+- Comps Finder
+- LTM Normalizer
+- DCF Valuer
+- Multiples Valuer
+- Synergy Analyst
+
+</td>
+<td width="33%">
+
+**📋 Due Diligence** (5)
+- VDR Auditor
+- Contract Abstractor
+- Legal Reviewer
+- Operational DD
+- ESG Reviewer
+
+</td>
+</tr>
+<tr>
+<td>
+
+**💼 Deal Execution & Capital** (5)
+- IC Memo Writer
+- Teaser Designer
+- Bid Strategist
+- IPO Readiness
+- Match Scorer
+
+</td>
+<td>
+
+**🔬 Research & Post-Deal** (2)
+- Research Analyst
+- Integration Planner
+
+</td>
+<td>
+
+**📈 Public Markets** (1)
+- Hedge Fund Analyst
+  *(13F, AUM, activist filings)*
+
+</td>
+</tr>
+</table>
+
+See [`docs/architecture_readme.md`](docs/architecture_readme.md) for the full architecture documentation with 11 Mermaid diagrams.
 
 ## Key Features
 
