@@ -34,14 +34,58 @@ def _tavily_search(query: str, max_results: int = 10) -> list[dict]:
     ]
 
 
+_QUERY_POOL = [
+    # Sector-specific
+    "Lithuanian fintech startup acquisition investment 2025 2026",
+    "Estonian healthtech medtech startup funding round 2025 2026",
+    "Baltic agritech foodtech company deal acquisition 2025",
+    "Lithuania logistics supply chain startup investment 2025",
+    "Estonian SaaS B2B software company acquisition growth equity",
+    "Baltic deeptech robotics AI startup funding raised",
+    "Lithuanian manufacturing industry 4.0 company deal M&A",
+    "Estonian cleantech renewable energy startup investment",
+    "Baltic cybersecurity defense tech startup acquisition 2025",
+    "Lithuanian edtech HR tech company funding round 2025",
+    "Estonian proptech real estate technology startup deal",
+    "Baltic biotech pharmaceutical startup investment 2025",
+    "Lithuanian e-commerce marketplace startup acquisition",
+    "Estonian gaming entertainment media company deal funding",
+    "Baltic construction engineering company M&A buyout",
+    "Lithuanian food beverage producer private company sale 2025",
+    "Estonian mobility transport tech startup investment raised",
+    "Baltic textile fashion DTC brand acquisition PE exit",
+    # Deal-type specific
+    "Baltic PE private equity portfolio company exit 2025 2026",
+    "Lithuanian founder succession family business sale",
+    "Estonian venture capital Series A B startup 2025 2026",
+    "Baltic cross-border acquisition European buyer Lithuania Estonia",
+    "Lithuanian company management buyout MBO 2025",
+    "Estonian startup acqui-hire talent acquisition 2025",
+    "Baltic SME consolidation roll-up strategy industry",
+    # Geography specific
+    "Vilnius startup ecosystem company investment 2025 2026",
+    "Tallinn tech startup acquisition funding round 2025",
+    "Kaunas technology company deal investment 2025",
+    "Tartu deeptech university spin-off startup funding",
+    # Niche angles
+    "Baltic startup IPO preparation pre-IPO private company",
+    "Lithuanian company received EU grants innovation funding",
+    "Estonian digital infrastructure data center company deal",
+    "Baltic marine shipping port services company M&A",
+    "Lithuanian forestry timber company private acquisition",
+    "Estonian aerospace satellite tech company investment",
+]
+
+
 def _research_companies() -> list[dict]:
-    """Use Tavily to find real private LT/EE companies involved in M&A, funding, or deals."""
-    queries = [
-        "Lithuania Estonia startup acquisition funding 2024 2025",
-        "Baltic private company M&A deal SME acquisition Lithuania Estonia",
-        "Estonian Lithuanian startup raised investment seed series A B 2025",
-        "Baltic fintech healthtech SaaS startup funding round",
-    ]
+    """Use Tavily to find real private LT/EE companies — rotates query themes daily."""
+    import hashlib
+    day_seed = int(hashlib.md5(date.today().isoformat().encode()).hexdigest()[:8], 16)
+    shuffled = list(_QUERY_POOL)
+    rng = __import__("random").Random(day_seed)
+    rng.shuffle(shuffled)
+    queries = shuffled[:5]
+
     all_results = []
     for q in queries:
         try:
@@ -116,10 +160,29 @@ RULES:
 - Good sources: Baltic startup ecosystem, PE/VC portfolio companies, founder-led
   SMEs, niche tech/SaaS, deep-tech, fintech, healthtech, agritech, logistics
   startups, craft manufacturers.
+- DIVERSITY: each company must be from a DIFFERENT sector. Do not repeat
+  sectors. Spread across fintech, healthtech, SaaS, deeptech, agritech,
+  manufacturing, logistics, cleantech, edtech, e-commerce, etc.
 - If the research doesn't have 8, fill remaining slots with real LT/EE startups
   or SMEs that have a credible M&A angle.
-
+{exclude_clause}
 Return ONLY a JSON array, no markdown fencing."""
+
+
+def _get_recent_company_names(days: int = 30) -> list[str]:
+    """Get company names featured in recent digests to exclude from new ones."""
+    try:
+        from utils.database import get_conn
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT DISTINCT jsonb_array_elements(digest_json->'companies')->>'name' AS name
+                FROM liquidround.digest_archive
+                WHERE digest_date >= CURRENT_DATE - INTERVAL '%s days'
+            """ % int(days))
+            return [r[0] for r in cur.fetchall() if r[0]]
+    except Exception:
+        return []
 
 
 THESIS_SYSTEM = """You are a senior Baltic ECM / M&A analyst.
@@ -196,11 +259,22 @@ def _revenue_over_limit(c: dict, limit: int = 10_000_000) -> bool:
 
 def _extract_companies(research: list[dict]) -> list[dict]:
     """LLM extracts structured company list from research results."""
-    llm = _llm(temperature=0.5)
+    llm = _llm(temperature=0.7)
     research_text = "\n\n".join(
         f"**{r['title']}**\n{r['content']}" for r in research
     )
-    resp = llm.invoke(f"Web research results:\n\n{research_text}\n\n{EXTRACT_SYSTEM}")
+
+    recent = _get_recent_company_names(days=30)
+    if recent:
+        exclude_clause = (
+            "\n- EXCLUDE these companies (already featured recently): "
+            + ", ".join(recent) + ".\n  Find DIFFERENT companies instead."
+        )
+    else:
+        exclude_clause = ""
+
+    prompt = EXTRACT_SYSTEM.format(exclude_clause=exclude_clause)
+    resp = llm.invoke(f"Web research results:\n\n{research_text}\n\n{prompt}")
     text = resp.content.strip()
     text = re.sub(r"^```(?:json)?\s*", "", text)
     text = re.sub(r"\s*```$", "", text)
@@ -211,8 +285,11 @@ def _extract_companies(research: list[dict]) -> list[dict]:
         match = re.search(r"\[.*\]", text, re.DOTALL)
         companies = json.loads(match.group()) if match else []
 
+    recent_lower = {n.lower() for n in recent}
     filtered = [c for c in companies
-                if not _is_public(c) and not _revenue_over_limit(c)]
+                if not _is_public(c)
+                and not _revenue_over_limit(c)
+                and c.get("name", "").lower() not in recent_lower]
 
     return filtered[:8]
 
@@ -612,26 +689,26 @@ def _render_hedge_fund_email(hf: dict | None) -> str:
     return f"""
     <!-- Hedge Fund Spotlight -->
     <div style="padding:0 0 16px;">
-      <div style="background:#0B1220;border-radius:8px;overflow:hidden;">
-        <div style="padding:12px 16px;border-bottom:2px solid #3B82F6;">
-          <div style="font-size:11px;font-weight:700;color:#3B82F6;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">
+      <div style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+        <div style="background:#e0f2fe;padding:10px 12px;">
+          <div style="font-size:11px;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">
             Hedge Fund Spotlight
           </div>
-          <div style="font-size:16px;font-weight:700;color:#e2e8f0;">
+          <div style="font-size:16px;font-weight:700;color:#0f172a;">
             {hf.get('fund', 'N/A')}
           </div>
-          <div style="font-size:11px;color:#94a3b8;margin-top:2px;">
+          <div style="font-size:11px;color:#64748b;margin-top:2px;">
             AUM {_fmt_money(hf.get('aum', 0))} &middot; {hf.get('positions', 0)} positions &middot;
             <span style="color:{ret_color};font-weight:600;">{ret_sign}{ret:.1f}% YTD</span>
           </div>
         </div>
-        <div style="padding:12px 16px;">
-          <div style="font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:6px;">Top 5 Holdings</div>
+        <div style="padding:12px;">
+          <div style="font-size:11px;font-weight:600;color:#64748b;margin-bottom:6px;">Top 5 Holdings</div>
           <table style="width:100%;border-collapse:collapse;">
-            <tr style="background:#f1f5f9;">
-              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:left;">Security</th>
-              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:right;">Value</th>
-              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:right;">Weight</th>
+            <tr style="background:#f8fafc;">
+              <th style="padding:6px 8px;font-size:11px;color:#64748b;text-align:left;border-bottom:1px solid #e2e8f0;">Security</th>
+              <th style="padding:6px 8px;font-size:11px;color:#64748b;text-align:right;border-bottom:1px solid #e2e8f0;">Value</th>
+              <th style="padding:6px 8px;font-size:11px;color:#64748b;text-align:right;border-bottom:1px solid #e2e8f0;">Weight</th>
             </tr>
             {holdings_rows}
           </table>
@@ -864,20 +941,20 @@ def _render_top_funds_email(top_funds: list[dict]) -> str:
     return f"""
     <!-- Top Hedge Funds -->
     <div style="padding:0 0 16px;">
-      <div style="background:#0B1220;border-radius:8px;overflow:hidden;">
-        <div style="padding:12px 16px;border-bottom:2px solid #3B82F6;">
-          <div style="font-size:11px;font-weight:700;color:#3B82F6;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">
+      <div style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+        <div style="background:#e0f2fe;padding:10px 12px;">
+          <div style="font-size:12px;font-weight:600;color:#1e40af;text-transform:uppercase;letter-spacing:0.5px;">
             Top Hedge Funds by YTD Return
           </div>
         </div>
-        <div style="padding:12px 16px;">
+        <div style="padding:12px;">
           <table style="width:100%;border-collapse:collapse;">
-            <tr style="background:#f1f5f9;">
-              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:center;">#</th>
-              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:left;">Fund</th>
-              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:right;">AUM</th>
-              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:right;">YTD</th>
-              <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:right;">Positions</th>
+            <tr style="background:#f8fafc;">
+              <th style="padding:6px 8px;font-size:11px;color:#64748b;text-align:center;border-bottom:1px solid #e2e8f0;">#</th>
+              <th style="padding:6px 8px;font-size:11px;color:#64748b;text-align:left;border-bottom:1px solid #e2e8f0;">Fund</th>
+              <th style="padding:6px 8px;font-size:11px;color:#64748b;text-align:right;border-bottom:1px solid #e2e8f0;">AUM</th>
+              <th style="padding:6px 8px;font-size:11px;color:#64748b;text-align:right;border-bottom:1px solid #e2e8f0;">YTD</th>
+              <th style="padding:6px 8px;font-size:11px;color:#64748b;text-align:right;border-bottom:1px solid #e2e8f0;">Positions</th>
             </tr>
             {rows}
           </table>
@@ -997,13 +1074,13 @@ def _render_ipo_email(snapshot: dict | None) -> str:
     return f"""
     <!-- IPO Pipeline Snapshot -->
     <div style="padding:0 0 16px;">
-      <div style="background:#0B1220;border-radius:8px;overflow:hidden;">
-        <div style="padding:12px 16px;border-bottom:2px solid #10B981;">
-          <div style="font-size:11px;font-weight:700;color:#10B981;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">
+      <div style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+        <div style="background:#d1fae5;padding:10px 12px;">
+          <div style="font-size:12px;font-weight:600;color:#065f46;text-transform:uppercase;letter-spacing:0.5px;">
             IPO Pipeline Snapshot
           </div>
         </div>
-        <div style="padding:12px 16px;">
+        <div style="padding:12px;">
           {upcoming_section}
           {private_section}
           <div style="font-size:10px;color:#94a3b8;margin-top:8px;">
