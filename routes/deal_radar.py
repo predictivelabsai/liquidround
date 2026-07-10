@@ -13,12 +13,53 @@ import logging
 import threading
 
 from fasthtml.common import (Div, Span, H1, H2, H3, P, A, NotStr, Button,
-                             Table, Thead, Tbody, Tr, Th, Td)
+                             Table, Thead, Tbody, Tr, Th, Td, Title, Script)
 from fasthtml.core import APIRouter
 from starlette.responses import JSONResponse
 
 ar = APIRouter()
 log = logging.getLogger(__name__)
+
+
+def _shell(session, *, title: str, header_title: str, header_sub: str,
+           content, current_path: str):
+    from components.chat_shell import left_pane, right_pane
+    user = session.get("user")
+    email = user.get("email") if user else None
+    sessions_list = []
+    if user and user.get("user_id"):
+        try:
+            from utils.database import db_service
+            convs = db_service.get_user_conversations(user["user_id"], limit=20) or []
+            sessions_list = [{"id": c["id"],
+                              "title": c.get("conversation_title") or c.get("user_query", "Untitled")}
+                             for c in convs]
+        except Exception:
+            pass
+    header = Div(
+        Div(
+            Button("☰", cls="mobile-menu-btn", onclick="toggleLeftPane()", type="button"),
+            Span(header_title, cls="chat-header-title"),
+            Span("·", cls="chat-header-dot"),
+            Span(header_sub, cls="chat-header-agent"),
+            cls="chat-header-left",
+        ),
+        cls="chat-header",
+    )
+    return (
+        Title(title),
+        Div(cls="left-overlay", id="left-overlay", onclick="toggleLeftPane()"),
+        Div(
+            left_pane(user_email=email, sessions=sessions_list, current_sid="",
+                      current_path=current_path,
+                      current_currency=session.get("currency", "EUR"),
+                      current_role=session.get("role", "buyer")),
+            Div(header, Div(content, cls="overflow-y-auto flex-1"), cls="center-pane"),
+            right_pane(),
+            cls="app pane-closed",
+        ),
+        Script(src="/chat.js?v=2"),
+    )
 
 DATA_SOURCES = [
     ("Estonia",   "🟢 Live",   "RIK e-Business Register (open bulk, 374k + status)",
@@ -145,8 +186,7 @@ def _deal_radar_content():
 
 @ar("/app/deal-radar")
 def deal_radar_page(session):
-    from components.chat_shell import app_shell_page
-    return app_shell_page(
+    return _shell(
         session, title="Deal Radar · LiquidRound",
         header_title="Daily M&A Deal Radar", header_sub="Buyer ↔ target synergy pairs",
         content=_deal_radar_content(), current_path="/app/deal-radar")
@@ -270,8 +310,7 @@ def _data_coverage_content():
 
 @ar("/app/data-coverage")
 def data_coverage_page(session):
-    from components.chat_shell import app_shell_page
-    return app_shell_page(
+    return _shell(
         session, title="Data Coverage · LiquidRound",
         header_title="Data Coverage", header_sub="Company + financials sources",
         content=_data_coverage_content(), current_path="/app/data-coverage")
@@ -304,7 +343,6 @@ def sync_no_trigger(session):
 
 @ar("/app/methodology")
 def methodology_page(session):
-    from components.chat_shell import app_shell_page
     from routes.help import _md_to_components
     md_path = Path(__file__).resolve().parent.parent / "docs" / "synergy_methodology.md"
     md = md_path.read_text() if md_path.exists() else "# Methodology\n\nComing soon."
@@ -312,7 +350,7 @@ def methodology_page(session):
         Div(*_md_to_components(md), cls="guide-content"),
         cls="max-w-3xl mx-auto w-full", style="padding:24px 20px;",
     )
-    return app_shell_page(
+    return _shell(
         session, title="Synergy Methodology · LiquidRound",
         header_title="Synergy Scoring Methodology", header_sub="How the Deal Radar scores pairs",
         content=content, current_path="/app/methodology")
