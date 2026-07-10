@@ -258,15 +258,34 @@ its full profile with financials, description, and deal brief.
 Track your deal pipeline — add targets or buyers, set deal stages, and monitor
 progress. Requires sign-in.
 
-### Daily Deals
+### Daily Radar
 
 ![Daily Digest](img/18-daily-digest.png)
 
-AI-curated daily digest of M&A-relevant companies. Each company gets a deal angle,
-investment thesis, and sector comps. The featured company gets a deep dive with
-company overview, deal context, and a bottom-line recommendation.
+AI-curated daily radar combining company scans, synergy-scored buyer–target pairs,
+hedge fund intelligence, and IPO snapshots in one email. Each company gets a deal
+angle, investment thesis, and sector comps. The featured company gets a deep dive.
+
+The **Deal Radar** section pairs public buyers (validated via Yahoo Finance) with
+private Baltic targets and scores each pair on a 5-bucket synergy methodology
+(cost/operational, revenue, strategic, financial, organizational — weighted 1–5).
+A daily **Featured Agent** rotates through the 23 ECM agents showing their
+editable system prompt.
 
 Delivered as a styled email — opt in via your profile preferences.
+
+### Deal Radar
+
+The in-app Deal Radar view at `/app/deal-radar` shows the latest scored
+buyer ↔ target synergy pairs, grouped by country and ranked by composite score.
+
+- **Scoring methodology** — view at `/app/methodology`, edit the scorer prompt
+  at `/app/instructions/deal_radar_synergy`
+- **Data coverage** — `/app/data-coverage` shows the target pool stats by country
+  and lets you manually trigger register syncs (Estonia, Norway, Denmark)
+
+Target data comes from open government APIs: Estonian Business Register + Tax Board,
+Norwegian Brønnøysund Register, and Danish Erhvervsstyrelsen annual reports.
 
 ### Valuation Simulator
 

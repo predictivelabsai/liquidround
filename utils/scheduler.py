@@ -73,12 +73,46 @@ def _run_deal_candidates():
              result.get("inserted"), result.get("updated"), result.get("total"))
 
 
+def _run_deal_radar():
+    from utils.deal_radar import build_deal_radar
+    pairs = build_deal_radar()
+    log.info("Deal Radar: scored %d pairs", len(pairs))
+
+
+def _run_ee_register():
+    if datetime.now(timezone.utc).weekday() != 0:  # Monday only
+        return
+    from scripts.sync_ee_register import main as sync_ee
+    result = sync_ee(refresh=False)  # incremental: reuse cached files if fresh
+    log.info("EE register: %s", result)
+
+
+def _run_no_register():
+    if datetime.now(timezone.utc).weekday() != 1:  # Tuesday only
+        return
+    from scripts.sync_no_register import main as sync_no
+    result = sync_no(target=3000)  # incremental: limited target count
+    log.info("NO register: %s", result)
+
+
+def _run_dk_register():
+    if datetime.now(timezone.utc).weekday() != 2:  # Wednesday only
+        return
+    from scripts.sync_dk_register import main as sync_dk
+    result = sync_dk(target=2000)  # incremental: limited target count
+    log.info("DK register: %s", result)
+
+
 CANDIDATE_HOUR = max(HOUR - 2, 0)
 
 JOBS = {
     "digest":           {"fn": _run_digest,           "hour": HOUR},
     "security_returns": {"fn": _run_security_returns, "hour": HOUR},
     "deal_candidates":  {"fn": _run_deal_candidates,  "hour": CANDIDATE_HOUR},
+    "deal_radar":       {"fn": _run_deal_radar,        "hour": CANDIDATE_HOUR},
+    "ee_register":      {"fn": _run_ee_register,       "hour": CANDIDATE_HOUR},
+    "no_register":      {"fn": _run_no_register,       "hour": CANDIDATE_HOUR},
+    "dk_register":      {"fn": _run_dk_register,       "hour": CANDIDATE_HOUR},
 }
 
 

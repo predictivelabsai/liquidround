@@ -477,6 +477,17 @@ def build_digest(n_companies: int = 5) -> dict:
     top_funds = _get_top_funds(n=10)
     ipo_snapshot = _get_ipo_snapshot()
 
+    # Deal Radar synergy pairs (pre-computed by scheduler or build_deal_radar)
+    try:
+        from utils.deal_radar import get_latest_pairs, featured_agent
+        radar_pairs = get_latest_pairs(limit=12)
+        feat_agent = featured_agent()
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception("Failed to load radar/agent for digest")
+        radar_pairs = []
+        feat_agent = None
+
     return {
         "companies": companies,
         "featured": featured,
@@ -484,6 +495,8 @@ def build_digest(n_companies: int = 5) -> dict:
         "hedge_fund": hedge_fund,
         "top_funds": top_funds,
         "ipo_snapshot": ipo_snapshot,
+        "radar_pairs": radar_pairs,
+        "featured_agent": feat_agent,
         "date": date.today().isoformat(),
     }
 
@@ -558,6 +571,8 @@ def render_email_html(digest: dict) -> str:
     hedge_fund = digest.get("hedge_fund")
     top_funds = digest.get("top_funds", [])
     ipo_snapshot = digest.get("ipo_snapshot")
+    radar_pairs = digest.get("radar_pairs", [])
+    feat_agent = digest.get("featured_agent")
 
     company_cards = ""
     for i, c in enumerate(companies):
@@ -602,16 +617,15 @@ def render_email_html(digest: dict) -> str:
     <!-- Header -->
     <div style="background:#0B1220;padding:20px 16px;text-align:center;border-radius:0 0 8px 8px;">
       <div style="font-size:22px;font-weight:700;color:#F59E0B;letter-spacing:-0.5px;">LiquidRound</div>
-      <div style="font-size:12px;color:#94a3b8;margin-top:4px;">Baltic ECM &amp; M&amp;A Daily Digest</div>
+      <div style="font-size:12px;color:#94a3b8;margin-top:4px;">Daily Radar &mdash; Baltic ECM &amp; M&amp;A Intelligence</div>
       <div style="font-size:11px;color:#64748b;margin-top:2px;">{today}</div>
     </div>
 
     <!-- Intro -->
     <div style="padding:16px 4px 8px;">
       <p style="font-size:13px;color:#334155;line-height:1.6;margin:0;">
-        Today's digest covers {len(companies)} Lithuanian and Estonian
-        companies with live M&amp;A angles, each with an AI-generated investment thesis
-        and a featured deep dive.
+        Today's radar covers {len(companies)} Baltic companies with live M&amp;A angles,
+        AI-generated theses, synergy-scored buyer&ndash;target pairs, and market intelligence.
       </p>
     </div>
 
@@ -650,6 +664,10 @@ def render_email_html(digest: dict) -> str:
     {_render_hedge_fund_email(hedge_fund)}
 
     {_render_ipo_email(ipo_snapshot)}
+
+    {_render_radar_email(radar_pairs)}
+
+    {_render_featured_agent_email(feat_agent)}
 
     <!-- Footer -->
     <div style="text-align:center;padding:16px 0;border-top:1px solid #e2e8f0;margin-top:4px;">
@@ -808,6 +826,8 @@ def render_blog_html(digest: dict) -> str:
     hedge_fund = digest.get("hedge_fund")
     top_funds = digest.get("top_funds", [])
     ipo_snapshot = digest.get("ipo_snapshot")
+    radar_pairs = digest.get("radar_pairs", [])
+    feat_agent = digest.get("featured_agent")
 
     cards_html = ""
     for c in companies:
@@ -871,7 +891,11 @@ def render_blog_html(digest: dict) -> str:
 
     {_render_hedge_fund_blog(hedge_fund)}
 
-    {_render_ipo_blog(ipo_snapshot)}"""
+    {_render_ipo_blog(ipo_snapshot)}
+
+    {_render_radar_blog(radar_pairs)}
+
+    {_render_featured_agent_blog(feat_agent)}"""
 
 
 def _render_hedge_fund_blog(hf: dict | None) -> str:
@@ -1012,6 +1036,125 @@ def _render_top_funds_blog(top_funds: list[dict]) -> str:
     </div>"""
 
 
+def _radar_score_color(s: float) -> str:
+    return "#10B981" if s >= 3.5 else ("#F59E0B" if s >= 2.5 else "#EF4444")
+
+
+_RADAR_FLAG = {"Estonia": "🇪🇪", "Latvia": "🇱🇻", "Lithuania": "🇱🇹", "Norway": "🇳🇴",
+               "Denmark": "🇩🇰", "Finland": "🇫🇮", "Sweden": "🇸🇪", "Poland": "🇵🇱"}
+
+
+def _render_radar_email(pairs: list[dict]) -> str:
+    if not pairs:
+        return ""
+    import html as _html
+
+    def _card(p):
+        sc = float(p["composite_score"])
+        rev = p.get("target_revenue_eur")
+        rev_s = f"~€{float(rev)/1e6:.1f}M rev" if rev else ""
+        mc = p.get("buyer_mktcap_usd")
+        mc_s = f"${float(mc)/1e9:.1f}B" if mc else ""
+        return f"""
+        <div style="border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-bottom:8px;">
+          <table width="100%" cellpadding="0" cellspacing="0"><tr>
+            <td style="vertical-align:top;width:42%;">
+              <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;">Buyer · public</div>
+              <div style="font-size:14px;font-weight:700;color:#0f172a;">{_html.escape(str(p['buyer_name']))}</div>
+              <div style="font-size:11px;color:#64748b;">{_html.escape(str(p['buyer_ticker']))} · {_html.escape(str(p.get('buyer_country') or ''))} · {mc_s}</div>
+            </td>
+            <td style="width:16%;text-align:center;vertical-align:middle;">
+              <div style="font-size:18px;color:#F59E0B;">→</div>
+              <div style="display:inline-block;background:{_radar_score_color(sc)};color:#fff;font-weight:800;font-size:14px;border-radius:6px;padding:2px 8px;">{sc:.2f}</div>
+            </td>
+            <td style="vertical-align:top;width:42%;text-align:right;">
+              <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;">Target · private</div>
+              <div style="font-size:14px;font-weight:700;color:#0f172a;">{_html.escape(str(p['target_name']))}</div>
+              <div style="font-size:11px;color:#64748b;">{_html.escape(str(p.get('target_sector') or ''))} · {rev_s}</div>
+            </td>
+          </tr></table>
+          <div style="font-size:12px;color:#64748b;line-height:1.5;margin-top:8px;border-top:1px solid #e2e8f0;padding-top:8px;">
+            <span style="color:{_radar_score_color(sc)};font-weight:600;">{_html.escape(str(p.get('recommendation') or ''))}.</span>
+            {_html.escape(str(p.get('reasoning') or ''))}
+          </div>
+        </div>"""
+
+    groups: dict[str, list] = {}
+    for p in pairs:
+        groups.setdefault(p.get("target_country") or "Other", []).append(p)
+    ordered = sorted(groups.items(),
+                     key=lambda kv: -max(float(x["composite_score"]) for x in kv[1]))
+    rows = ""
+    for country, cps in ordered:
+        flag = _RADAR_FLAG.get(country, "")
+        rows += (f'<div style="font-size:12px;font-weight:700;color:#0f172a;'
+                 f'margin:14px 0 6px;padding-bottom:3px;border-bottom:2px solid #F59E0B;">'
+                 f'{flag} {_html.escape(country)} '
+                 f'<span style="color:#94a3b8;font-weight:400;">· {len(cps)} pairs</span></div>')
+        rows += "".join(_card(p) for p in cps)
+
+    return f"""
+    <!-- Deal Radar -->
+    <div style="padding:0 0 16px;">
+      <div style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+        <div style="background:#0B1220;padding:10px 12px;">
+          <div style="font-size:12px;font-weight:600;color:#F59E0B;text-transform:uppercase;letter-spacing:0.5px;">
+            Deal Radar &mdash; Buyer ↔ Target Synergy Pairs
+          </div>
+        </div>
+        <div style="padding:12px;">
+          <p style="font-size:11px;color:#64748b;margin:0 0 10px;">
+            Top scored M&amp;A pairs — public buyer matched to private target,
+            scored on the 5-bucket synergy methodology (cost · revenue · strategic ·
+            financial · organizational, weighted 1–5).
+          </p>
+          {rows}
+          <div style="font-size:10px;color:#94a3b8;margin-top:8px;">
+            <a href="https://liquidround.ai/app/deal-radar" style="color:#F59E0B;text-decoration:none;">
+              Open the Deal Radar →
+            </a>
+            <span style="color:#cbd5e1;margin:0 6px;">·</span>
+            <a href="https://liquidround.ai/app/methodology" style="color:#F59E0B;text-decoration:none;">
+              Scoring methodology →
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>"""
+
+
+def _render_featured_agent_email(agent: dict | None) -> str:
+    if not agent:
+        return ""
+    import html as _html
+    prompt_excerpt = _html.escape((agent.get("prompt") or "")[:600])
+    if len(agent.get("prompt") or "") > 600:
+        prompt_excerpt += "…"
+    return f"""
+    <!-- Featured Agent -->
+    <div style="padding:0 0 16px;">
+      <div style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+        <div style="background:#0B1220;padding:10px 12px;">
+          <div style="font-size:12px;font-weight:600;color:#F59E0B;text-transform:uppercase;letter-spacing:0.5px;">
+            Featured Agent
+          </div>
+        </div>
+        <div style="padding:12px;">
+          <div style="font-size:16px;font-weight:700;color:#0f172a;">{_html.escape(agent['name'])}</div>
+          <div style="font-size:12px;color:#64748b;margin:2px 0 4px;">{_html.escape(agent.get('category', ''))} · {_html.escape(agent.get('one_liner', ''))}</div>
+          <div style="font-size:12px;color:#334155;margin-bottom:8px;">{_html.escape(agent['description'])}</div>
+          <div style="font-size:10px;color:#94a3b8;margin-bottom:4px;">Its editable system prompt:</div>
+          <pre style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:10px;font-size:10px;color:#334155;white-space:pre-wrap;word-wrap:break-word;font-family:ui-monospace,Menlo,monospace;line-height:1.5;max-height:200px;overflow:hidden;">{prompt_excerpt}</pre>
+          <div style="font-size:10px;color:#94a3b8;margin-top:6px;">
+            <a href="https://liquidround.ai/app/instructions/{_html.escape(agent['slug'])}" style="color:#F59E0B;text-decoration:none;">
+              Edit this agent's prompt →
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>"""
+
+
 def _render_ipo_email(snapshot: dict | None) -> str:
     if not snapshot:
         return ""
@@ -1088,6 +1231,96 @@ def _render_ipo_email(snapshot: dict | None) -> str:
               View full IPO pipeline on LiquidRound →
             </a>
           </div>
+        </div>
+      </div>
+    </div>"""
+
+
+def _render_radar_blog(pairs: list[dict]) -> str:
+    if not pairs:
+        return ""
+    import html as _html
+    groups: dict[str, list] = {}
+    for p in pairs:
+        groups.setdefault(p.get("target_country") or "Other", []).append(p)
+    ordered = sorted(groups.items(),
+                     key=lambda kv: -max(float(x["composite_score"]) for x in kv[1]))
+    sections = ""
+    for country, cps in ordered:
+        flag = _RADAR_FLAG.get(country, "")
+        sections += (f'<div class="text-sm font-bold mt-5 mb-2 pb-1" '
+                     f'style="color:#E5E7EB;border-bottom:2px solid #F59E0B;">'
+                     f'{flag} {_html.escape(country)} '
+                     f'<span style="color:#94A3B8;font-weight:400;">· {len(cps)} pairs</span></div>')
+        for p in cps:
+            sc = float(p["composite_score"])
+            rev = p.get("target_revenue_eur")
+            rev_s = f"~€{float(rev)/1e6:.1f}M rev" if rev else ""
+            mc = p.get("buyer_mktcap_usd")
+            mc_s = f"${float(mc)/1e9:.1f}B" if mc else ""
+            sections += f"""
+            <div class="p-3 rounded-lg mb-2" style="background:#111A2E;border:1px solid #1E293B;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="flex:1;min-width:0;">
+                  <div class="text-xs" style="color:#64748B;">BUYER · PUBLIC</div>
+                  <div class="text-sm font-bold" style="color:#E5E7EB;">{_html.escape(str(p['buyer_name']))}</div>
+                  <div class="text-xs" style="color:#94A3B8;">{_html.escape(str(p['buyer_ticker']))} · {mc_s}</div>
+                </div>
+                <div style="text-align:center;flex:0 0 70px;">
+                  <div style="color:#F59E0B;font-size:16px;">→</div>
+                  <div style="display:inline-block;background:{_radar_score_color(sc)};color:#0B1220;font-weight:800;font-size:13px;border-radius:6px;padding:1px 8px;">{sc:.2f}</div>
+                </div>
+                <div style="flex:1;min-width:0;text-align:right;">
+                  <div class="text-xs" style="color:#64748B;">TARGET · PRIVATE</div>
+                  <div class="text-sm font-bold" style="color:#E5E7EB;">{_html.escape(str(p['target_name']))}</div>
+                  <div class="text-xs" style="color:#94A3B8;">{_html.escape(str(p.get('target_sector') or ''))} · {rev_s}</div>
+                </div>
+              </div>
+              <div class="text-xs mt-2 pt-2" style="color:#94A3B8;border-top:1px solid #1E293B;line-height:1.5;">
+                <span style="color:{_radar_score_color(sc)};font-weight:600;">{_html.escape(str(p.get('recommendation') or ''))}.</span>
+                {_html.escape(str(p.get('reasoning') or ''))}
+              </div>
+            </div>"""
+    return f"""
+    <div class="mt-8 rounded-lg overflow-hidden" style="background:#111A2E;border:1px solid #1E293B;">
+      <div class="p-4" style="border-bottom:2px solid #F59E0B;">
+        <div class="text-xs font-bold uppercase tracking-wider mb-1" style="color:#F59E0B;">
+          Deal Radar — Buyer ↔ Target Synergy Pairs
+        </div>
+      </div>
+      <div class="p-4">
+        {sections}
+        <div class="text-xs mt-3">
+          <a href="/app/deal-radar" style="color:#F59E0B;text-decoration:none;">Open the Deal Radar →</a>
+          <span style="color:#64748B;margin:0 6px;">·</span>
+          <a href="/app/methodology" style="color:#F59E0B;text-decoration:none;">Scoring methodology →</a>
+        </div>
+      </div>
+    </div>"""
+
+
+def _render_featured_agent_blog(agent: dict | None) -> str:
+    if not agent:
+        return ""
+    import html as _html
+    prompt_excerpt = _html.escape((agent.get("prompt") or "")[:600])
+    if len(agent.get("prompt") or "") > 600:
+        prompt_excerpt += "…"
+    return f"""
+    <div class="mt-8 rounded-lg overflow-hidden" style="background:#111A2E;border:1px solid #1E293B;">
+      <div class="p-4" style="border-bottom:2px solid #F59E0B;">
+        <div class="text-xs font-bold uppercase tracking-wider mb-1" style="color:#F59E0B;">
+          Featured Agent
+        </div>
+      </div>
+      <div class="p-4">
+        <div class="text-lg font-bold" style="color:#E5E7EB;">{_html.escape(agent['name'])}</div>
+        <div class="text-xs mt-1" style="color:#94A3B8;">{_html.escape(agent.get('category', ''))} · {_html.escape(agent.get('one_liner', ''))}</div>
+        <div class="text-sm mt-2" style="color:#CBD5E1;">{_html.escape(agent['description'])}</div>
+        <div class="text-xs mt-3 mb-1" style="color:#64748B;">Its editable system prompt:</div>
+        <pre class="p-3 rounded text-xs" style="background:#0B1220;border:1px solid #1E293B;color:#CBD5E1;white-space:pre-wrap;word-wrap:break-word;font-family:ui-monospace,Menlo,monospace;line-height:1.5;max-height:200px;overflow:hidden;">{prompt_excerpt}</pre>
+        <div class="text-xs mt-2">
+          <a href="/app/instructions/{_html.escape(agent['slug'])}" style="color:#F59E0B;text-decoration:none;">Edit this agent's prompt →</a>
         </div>
       </div>
     </div>"""
@@ -1369,7 +1602,7 @@ def send_digest_email(html: str, to_email: Optional[str] = None,
     from_email = os.getenv("FROM_EMAIL", "info@liquidround.com")
 
     today = date.today().strftime("%d %b %Y")
-    subj = subject or f"LiquidRound Baltic Daily Digest — {today}"
+    subj = subject or f"LiquidRound Daily Radar — {today}"
 
     resp = requests.post(
         "https://api.postmarkapp.com/email",

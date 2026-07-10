@@ -174,6 +174,10 @@ help_router.to_app(app)
 from routes.instructions import ar as instructions_router
 instructions_router.to_app(app)
 
+# Register Deal Radar + Methodology + Data Coverage routes
+from routes.deal_radar import ar as deal_radar_router
+deal_radar_router.to_app(app)
+
 # ---------------------------------------------------------------------------
 # News feed routes
 # ---------------------------------------------------------------------------
