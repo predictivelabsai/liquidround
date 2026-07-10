@@ -256,6 +256,14 @@ def _render_guide(session, current_path="/app/user-guide"):
                         Span("LiquidRound", cls="chat-header-agent"),
                         cls="chat-header-left",
                     ),
+                    Div(
+                        A("⬇ PDF", href="/app/user-guide/pdf",
+                          style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;"
+                                "font-size:12px;font-weight:600;color:#F59E0B;"
+                                "border:1px solid rgba(245,158,11,.4);border-radius:6px;"
+                                "text-decoration:none;"),
+                        cls="chat-header-actions",
+                    ),
                     cls="chat-header",
                 ),
                 Div(
@@ -280,3 +288,17 @@ def user_guide_page(session):
 @ar("/app/help")
 def help_page(session):
     return _render_guide(session, current_path="/app/help")
+
+
+@ar("/app/user-guide/pdf")
+async def user_guide_pdf():
+    """Export the user guide as PDF."""
+    from utils.page_pdf import build_pdf, pdf_filename, Section
+    from starlette.responses import FileResponse
+
+    md = _GUIDE_PATH.read_text() if _GUIDE_PATH.exists() else "User guide not available."
+    sections = [Section("LiquidRound User Guide", text=md)]
+    path = build_pdf("User Guide", "ECM / IB Analyst Squad documentation", sections)
+    fname = pdf_filename("User-Guide")
+    return FileResponse(str(path), media_type="application/pdf",
+                        headers={"Content-Disposition": f'attachment; filename="{fname}"'})

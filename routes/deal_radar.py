@@ -16,7 +16,7 @@ from fasthtml.common import (Div, Span, H1, H2, H3, P, A, NotStr, Button, Input,
                              Table, Thead, Tbody, Tr, Th, Td, Title, Script)
 from fasthtml.core import APIRouter
 from starlette.requests import Request
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, FileResponse
 
 ar = APIRouter()
 log = logging.getLogger(__name__)
@@ -44,6 +44,14 @@ def _shell(session, *, title: str, header_title: str, header_sub: str,
             Span("·", cls="chat-header-dot"),
             Span(header_sub, cls="chat-header-agent"),
             cls="chat-header-left",
+        ),
+        Div(
+            A("⬇ PDF", href=f"{current_path}/pdf",
+              style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;"
+                    "font-size:12px;font-weight:600;color:#F59E0B;"
+                    "border:1px solid rgba(245,158,11,.4);border-radius:6px;"
+                    "text-decoration:none;"),
+            cls="chat-header-actions",
         ),
         cls="chat-header",
     )
@@ -428,6 +436,45 @@ def tab_targets(session):
     return _targets_content()
 
 
+# ── PDF export ──────────────────────────────────────────────────────────────
+
+@ar("/app/deal-radar/pdf")
+def deal_radar_pdf(session):
+    from utils.deal_radar import get_latest_pairs
+    from utils.page_pdf import build_pdf, pdf_filename, Section, Row
+
+    pairs = get_latest_pairs(limit=25)
+    groups: dict[str, list[dict]] = {}
+    for p in pairs:
+        groups.setdefault(p.get("target_country") or "Other", []).append(p)
+    ordered = sorted(groups.items(),
+                     key=lambda kv: -max(float(x["composite_score"]) for x in kv[1]))
+
+    sections = []
+    for country, cps in ordered:
+        rows = [
+            Row([
+                p["buyer_name"],
+                p["buyer_ticker"],
+                p["target_name"],
+                p.get("target_sector") or "",
+                f"{float(p['composite_score']):.2f}",
+                p.get("recommendation") or "",
+            ])
+            for p in cps
+        ]
+        sections.append(Section(
+            f"{_FLAG.get(country, '')} {country}",
+            headers=["Buyer", "Ticker", "Target", "Sector", "Score", "Recommendation"],
+            rows=rows,
+        ))
+
+    path = build_pdf("Deal Radar", "Synergy pairs export", sections)
+    fname = pdf_filename("Deal-Radar")
+    return FileResponse(str(path), media_type="application/pdf",
+                        headers={"Content-Disposition": f'attachment; filename="{fname}"'})
+
+
 # ── Data Coverage ───────────────────────────────────────────────────────────
 
 def _pool_stats() -> list[dict]:
@@ -590,3 +637,45 @@ def methodology_page(session):
         session, title="Synergy Methodology · LiquidRound",
         header_title="Synergy Scoring Methodology", header_sub="How the Deal Radar scores pairs",
         content=content, current_path="/app/methodology")
+
+
+@ar("/app/data-coverage/pdf")
+async def data_coverage_pdf():
+    """Export data coverage overview as PDF."""
+    from utils.page_pdf import build_pdf, pdf_filename, Section, Row
+    from starlette.responses import FileResponse
+
+    src_rows = [Row([name, status, comp, fin, verdict]) for name, status, comp, fin, verdict in DATA_SOURCES]
+    sections = [Section("Data Sources", headers=["Country", "Status", "Company Data", "Financials", "Verdict"], rows=src_rows)]
+
+    pool = _pool_stats()
+    if pool:
+        pool_rows = [Row([
+            r["country"],
+            f'{r["total"]:,}',
+            f'{r["covered"]:,}' if r["covered"] else "—",
+            f'{r["with_sector"]:,}' if r["with_sector"] else "—",
+            f'€{float(r["median_rev"])/1e6:.2f}M' if r.get("median_rev") else "—",
+        ]) for r in pool]
+        sections.append(Section("Pool by Country", headers=["Country", "Total", "Covered ≥€100k", "With Sector", "Median Rev"], rows=pool_rows))
+
+    path = build_pdf("Data Coverage", "Company + financials sources", sections)
+    fname = pdf_filename("Data-Coverage")
+    return FileResponse(str(path), media_type="application/pdf",
+                        headers={"Content-Disposition": f'attachment; filename="{fname}"'})
+
+
+@ar("/app/methodology/pdf")
+async def methodology_pdf():
+    """Export synergy scoring methodology as PDF."""
+    from utils.page_pdf import build_pdf, pdf_filename, Section
+    from starlette.responses import FileResponse
+
+    md_path = Path(__file__).resolve().parent.parent / "docs" / "synergy_methodology.md"
+    md = md_path.read_text() if md_path.exists() else "Methodology content not available."
+
+    sections = [Section("M&A Synergy Scoring Methodology", text=md)]
+    path = build_pdf("Methodology", "Synergy scoring methodology", sections)
+    fname = pdf_filename("Methodology")
+    return FileResponse(str(path), media_type="application/pdf",
+                        headers={"Content-Disposition": f'attachment; filename="{fname}"'})

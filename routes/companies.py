@@ -18,7 +18,10 @@ from fasthtml.common import (
 )
 from fasthtml.core import APIRouter
 
+from starlette.responses import FileResponse
+
 from utils.database import get_conn
+from utils.page_pdf import build_pdf, pdf_filename, Section, Row
 
 ar = APIRouter()
 
@@ -218,7 +221,15 @@ def companies_search(sess, name: str = "", sector: str = ""):
                     Span("Companies", cls="chat-header-title"),
                     cls="chat-header-left",
                 ),
-                Div(copilot_toggle_btn(), cls="chat-header-actions"),
+                Div(
+                    A("⬇ PDF", href="/app/companies/pdf",
+                      style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;"
+                            "font-size:12px;font-weight:600;color:#F59E0B;"
+                            "border:1px solid rgba(245,158,11,.4);border-radius:6px;"
+                            "text-decoration:none;"),
+                    copilot_toggle_btn(),
+                    cls="chat-header-actions",
+                ),
                 cls="chat-header",
             ),
             Div(search_bar, results, cls="companies-wrap"),
@@ -235,6 +246,37 @@ def companies_search(sess, name: str = "", sector: str = ""):
     )
 
     return Html(_head("Companies · LiquidRound"), body, lang="en")
+
+
+# ── Company list PDF export ─────────────────────────────────────────────
+
+@ar("/app/companies/pdf")
+def companies_pdf():
+    rows = _fetch_all(
+        f"SELECT name, hq_city, sector, revenue_ltm, ebitda_ltm, employees, deal_stage "
+        f"FROM {DB_SCHEMA}.companies "
+        f"ORDER BY revenue_ltm DESC NULLS LAST LIMIT 200"
+    )
+    section = Section(
+        "Companies",
+        headers=["Name", "City", "Sector", "Revenue", "EBITDA", "Employees", "Stage"],
+        rows=[
+            Row([
+                r.get("name") or "—",
+                r.get("hq_city") or "—",
+                (r.get("sector") or "—").replace("_", " ").title(),
+                _fmt_money(r.get("revenue_ltm")),
+                _fmt_money(r.get("ebitda_ltm")),
+                _fmt_int(r.get("employees")),
+                (r.get("deal_stage") or "sourced").replace("_", " ").title(),
+            ])
+            for r in rows
+        ],
+    )
+    path = build_pdf("Companies", "Company directory", [section])
+    fname = pdf_filename("Companies")
+    return FileResponse(str(path), media_type="application/pdf",
+                        headers={"Content-Disposition": f'attachment; filename="{fname}"'})
 
 
 # ── Company detail/overview page ────────────────────────────────────────

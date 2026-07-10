@@ -57,6 +57,14 @@ def hedge_funds_page(session, request):
             Span("SEC 13F Institutional Holdings", cls="chat-header-agent"),
             cls="chat-header-left",
         ),
+        Div(
+            A("⬇ PDF", href="/app/hedgefunds/pdf",
+              style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;"
+                    "font-size:12px;font-weight:600;color:#F59E0B;"
+                    "border:1px solid rgba(245,158,11,.4);border-radius:6px;"
+                    "text-decoration:none;"),
+            cls="chat-header-actions",
+        ),
         cls="chat-header",
     )
 
@@ -78,6 +86,37 @@ def hedge_funds_page(session, request):
         ),
         Script(src="/chat.js?v=2"),
     )
+
+
+@ar("/app/hedgefunds/pdf")
+async def hedge_funds_pdf():
+    """Export top funds overview as PDF."""
+    from utils.page_pdf import build_pdf, pdf_filename, Section, Row
+    from starlette.responses import FileResponse
+
+    try:
+        from utils.hedge_fund_db import get_treemap_data
+        data = get_treemap_data(min_value=0, fund_filter="", limit=100)
+    except Exception:
+        data = []
+
+    rows = []
+    for d in data:
+        val = d.get("total_value", 0)
+        val_s = f"${val/1e9:.1f}B" if val >= 1e9 else f"${val/1e6:.0f}M" if val >= 1e6 else f"${val:,.0f}"
+        rows.append(Row([
+            d.get("fund_name", ""),
+            val_s,
+            str(d.get("holding_count", "")),
+            d.get("top_holding", ""),
+        ]))
+
+    sections = [Section("Top Institutional Holders (SEC 13F)",
+                        headers=["Fund", "AUM", "Holdings", "Top Holding"], rows=rows)]
+    path = build_pdf("Hedge Funds", "SEC 13F Institutional Holdings", sections)
+    fname = pdf_filename("Hedge-Funds")
+    return FileResponse(str(path), media_type="application/pdf",
+                        headers={"Content-Disposition": f'attachment; filename="{fname}"'})
 
 
 @ar("/app/hedgefunds/bookmarks")

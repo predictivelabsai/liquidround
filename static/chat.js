@@ -738,6 +738,10 @@
     };
     window.fillChat = (text) => {
         const ta = $("#chat-input");
+        if (!ta) {
+            window.location.href = "/app?q=" + encodeURIComponent(text);
+            return;
+        }
         ta.value = text;
         ta.focus();
         autoResize(ta);

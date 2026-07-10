@@ -222,6 +222,14 @@ def dataroom_home(session):
                              cls="chat-header-agent"),
                         cls="chat-header-left",
                     ),
+                    Div(
+                        A("⬇ PDF", href="/app/dataroom/pdf",
+                          style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;"
+                                "font-size:12px;font-weight:600;color:#F59E0B;"
+                                "border:1px solid rgba(245,158,11,.4);border-radius:6px;"
+                                "text-decoration:none;"),
+                        cls="chat-header-actions",
+                    ),
                     cls="chat-header",
                 ),
                 Div(
@@ -315,3 +323,43 @@ def dataroom_delete(doc_id: int, session):
         except Exception:
             pass
     return RedirectResponse("/app/dataroom", status_code=303)
+
+
+@ar("/app/dataroom/pdf")
+async def dataroom_pdf(session):
+    """Export data room document index as PDF."""
+    from utils.page_pdf import build_pdf, pdf_filename, Section, Row
+    from starlette.responses import FileResponse, JSONResponse
+    from utils.database import get_conn
+
+    user = session.get("user")
+    if not user:
+        return JSONResponse({"error": "Sign in required"}, status_code=401)
+
+    try:
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT filename, doc_type, company_slug, uploaded_at "
+                "FROM liquidround.documents WHERE user_id = %s ORDER BY uploaded_at DESC",
+                (user["user_id"],),
+            )
+            cols = [d[0] for d in cur.description]
+            docs = [dict(zip(cols, r)) for r in cur.fetchall()]
+    except Exception:
+        docs = []
+
+    rows = [Row([
+        d.get("filename", ""),
+        (d.get("doc_type") or "general").replace("_", " ").title(),
+        d.get("company_slug") or "General",
+        str(d.get("uploaded_at", ""))[:10],
+    ]) for d in docs]
+
+    sections = [Section(f"Data Room — {len(docs)} documents",
+                        headers=["Filename", "Type", "Company", "Uploaded"],
+                        rows=rows)]
+    path = build_pdf("Data Room", "Document index", sections)
+    fname = pdf_filename("Data-Room")
+    return FileResponse(str(path), media_type="application/pdf",
+                        headers={"Content-Disposition": f'attachment; filename="{fname}"'})

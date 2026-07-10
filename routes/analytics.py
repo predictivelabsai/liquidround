@@ -227,6 +227,11 @@ def analytics_page(session):
                         cls="chat-header-left",
                     ),
                     Div(
+                        A("⬇ PDF", href="/app/analytics/pdf",
+                          style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;"
+                                "font-size:12px;font-weight:600;color:#F59E0B;"
+                                "border:1px solid rgba(245,158,11,.4);border-radius:6px;"
+                                "text-decoration:none;"),
                         copilot_toggle_btn(),
                         cls="chat-header-actions",
                     ),
@@ -417,6 +422,32 @@ def copilot_pane(*, page_name: str, page_context: dict | None = None,
         ),
         id="right-pane", cls="right-pane copilot-pane open",
     )
+
+
+@ar("/app/analytics/pdf")
+async def analytics_pdf():
+    """Export analytics schema overview as PDF."""
+    from utils.page_pdf import build_pdf, pdf_filename, Section, Row
+    from starlette.responses import FileResponse
+    import json
+    from pathlib import Path
+
+    schema_path = Path(__file__).resolve().parent.parent / "sql" / "schema.json"
+    if not schema_path.exists():
+        from starlette.responses import JSONResponse
+        return JSONResponse({"error": "Schema not found"}, status_code=404)
+
+    schema = json.loads(schema_path.read_text())
+    sections = []
+    for table, info in schema.items():
+        cols = info.get("columns", [])
+        rows = [Row([c["name"], c.get("type", ""), c.get("description", "")]) for c in cols[:30]]
+        sections.append(Section(table, headers=["Column", "Type", "Description"], rows=rows))
+
+    path = build_pdf("Analytics", "Database schema reference", sections)
+    fname = pdf_filename("Analytics")
+    return FileResponse(str(path), media_type="application/pdf",
+                        headers={"Content-Disposition": f'attachment; filename="{fname}"'})
 
 
 def copilot_toggle_btn():
