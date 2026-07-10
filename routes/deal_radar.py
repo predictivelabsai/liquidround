@@ -1,9 +1,9 @@
-"""Daily M&A Deal Radar — in-app view of top buyer↔target synergy pairs,
-scoring methodology, and data-coverage stats.
+"""Deal Radar — unified two-tab view combining synergy pairs + daily targets.
 
-/app/deal-radar    -> ranked pairs by country
-/app/methodology   -> synergy scoring methodology (rendered markdown)
-/app/data-coverage -> pool stats + register sync triggers
+/app/deal-radar       -> tabbed page: Synergies | Targets
+/app/deal-radar/tab/* -> HTMX tab content
+/app/methodology      -> synergy scoring methodology (rendered markdown)
+/app/data-coverage    -> pool stats + register sync triggers
 """
 from __future__ import annotations
 
@@ -12,9 +12,10 @@ from pathlib import Path
 import logging
 import threading
 
-from fasthtml.common import (Div, Span, H1, H2, H3, P, A, NotStr, Button,
+from fasthtml.common import (Div, Span, H1, H2, H3, P, A, NotStr, Button, Input,
                              Table, Thead, Tbody, Tr, Th, Td, Title, Script)
 from fasthtml.core import APIRouter
+from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 ar = APIRouter()
@@ -22,7 +23,7 @@ log = logging.getLogger(__name__)
 
 
 def _shell(session, *, title: str, header_title: str, header_sub: str,
-           content, current_path: str):
+           content, current_path: str, extra_js: str = ""):
     from components.chat_shell import left_pane, right_pane
     user = session.get("user")
     email = user.get("email") if user else None
@@ -46,7 +47,7 @@ def _shell(session, *, title: str, header_title: str, header_sub: str,
         ),
         cls="chat-header",
     )
-    return (
+    parts = [
         Title(title),
         Div(cls="left-overlay", id="left-overlay", onclick="toggleLeftPane()"),
         Div(
@@ -59,7 +60,11 @@ def _shell(session, *, title: str, header_title: str, header_sub: str,
             cls="app pane-closed",
         ),
         Script(src="/chat.js?v=2"),
-    )
+    ]
+    if extra_js:
+        parts.append(Script(NotStr(extra_js)))
+    return tuple(parts)
+
 
 DATA_SOURCES = [
     ("Estonia",   "🟢 Live",   "RIK e-Business Register (open bulk, 374k + status)",
@@ -89,6 +94,37 @@ _FLAG = {"Estonia": "🇪🇪", "Latvia": "🇱🇻", "Lithuania": "🇱🇹", "
 def _score_color(s: float) -> str:
     return GOOD if s >= 3.5 else (WARN if s >= 2.5 else BAD)
 
+
+# ── Tab bar ──────────────────────────────────────────────────────────
+
+_TAB_STYLE_ACTIVE = (f"background:{AMBER};color:#0B1220;font-weight:700;font-size:13px;"
+                     "border:none;border-radius:8px 8px 0 0;padding:10px 20px;cursor:pointer;")
+_TAB_STYLE_INACTIVE = (f"background:transparent;color:{MUTED};font-weight:600;font-size:13px;"
+                       f"border:1px solid {LINE};border-bottom:none;border-radius:8px 8px 0 0;"
+                       "padding:10px 20px;cursor:pointer;")
+
+
+def _tab_bar(active: str):
+    def _btn(label, tab_id):
+        is_active = tab_id == active
+        return Button(
+            label,
+            hx_get=f"/app/deal-radar/tab/{tab_id}",
+            hx_target="#radar-tab-content",
+            hx_swap="innerHTML",
+            onclick=f"setActiveTab(this, '{tab_id}')",
+            style=_TAB_STYLE_ACTIVE if is_active else _TAB_STYLE_INACTIVE,
+            cls=f"radar-tab{' active' if is_active else ''}",
+            type="button",
+        )
+    return Div(
+        _btn("Synergies", "synergies"),
+        _btn("Targets", "targets"),
+        style=f"display:flex;gap:4px;border-bottom:2px solid {AMBER};padding:0 20px;",
+    )
+
+
+# ── Synergies tab content ────────────────────────────────────────────
 
 def _pair_row(p: dict):
     sc = float(p["composite_score"])
@@ -131,7 +167,7 @@ def _pair_row(p: dict):
     )
 
 
-def _deal_radar_content():
+def _synergies_content():
     from utils.deal_radar import get_latest_pairs
     try:
         pairs = get_latest_pairs(limit=25)
@@ -139,30 +175,26 @@ def _deal_radar_content():
         pairs = []
     run = pairs[0].get("run_date") if pairs else None
 
-    header = Div(
+    intro = Div(
         Div(
-            H1("Daily M&A Deal Radar", cls="text-2xl font-bold", style=f"color:{INK};"),
-            Span(str(run) if run else "", cls="mono", style=f"font-size:12px;color:{MUTED};"),
-            style="display:flex;align-items:baseline;gap:12px;",
+            Span(str(run) if run else "No run yet", cls="mono",
+                 style=f"font-size:12px;color:{MUTED};"),
+            A("Methodology →", href="/app/methodology",
+              style=f"color:{AMBER};font-size:12px;font-weight:600;margin-left:16px;"),
+            A("Edit prompt →", href="/app/instructions/deal_radar_synergy",
+              style=f"color:{AMBER};font-size:12px;font-weight:600;margin-left:12px;"),
+            A("Data coverage →", href="/app/data-coverage",
+              style=f"color:{AMBER};font-size:12px;font-weight:600;margin-left:12px;"),
+            style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;",
         ),
-        P(NotStr("Top scored M&A pairs <b>by country</b> — each matches a <b>public buyer</b> "
-                 "(any global exchange, via Yahoo Finance) with a <b>private target</b>, scored on "
-                 "the 5-bucket synergy methodology (cost · revenue · strategic · financial · "
-                 "organizational, weighted 1–5)."),
-          style=f"font-size:13px;color:{MUTED};margin-top:6px;max-width:680px;"),
-        Div(
-            A("Scoring methodology →", href="/app/methodology",
-              style=f"color:{AMBER};font-size:12px;font-weight:600;margin-right:16px;"),
-            A("Edit the scorer prompt →", href="/app/instructions/deal_radar_synergy",
-              style=f"color:{AMBER};font-size:12px;font-weight:600;"),
-            style="margin-top:10px;",
-        ),
-        style="margin-bottom:18px;",
+        P(NotStr("Public buyer ↔ private target pairs scored on the <b>5-bucket synergy methodology</b> "
+                 "(cost · revenue · strategic · financial · organizational, weighted 1–5)."),
+          style=f"font-size:12px;color:{MUTED};margin-top:6px;max-width:680px;"),
+        style="margin-bottom:14px;",
     )
 
     if not pairs:
-        body = Div(P("No pairs scored yet — the Deal Radar runs daily (07:00 UTC). "
-                     "Run `python -m scripts.build_deal_radar` to populate now.",
+        body = Div(P("No pairs scored yet — the Deal Radar runs daily at 05:00 UTC.",
                      style=f"color:{MUTED};font-size:13px;"),
                    style=f"background:{BG_CARD};border:1px solid {LINE};border-radius:12px;padding:20px;")
     else:
@@ -181,15 +213,219 @@ def _deal_radar_content():
             sections.extend(_pair_row(p) for p in cps)
         body = Div(*sections)
 
-    return Div(header, body, cls="max-w-4xl mx-auto w-full", style="padding:24px 20px;")
+    return Div(intro, body)
+
+
+# ── Targets tab content ──────────────────────────────────────────────
+
+def _target_card(c: dict, is_featured: bool = False):
+    flag = _FLAG.get(c.get("country", ""), "")
+    rev = c.get("estimated_revenue_eur")
+    rev_s = f"€{float(rev)/1e6:.1f}M" if rev else ""
+    ds = c.get("deal_size_estimate", "")
+    ds_s = f" · {ds}" if ds and ds != "undisclosed" else ""
+
+    header_parts = [
+        Span(f"{flag} {c.get('name', 'N/A')}", style=f"font-size:15px;font-weight:700;color:{INK};"),
+    ]
+    if is_featured:
+        header_parts.append(
+            Span("DEEP DIVE", style=f"font-size:9px;font-weight:700;color:{AMBER};"
+                 f"background:#1E293B;border:1px solid {AMBER};border-radius:4px;padding:2px 6px;"
+                 "margin-left:8px;letter-spacing:.05em;vertical-align:middle;"))
+
+    meta = f"{c.get('sector', '')} · {c.get('country', '')}"
+    if rev_s:
+        meta += f" · {rev_s} rev"
+    meta += ds_s
+
+    parts = [
+        Div(*header_parts),
+        Div(meta, style=f"font-size:11px;color:{MUTED};margin:2px 0 6px;"),
+    ]
+    if c.get("description"):
+        parts.append(P(c["description"], style=f"font-size:12.5px;color:{INK};line-height:1.5;margin:0 0 4px;"))
+    if c.get("deal_context"):
+        parts.append(P(NotStr(f"<b style='color:{AMBER};'>Deal angle:</b> {c['deal_context']}"),
+                       style=f"font-size:12px;color:{MUTED};line-height:1.5;margin:0 0 4px;"))
+    if c.get("thesis"):
+        parts.append(P(NotStr(f"<b>Thesis:</b> <i>{c['thesis']}</i>"),
+                       style=f"font-size:12px;color:{MUTED};line-height:1.5;margin:0;"))
+
+    return Div(*parts,
+               style=f"background:{BG_CARD};border:1px solid {LINE};border-radius:12px;"
+                     f"padding:16px;margin-bottom:12px;")
+
+
+def _targets_content():
+    from utils.digest import get_cached_digest
+    cached = get_cached_digest()
+    digest = cached.get("digest", {}) if cached else {}
+    companies = digest.get("companies", [])
+    featured = digest.get("featured", {})
+    deep_dive = digest.get("deep_dive", "")
+    cached_at = cached.get("cached_at", "") if cached else ""
+
+    action_bar = Div(
+        Div(
+            Span(f"{len(companies)} companies", style=f"font-size:12px;color:{INK};font-weight:600;"),
+            Span(f"· {cached_at}", cls="mono", style=f"font-size:11px;color:{MUTED};margin-left:8px;")
+            if cached_at else "",
+            style="display:flex;align-items:center;",
+        ),
+        Div(
+            Button("Regenerate", onclick="generateTargets()", type="button",
+                   id="targets-gen-btn",
+                   style=f"background:{AMBER};color:#0B1220;font-weight:700;font-size:12px;"
+                   "border:none;border-radius:8px;padding:8px 14px;cursor:pointer;"),
+            Input(type="email", id="targets-email", placeholder="recipient@email.com",
+                  value="julian@predictivelabs.co.uk",
+                  style=f"background:{BG_CARD};border:1px solid {LINE};color:{INK};"
+                  "border-radius:8px;padding:7px 12px;font-size:12px;margin-left:8px;width:200px;"),
+            Button("Send Email", onclick="sendTargetsEmail()", type="button",
+                   id="targets-send-btn",
+                   style=f"background:transparent;color:{AMBER};font-weight:700;font-size:12px;"
+                   f"border:1px solid {AMBER};border-radius:8px;padding:8px 14px;cursor:pointer;margin-left:4px;"),
+            Button("PDF", onclick="downloadTargetsPDF()", type="button",
+                   style=f"background:transparent;color:{MUTED};font-weight:600;font-size:12px;"
+                   f"border:1px solid {LINE};border-radius:8px;padding:8px 14px;cursor:pointer;margin-left:4px;"),
+            Span(id="targets-status", cls="mono",
+                 style=f"font-size:11px;color:{MUTED};margin-left:10px;"),
+            style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;",
+        ),
+        style=f"display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;"
+              f"gap:10px;margin-bottom:14px;padding:12px 16px;background:{BG_CARD};"
+              f"border:1px solid {LINE};border-radius:12px;",
+    )
+
+    if not companies:
+        body = Div(
+            P("No daily scan available yet. Click Regenerate to build one (~60s).",
+              style=f"color:{MUTED};font-size:13px;"),
+            style=f"background:{BG_CARD};border:1px solid {LINE};border-radius:12px;padding:20px;",
+        )
+    else:
+        featured_name = featured.get("name") if featured else None
+        cards = [_target_card(c, is_featured=(c.get("name") == featured_name)) for c in companies]
+
+        if featured and deep_dive:
+            import re
+            lines = deep_dive.strip().splitlines()
+            dive_parts = []
+            for raw in lines:
+                line = raw.strip()
+                if not line:
+                    continue
+                elif line.startswith("## "):
+                    dive_parts.append(H3(line[3:], style=f"font-size:14px;font-weight:700;color:{INK};margin:12px 0 4px;"))
+                elif line.startswith("# "):
+                    dive_parts.append(H2(line[2:], style=f"font-size:16px;font-weight:700;color:{INK};margin:14px 0 4px;"))
+                elif line.startswith("- ") or line.startswith("* "):
+                    dive_parts.append(P(NotStr(f"• {line[2:]}"),
+                                        style=f"font-size:12px;color:{INK};line-height:1.5;margin:2px 0 2px 12px;"))
+                elif line.startswith("> "):
+                    dive_parts.append(P(NotStr(f"<i>{line[2:]}</i>"),
+                                        style=f"font-size:12px;color:{MUTED};line-height:1.5;margin:2px 0;"))
+                else:
+                    dive_parts.append(P(line, style=f"font-size:12px;color:{INK};line-height:1.5;margin:2px 0;"))
+
+            f_flag = _FLAG.get(featured.get("country", ""), "")
+            deep_dive_section = Div(
+                Div(
+                    Span(f"Deep Dive — {f_flag} {featured.get('name', '')}",
+                         style=f"font-size:16px;font-weight:700;color:{AMBER};"),
+                    Div(f"{featured.get('sector', '')} · {featured.get('country', '')}",
+                        style=f"font-size:11px;color:{MUTED};margin-top:2px;"),
+                    style=f"padding-bottom:10px;border-bottom:2px solid {AMBER};margin-bottom:10px;",
+                ),
+                *dive_parts,
+                style=f"background:{BG_CARD};border:1px solid {LINE};border-radius:12px;"
+                      f"padding:16px;margin-bottom:12px;",
+            )
+            cards.append(deep_dive_section)
+
+        body = Div(*cards)
+
+    return Div(action_bar, body)
+
+
+# ── Main page ────────────────────────────────────────────────────────
+
+_RADAR_JS = """
+function setActiveTab(el, tabId) {
+    document.querySelectorAll('.radar-tab').forEach(function(t) {
+        t.style.background = 'transparent';
+        t.style.color = '#94A3B8';
+        t.style.border = '1px solid #1E293B';
+        t.style.borderBottom = 'none';
+        t.classList.remove('active');
+    });
+    el.style.background = '#F59E0B';
+    el.style.color = '#0B1220';
+    el.style.border = 'none';
+    el.classList.add('active');
+}
+async function generateTargets() {
+    var btn = document.getElementById('targets-gen-btn');
+    var status = document.getElementById('targets-status');
+    btn.disabled = true; btn.textContent = 'Generating…';
+    status.textContent = 'Building digest (~60s)…';
+    try {
+        var resp = await fetch('/app/deals/generate', {method: 'POST'});
+        var data = await resp.json();
+        if (data.ok) {
+            status.textContent = 'Done! Reloading…';
+            htmx.ajax('GET', '/app/deal-radar/tab/targets', '#radar-tab-content');
+        } else {
+            status.textContent = data.error || 'Failed';
+        }
+    } catch(e) { status.textContent = 'Failed'; }
+    btn.disabled = false; btn.textContent = 'Regenerate';
+}
+async function sendTargetsEmail() {
+    var btn = document.getElementById('targets-send-btn');
+    var status = document.getElementById('targets-status');
+    var email = (document.getElementById('targets-email') || {}).value || '';
+    if (!email) { status.textContent = 'Enter an email'; return; }
+    btn.disabled = true; btn.textContent = 'Sending…';
+    try {
+        var resp = await fetch('/app/deals/send', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({email: email})
+        });
+        var data = await resp.json();
+        status.textContent = data.ok ? ('Sent to ' + (data.to || email)) : (data.error || 'Failed');
+    } catch(e) { status.textContent = 'Send failed'; }
+    btn.disabled = false; btn.textContent = 'Send Email';
+}
+function downloadTargetsPDF() { window.location.href = '/app/deals/pdf'; }
+"""
 
 
 @ar("/app/deal-radar")
 def deal_radar_page(session):
+    tab = "synergies"
+    content = Div(
+        _tab_bar(tab),
+        Div(_synergies_content(), id="radar-tab-content",
+            style="padding:16px 20px;"),
+        cls="max-w-4xl mx-auto w-full",
+    )
     return _shell(
         session, title="Deal Radar · LiquidRound",
-        header_title="Daily M&A Deal Radar", header_sub="Buyer ↔ target synergy pairs",
-        content=_deal_radar_content(), current_path="/app/deal-radar")
+        header_title="Deal Radar", header_sub="Synergies & Daily Targets",
+        content=content, current_path="/app/deal-radar",
+        extra_js=_RADAR_JS)
+
+
+@ar("/app/deal-radar/tab/synergies")
+def tab_synergies(session):
+    return _synergies_content()
+
+
+@ar("/app/deal-radar/tab/targets")
+def tab_targets(session):
+    return _targets_content()
 
 
 # ── Data Coverage ───────────────────────────────────────────────────────────

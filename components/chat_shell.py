@@ -134,9 +134,7 @@ def agent_browser():
 _WORKSPACE_ITEMS = [
     ("Companies",    "/app/companies",     "⊞"),
     ("Pipelines",    "/pipeline/target",   "◆"),
-    ("Daily Radar",  "/app/deals",         "◉"),
-    ("Deal Radar",   "/app/deal-radar",    "⊕"),
-    ("Methodology",  "/app/methodology",   "◎"),
+    ("Deal Radar",   "/app/deal-radar",    "◉"),
     ("Data Coverage","/app/data-coverage", "◈"),
     ("Valuation",    "/app/valuation",     "◇"),
     ("Analytics",    "/app/analytics",     "△"),

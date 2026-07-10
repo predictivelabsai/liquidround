@@ -78,7 +78,14 @@ def _deals_shell(session, center_children):
 
 @ar("/app/deals")
 async def deals_page(session):
-    """Daily Deals workspace page — shows cached digest or empty state."""
+    """Redirect to unified Deal Radar page."""
+    from starlette.responses import RedirectResponse
+    return RedirectResponse("/app/deal-radar", status_code=302)
+
+
+@ar("/app/deals-legacy")
+async def deals_page_legacy(session):
+    """Legacy Daily Deals workspace page — shows cached digest or empty state."""
     from utils.digest import get_cached_digest
 
     cached = get_cached_digest()
