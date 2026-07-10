@@ -184,8 +184,12 @@ def score_pair(buyer: dict, target: dict, scoring_prompt: str | None = None) -> 
     num = den = 0.0
     for k, spec in buckets.items():
         try:
-            s = float(spec.get("score"))
-            w = float(spec.get("weight", DEFAULT_WEIGHTS.get(k, 0)))
+            if isinstance(spec, dict):
+                s = float(spec.get("score"))
+                w = float(spec.get("weight", DEFAULT_WEIGHTS.get(k, 0)))
+            else:
+                s = float(spec)
+                w = float(DEFAULT_WEIGHTS.get(k, 0))
         except (TypeError, ValueError):
             continue
         num += s * w

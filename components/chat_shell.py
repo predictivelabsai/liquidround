@@ -324,7 +324,7 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
                 Button(
                     Span("?", cls="cat-icon"),
                     Span("Help", cls="cat-name"),
-                    Span("3", cls="cat-count"),
+                    Span("4", cls="cat-count"),
                     Span("▸", cls="cat-arrow"),
                     cls="cat-toggle",
                     onclick="toggleGroup('sec-help')",
@@ -338,6 +338,9 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
                     A(Span("?", cls="bottom-nav-icon"), Span("User Guide", cls="bottom-nav-label"),
                       href="/app/user-guide",
                       cls=f"bottom-nav-link{' active' if current_path.startswith('/app/user-guide') or current_path.startswith('/app/help') else ''}"),
+                    A(Span("◎", cls="bottom-nav-icon"), Span("Scoring Methodology", cls="bottom-nav-label"),
+                      href="/app/methodology",
+                      cls=f"bottom-nav-link{' active' if current_path.startswith('/app/methodology') else ''}"),
                     A(Span("⌨", cls="bottom-nav-icon"), Span("Shortcuts", cls="bottom-nav-label"),
                       href="#", onclick="toggleGroup('sec-shortcuts'); return false;",
                       cls="bottom-nav-link"),
