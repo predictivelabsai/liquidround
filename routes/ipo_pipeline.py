@@ -74,10 +74,25 @@ def render_pipeline_body(sort: str = "last_valuation") -> Div:
             id="ipo-pipeline-body",
         )
 
+    completed = df[df["kind"] == "ipo_completed"].copy()
     private = df[df["kind"] == "private"].copy()
-    upcoming = df[df["kind"] != "private"].copy()
+    upcoming = df[(df["kind"] != "private") & (df["kind"] != "ipo_completed")].copy()
 
     children = []
+
+    # Recently completed IPOs
+    if not completed.empty:
+        comp = completed.copy()
+        comp["Valuation"] = comp["last_valuation"].apply(_fmt_val)
+        comp["IPO Date"] = comp["expected_date"].apply(_fmt_date)
+        view_c = comp[["company_name", "ticker", "exchange", "Valuation", "IPO Date"]].rename(
+            columns={"company_name": "Company", "ticker": "Ticker", "exchange": "Exchange"})
+        view_c = view_c.fillna("—")
+        children.append(Div(
+            H3(f"Recently completed IPOs ({len(completed)})", cls="ipo-section-title"),
+            NotStr(view_c.to_html(index=False, classes="artifact-table", border=0)),
+            cls="ipo-card",
+        ))
 
     # Valuation chart for private companies
     pv = private[private["last_valuation"].notna() & (private["last_valuation"] > 0)].copy()
@@ -93,7 +108,7 @@ def render_pipeline_body(sort: str = "last_valuation") -> Div:
     # Private cards
     if not private.empty:
         children.append(Div(
-            H3(f"Private companies ({len(private)})", cls="ipo-section-title"),
+            H3(f"Pre-IPO private companies ({len(private)})", cls="ipo-section-title"),
             Div(*[_private_card(r) for _, r in private.iterrows()], cls="ipo-pl-grid"),
             cls="ipo-card",
         ))

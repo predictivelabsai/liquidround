@@ -103,6 +103,14 @@ def _run_dk_register():
     log.info("DK register: %s", result)
 
 
+def _run_ipo_pipeline():
+    if datetime.now(timezone.utc).weekday() != 3:  # Thursday only
+        return
+    from utils.ipo_pipeline_fetcher import refresh_pipeline
+    n = refresh_pipeline()
+    log.info("IPO pipeline: refreshed %d companies", n)
+
+
 CANDIDATE_HOUR = max(HOUR - 2, 0)
 
 JOBS = {
@@ -113,6 +121,7 @@ JOBS = {
     "ee_register":      {"fn": _run_ee_register,       "hour": CANDIDATE_HOUR},
     "no_register":      {"fn": _run_no_register,       "hour": CANDIDATE_HOUR},
     "dk_register":      {"fn": _run_dk_register,       "hour": CANDIDATE_HOUR},
+    "ipo_pipeline":     {"fn": _run_ipo_pipeline,      "hour": CANDIDATE_HOUR},
 }
 
 
