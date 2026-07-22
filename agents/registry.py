@@ -1,4 +1,4 @@
-"""Central registry of all 22 LiquidRound specialist agents.
+"""Central registry of all 25 LiquidRound specialist agents.
 
 Each `AgentSpec` is the source of truth for:
   - Routing (prefix, keywords)
@@ -355,7 +355,7 @@ AGENTS: tuple[AgentSpec, ...] = (
     ),
 
     # ─────────────────────────────────────────────────────────────────────
-    # Public Markets & Hedge Funds (1)
+    # Public Markets & Hedge Funds (3)
     # ─────────────────────────────────────────────────────────────────────
     AgentSpec(
         slug="hedge_fund_analyst", name="Hedge Fund Analyst",
@@ -369,6 +369,34 @@ AGENTS: tuple[AgentSpec, ...] = (
             "hedgefunds: recent 13D activist filings — any new campaigns worth watching?",
             "hedgefunds: most concentrated portfolios — which funds have the highest conviction bets?",
             "hedgefunds: what are the most popular tech stocks among hedge funds?",
+        ),
+    ),
+    AgentSpec(
+        slug="filing_analyst", name="Filing Analyst",
+        category="public_markets", audience="shared", icon="▤", prefix="filings:",
+        one_liner="SEC EDGAR filing search and analysis — 10-K, 10-Q, 8-K, proxy, XBRL.",
+        description="Search and analyze SEC EDGAR filings — 10-K, 10-Q, 8-K, proxy statements. Ask questions about any public company's regulatory filings.",
+        example_prompts=(
+            "filings: AAPL 10-K filings",
+            "filings: search for 'material weakness' in recent 10-K filings",
+            "filings: show me MSFT's latest proxy statement",
+            "filings: XBRL financial data for TSLA",
+            "What did Apple disclose in their most recent 8-K?",
+            "Search SEC filings for goodwill impairment disclosures",
+        ),
+    ),
+    AgentSpec(
+        slug="press_release_analyst", name="Press Release Analyst",
+        category="public_markets", audience="shared", icon="◩", prefix="releases:",
+        one_liner="Search and analyze 390K+ press releases from GlobeNewswire, Euronext, and Nordic exchanges.",
+        description="Search and analyze 390K+ press releases from GlobeNewswire, PR Newswire, Nasdaq Nordic/Baltic, and Euronext. Filter by company, event type, or ask analytical questions.",
+        example_prompts=(
+            "releases: recent M&A announcements in the Nordics",
+            "releases: earnings releases for NOVO-B.CO",
+            "What press releases has Enefit Green issued this quarter?",
+            "releases: clinical study announcements in biotech last 90 days",
+            "How many press releases were issued by Euronext companies this month?",
+            "releases: management changes at Baltic companies",
         ),
     ),
 )
@@ -396,4 +424,4 @@ def by_audience(audience: str) -> list[AgentSpec]:
     return [a for a in AGENTS if a.audience == audience or a.audience == "shared"]
 
 
-assert len(AGENTS) == 23, f"expected 23 agents, got {len(AGENTS)}"
+assert len(AGENTS) == 25, f"expected 25 agents, got {len(AGENTS)}"

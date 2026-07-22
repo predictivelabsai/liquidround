@@ -274,14 +274,13 @@ class ActivistFilingsArgs(BaseModel):
 
 def _get_recent_activist_filings(days: int = 30, limit: int = 25) -> str:
     from utils.hedge_fund_db import recent_activist_filings, activist_stats
-    filings = recent_activist_filings(days=days, limit=limit)
+    filings = recent_activist_filings(days=days, limit=limit, activist_only=False)
     stats = activist_stats(days=days)
     if not filings:
-        return f"No activist filings in the last {days} days."
+        return f"No activist filings (13D/13G) in the last {days} days."
     rows = [
         {"date": r["filing_date"].isoformat() if r["filing_date"] else "",
          "form": r["form_type"], "filer": (r["filer_name"] or "?")[:50],
-         "subject": (r["subject_name"] or "")[:50],
          "link": r["filing_url"] or ""}
         for r in filings
     ]
@@ -292,7 +291,7 @@ def _get_recent_activist_filings(days: int = 30, limit: int = 25) -> str:
         kind="table",
         title="Recent Activist / Beneficial-Ownership Filings",
         subtitle=subtitle,
-        columns=["date", "form", "filer", "subject", "link"],
+        columns=["date", "form", "filer", "link"],
         rows=rows,
     )
 

@@ -98,7 +98,7 @@ def _agent_freeform(spec):
 
 
 def agent_browser():
-    """All 23 agents grouped by 6 categories — collapsible."""
+    """All 25 agents grouped by 6 categories — collapsible."""
     groups = []
     for cat in CATEGORIES:
         agents = AGENTS_BY_CATEGORY.get(cat["key"], [])
@@ -132,17 +132,19 @@ def agent_browser():
 
 
 _WORKSPACE_ITEMS = [
-    ("Companies",    "/app/companies",     "⊞"),
-    ("Pipelines",    "/pipeline/target",   "◆"),
-    ("Deal Radar",   "/app/deal-radar",    "◉"),
-    ("Data Coverage","/app/data-coverage", "◈"),
-    ("Valuation",    "/app/valuation",     "◇"),
-    ("Analytics",    "/app/analytics",     "△"),
-    ("Data Room",    "/app/dataroom",      "▣"),
-    ("Documents",    "/page/documents",    "▦"),
-    ("Deal history", "/page/deals",        "∑"),
-    ("Instructions", "/app/instructions",  "✎"),
-    ("User Guide",   "/app/user-guide",    "?"),
+    ("Companies",      "/app/companies",      "⊞"),
+    ("Pipelines",      "/pipeline/target",    "◆"),
+    ("Deal Radar",     "/app/deal-radar",     "◉"),
+    ("Data Coverage",  "/app/data-coverage",  "◈"),
+    ("Press Releases", "/app/press-releases", "◩"),
+    ("SEC Filings",    "/app/filings",        "▤"),
+    ("Valuation",      "/app/valuation",      "◇"),
+    ("Analytics",      "/app/analytics",      "△"),
+    ("Data Room",      "/app/dataroom",       "▣"),
+    ("Documents",      "/page/documents",     "▦"),
+    ("Deal history",   "/page/deals",         "∑"),
+    ("Instructions",   "/app/instructions",   "✎"),
+    ("User Guide",     "/app/user-guide",     "?"),
 ]
 
 
@@ -229,7 +231,7 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
                 Button(
                     Span("◧", cls="cat-icon"),
                     Span("Public Markets", cls="cat-name"),
-                    Span("4", cls="cat-count"),
+                    Span("6", cls="cat-count"),
                     Span("▸", cls="cat-arrow"),
                     cls="cat-toggle",
                     onclick="toggleGroup('sec-public-markets')",
@@ -249,6 +251,12 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
                     A(Span("◰", cls="bottom-nav-icon"), Span("Prospectus", cls="bottom-nav-label"),
                       href="/app/prospectus",
                       cls=f"bottom-nav-link{' active' if current_path.startswith('/app/prospectus') else ''}"),
+                    A(Span("▤", cls="bottom-nav-icon"), Span("SEC Filings", cls="bottom-nav-label"),
+                      href="/app/filings",
+                      cls=f"bottom-nav-link{' active' if current_path.startswith('/app/filings') else ''}"),
+                    A(Span("◩", cls="bottom-nav-icon"), Span("Press Releases", cls="bottom-nav-label"),
+                      href="/app/press-releases",
+                      cls=f"bottom-nav-link{' active' if current_path.startswith('/app/press-releases') else ''}"),
                     cls="agent-list", id="sec-public-markets",
                 ),
                 cls="agent-group",
@@ -290,7 +298,7 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
                 Button(
                     Span("◆", cls="cat-icon"),
                     Span("Workspace", cls="cat-name"),
-                    Span("10", cls="cat-count"),
+                    Span("12", cls="cat-count"),
                     Span("▸", cls="cat-arrow"),
                     cls="cat-toggle",
                     onclick="toggleGroup('sec-workspace')",

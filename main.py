@@ -162,6 +162,14 @@ prospectus_router.to_app(app)
 from routes.hedge_funds import ar as hedge_funds_router
 hedge_funds_router.to_app(app)
 
+# Register SEC EDGAR filing routes (/app/filings)
+from routes.filings import ar as filings_router
+filings_router.to_app(app)
+
+# Register press releases (/app/press-releases)
+from routes.press_releases import ar as press_releases_router
+press_releases_router.to_app(app)
+
 # Register SPAC tracker (/app/spacs)
 from routes.spacs import ar as spacs_router
 spacs_router.to_app(app)
@@ -657,7 +665,7 @@ def _nav_button(label, cmd, accent="gray"):
     )
 
 def _all_agents_nav_section():
-    """Collapsible browser of all 22 ECM Squad specialists, grouped by category.
+    """Collapsible browser of all 25 ECM Squad specialists, grouped by category.
 
     Clicking an agent inserts its prefix into the chat input so the user can
     complete the prompt. Mirrors pehero's agent_browser pattern.
@@ -692,7 +700,7 @@ def _all_agents_nav_section():
         ))
     return Details(
         Summary(
-            Span("ECM SQUAD · 22 AGENTS", cls="text-xs font-bold text-amber-500 uppercase tracking-wide"),
+            Span("ECM SQUAD · 25 AGENTS", cls="text-xs font-bold text-amber-500 uppercase tracking-wide"),
             cls="px-3 py-2 cursor-pointer hover:bg-gray-50 rounded list-none flex items-center nav-section-header",
         ),
         Div(*groups, cls="pl-2 ml-2 mb-2"),
@@ -812,7 +820,7 @@ def _nav_section(session):
                     open=seller_open,
                     cls="mb-1",
                 ),
-                # ALL 22 SPECIALISTS section (collapsed) — full ECM Squad browser
+                # ALL 25 SPECIALISTS section (collapsed) — full ECM Squad browser
                 _all_agents_nav_section(),
                 # RESEARCH section (collapsed)
                 Details(
@@ -1224,7 +1232,7 @@ async def app_config(session, request):
 
 @rt("/app/chat", methods=["POST"])
 async def app_chat_sse(request, session):
-    """SSE streaming chat — routes to one of the 22 ECM Squad specialists.
+    """SSE streaming chat — routes to one of the 25 ECM Squad specialists.
 
     Event stream format (pehero-compatible):
       event: agent_route  → {slug, agent, icon}

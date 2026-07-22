@@ -258,7 +258,7 @@ def recent_activist_filings(days: int = 30, limit: int = 25, activist_only: bool
             where.append("is_activist = TRUE")
         rows = s.execute(text(f"""
             SELECT accession_number, form_type, filing_date,
-                   filer_name, filer_cik, subject_name, subject_cik, filing_url
+                   filer_name, filer_cik, filing_url
             FROM {SCHEMA}.activist_filing
             WHERE {' AND '.join(where)}
             ORDER BY filing_date DESC, accession_number DESC
@@ -266,8 +266,7 @@ def recent_activist_filings(days: int = 30, limit: int = 25, activist_only: bool
         """), {"days": int(days), "lim": limit}).fetchall()
         return [
             {"accession_number": r[0], "form_type": r[1], "filing_date": r[2],
-             "filer_name": r[3], "filer_cik": r[4], "subject_name": r[5],
-             "subject_cik": r[6], "filing_url": r[7]}
+             "filer_name": r[3], "filer_cik": r[4], "filing_url": r[5]}
             for r in rows
         ]
     finally:

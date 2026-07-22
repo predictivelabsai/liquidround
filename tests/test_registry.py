@@ -1,4 +1,4 @@
-"""Tests for the 23-agent registry + router — pure unit, no network."""
+"""Tests for the 25-agent registry + router — pure unit, no network."""
 from __future__ import annotations
 
 import pytest
@@ -13,8 +13,8 @@ from agents.base import load_system_prompt
 
 # ── Shape invariants ────────────────────────────────────────────────────
 
-def test_exactly_23_agents():
-    assert len(AGENTS) == 23, f"expected 23 agents, got {len(AGENTS)}"
+def test_exactly_25_agents():
+    assert len(AGENTS) == 25, f"expected 25 agents, got {len(AGENTS)}"
 
 
 def test_unique_slugs():
@@ -119,6 +119,8 @@ PREFIX_CASES = [
     ("ltm: normalize NovaTech P&L",         "ltm_normalizer"),
     ("comps: SaaS M&A precedents",          "comps_finder"),
     ("hedgefunds: top funds by AUM",         "hedge_fund_analyst"),
+    ("filings: AAPL 10-K filings",            "filing_analyst"),
+    ("releases: recent M&A announcements",     "press_release_analyst"),
 ]
 
 

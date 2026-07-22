@@ -1,4 +1,4 @@
-"""Intent router — maps a user message to one of the 22 agent slugs.
+"""Intent router — maps a user message to one of the 25 agent slugs.
 
 Order of preference:
   1. Forced slug (caller already knows which agent)
@@ -55,6 +55,12 @@ CATEGORY_HINTS: dict[str, list[str]] = {
         "fund holdings", "institutional ownership", "aum",
         "popular securities", "crowded trade", "most held",
         "fund concentration",
+        "sec filing", "sec filings", "edgar", "10-k", "10-q", "8-k",
+        "annual report", "quarterly report", "proxy statement",
+        "def 14a", "s-1", "form 4", "xbrl",
+        "press release", "press releases", "news release", "announcement",
+        "globenewswire", "euronext news", "omx news", "baltic news",
+        "prnewswire", "pr newswire",
     ],
 }
 
@@ -118,6 +124,16 @@ def _best_in_category_for(message: str) -> str | None:
         return "hedge_fund_analyst"
     if "fund holdings" in lower or "institutional ownership" in lower:
         return "hedge_fund_analyst"
+    if "sec filing" in lower or "edgar" in lower or "10-k" in lower or "10-q" in lower:
+        return "filing_analyst"
+    if "8-k" in lower or "annual report" in lower or "proxy statement" in lower:
+        return "filing_analyst"
+    if "def 14a" in lower or "xbrl" in lower:
+        return "filing_analyst"
+    if "press release" in lower or "news release" in lower or "globenewswire" in lower:
+        return "press_release_analyst"
+    if "euronext news" in lower or "omx news" in lower or "baltic news" in lower:
+        return "press_release_analyst"
     return None
 
 
@@ -171,7 +187,7 @@ def route(message: str, forced_slug: str | None = None) -> str:
 
 
 def has_specialist_prefix(message: str) -> bool:
-    """True if the message starts with one of the 22 agent prefixes."""
+    """True if the message starts with one of the 25 agent prefixes."""
     return _prefix_match(message) is not None
 
 

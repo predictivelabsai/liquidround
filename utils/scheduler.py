@@ -111,6 +111,21 @@ def _run_ipo_pipeline():
     log.info("IPO pipeline: refreshed %d companies", n)
 
 
+def _run_activist_sync():
+    from scripts.sync_activist import sync_days
+    result = sync_days(days=30)
+    log.info("Activist filings: %s", result)
+
+
+def _run_treemap_refresh():
+    from utils.hedge_fund_db import get_treemap_data
+    data = get_treemap_data(min_value=0, fund_filter="", limit=500)
+    from routes.hedge_funds import _cache
+    import time as _t
+    _cache[":0:500"] = (_t.time(), data)
+    log.info("Treemap cache refreshed: %d rows", len(data))
+
+
 CANDIDATE_HOUR = max(HOUR - 2, 0)
 
 JOBS = {
@@ -122,6 +137,8 @@ JOBS = {
     "no_register":      {"fn": _run_no_register,       "hour": CANDIDATE_HOUR},
     "dk_register":      {"fn": _run_dk_register,       "hour": CANDIDATE_HOUR},
     "ipo_pipeline":     {"fn": _run_ipo_pipeline,      "hour": CANDIDATE_HOUR},
+    "activist_sync":    {"fn": _run_activist_sync,     "hour": CANDIDATE_HOUR},
+    "treemap_refresh":  {"fn": _run_treemap_refresh,   "hour": CANDIDATE_HOUR},
 }
 
 
