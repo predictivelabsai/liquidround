@@ -408,7 +408,7 @@ html, body {
 .bottom-nav-icon { color: var(--accent); width: 1rem; text-align: center; flex-shrink: 0; }
 .bottom-nav-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* ───── Right pane (artifact) ───── */
+/* ───── Right pane (news) ───── */
 .right-pane {
     position: fixed; top: 0; bottom: 0; right: -440px; width: 420px;
     background: var(--bg-elev); border-left: 1px solid var(--line);

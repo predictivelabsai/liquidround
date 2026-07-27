@@ -1,0 +1,4 @@
+interface:
+  display_name: "Validate LiquidRound UI"
+  short_description: "Run local Playwright checks and capture screenshots"
+  default_prompt: "Use $validate-liquidround-ui to test changed LiquidRound UI locally and capture reusable screenshots."

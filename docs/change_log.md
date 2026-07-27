@@ -1,5 +1,43 @@
 # LiquidRound Change Log
 
+## 0.5.1 — 2026-07-28
+
+News-first chat workspace update making investor-relations access and market
+intelligence immediately visible.
+
+### Added
+
+- Repository-local UI validation skill and rule requiring real Playwright checks.
+- Gitignored, reusable screenshots under `screenshots/` for future user guides and demos.
+
+### Changed
+
+- The desktop News pane now opens by default and remains visible in the chat workspace.
+- Investor Relations is expanded by default so Press Release Creator is immediately
+  visible in the left navigation.
+- Generated memo PDFs open in a dedicated browser tab.
+
+### Removed
+
+- The unused Artifact header button, tab, close control, and right-pane artifact window.
+
+### Documentation
+
+- Updated the platform guide and testing matrix for the News-first workspace.
+- Regenerated the timestamped Platform Demo and archived the prior edition.
+
+### Compatibility and operations
+
+- Mobile keeps News off-canvas so the chat remains usable at narrow viewport widths.
+- Inline agent tables, citations, charts, and other conversation artifacts are retained.
+- Coolify credentials remain local and ignored by Git.
+
+### Verification
+
+- Python compilation, JavaScript syntax, and focused registry tests passed.
+- Playwright verified desktop and mobile chat layouts, Investor Relations navigation,
+  absence of Artifact controls, and visible release version.
+
 ## 0.5.0 — 2026-07-27
 
 Investor Relations release introducing researched press-release creation, expanded

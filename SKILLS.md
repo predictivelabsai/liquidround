@@ -8,7 +8,7 @@ After any change to:
 - `components/chat_shell.py` (left pane, center pane, right pane, welcome hero, sample cards)
 - `components/landing.py` (landing page, sign-in overlay, nav, hero, sections, footer)
 - `static/app.css` (layout, dark theme, responsive breakpoints)
-- `static/chat.js` (chat interaction, SSE, share/copy, sample cards, artifact pane)
+- `static/chat.js` (chat interaction, SSE, share/copy, sample cards, News pane)
 - `routes/auth.py` (login, register, forgot password, profile)
 - `routes/*.py` that render full pages (`help.py`, `instructions.py`, `analytics.py`, `dataroom.py`, `companies.py`)
 - `main.py` `/app` or `/` route changes
@@ -77,12 +77,15 @@ Use `browser_resize` to switch between them.
 ### 3. Chat app (`/app`)
 
 **Desktop (1400x900):**
-- [ ] 3-pane layout renders: left pane (300px), center pane, right pane (artifact canvas)
+- [ ] 3-pane layout renders: left pane (300px), center pane, right pane (News feed)
 - [ ] Left pane sections in order: Sessions, Agents, Workspace, Training, Settings
 - [ ] Workspace section: 9 links (Companies, Pipelines, Valuation, Analytics, Data Room, Documents, Deal history, Instructions, Help) -- NO "Settings" button
 - [ ] Settings section: single "Profile / Account" link pointing to `/profile`
 - [ ] Agents section: 5 category groups, expandable on click
-- [ ] Center pane: header with "LiquidRound · Auto-routed", Copy/Share/News/Artifact buttons
+- [ ] Center pane: header with "LiquidRound · Auto-routed" and Copy/Share buttons
+- [ ] News pane is open and visible by default
+- [ ] Investor Relations is expanded and Press Release Creator is visible
+- [ ] No Artifact header button, tab, or right-pane artifact window is present
 - [ ] Welcome hero with Baltic/Lithuanian company prompts (Grigeo, InMedica, Lietuvos Veterinarija)
 - [ ] Sample cards at bottom show Baltic prompts
 - [ ] Chat input + send button visible at bottom
@@ -102,8 +105,8 @@ Use `browser_resize` to switch between them.
 
 **Desktop:**
 - [ ] Send a query -> SSE stream renders agent response
-- [ ] Right pane shows artifacts when produced
-- [ ] Artifact button toggles right pane open/closed
+- [ ] Right pane remains dedicated to News
+- [ ] Agent artifacts render inline; generated memo PDFs open in a new browser tab
 - [ ] Copy button copies chat text, shows green checkmark flash (1.8s)
 - [ ] Share button fires /app/share, shows green checkmark flash
 - [ ] "+ New chat" resets to clean state with welcome hero
@@ -149,18 +152,19 @@ When bumping the version:
 
 **Z-index hierarchy (mobile):**
 - 50: left pane (sidebar)
-- 60: right pane (artifact canvas)
+- 60: right pane (News feed)
 - 100: `.signin-overlay` (auth modal on landing)
 
 **Critical CSS patterns:**
 - `.app` grid: `grid-template-columns: 300px 1fr`, `height: 100vh`, `overflow: hidden`
 - `html, body`: NO `overflow: hidden` or `height: 100%` (breaks landing page scroll)
-- `.app` has `padding-right: 420px` when artifact pane open, `0` when closed
+- `.app` has `padding-right: 420px` for the desktop News pane and removes it at the
+  mobile breakpoint
 - Dark theme: `.lr-dark` class on body for `/app`, NOT on landing page
 - Landing page: own inline palette via `components/landing.py` constants (BG, BG_ELEV, INK, etc.)
 
 **JS behavior:**
-- `toggleArtifactPane()`: toggles right pane visibility + adjusts `.app` padding-right
+- `toggleNewsPane()`: preserves the desktop News pane state
 - `toggleLeftPane()`: mobile hamburger, toggles left pane open/closed
 - `shareChat()` / `copyChat()`: icon swap feedback via `_flashBtn()` (checkmark + grey for 1.8s)
 - `shareSession(event, sid, btn)`: sidebar session share buttons

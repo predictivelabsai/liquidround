@@ -1179,10 +1179,10 @@ def app_shell(session, role: str = "", sid: str = ""):
                 current_agent_slug=None,
                 current_role=active_role,
             ),
-            right_pane(),
-            cls="app pane-closed",
+            right_pane(open_by_default=True),
+            cls="app",
         ),
-        Script(src="/chat.js?v=2"),
+        Script(src="/chat.js?v=3"),
     )
 
 

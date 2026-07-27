@@ -235,23 +235,7 @@
         if (searchText) {
             viewer += "#search=" + encodeURIComponent(String(searchText).slice(0, 120)) + "&phrase=true";
         }
-        const body = $("#artifact-body");
-        const empty = $("#artifact-empty");
-        if (empty) empty.style.display = "none";
-        body.style.display = "block";
-        body.innerHTML = `
-            <div class="pdf-wrap">
-              <div class="pdf-caption"></div>
-              <iframe id="pdf-frame" class="pdf-iframe" src="${viewer}" allow="fullscreen"></iframe>
-            </div>`;
-        const cap = body.querySelector(".pdf-caption");
-        cap.innerHTML = (title ? escapeHtml(title) : "Memo preview") +
-            (searchText ? ' · <i>highlighting "' + escapeHtml(String(searchText).slice(0, 40)) + '"</i>' : "");
-        const sub = $("#artifact-subtitle");
-        if (sub) sub.textContent = title || "PDF preview";
-        document.querySelector(".app").classList.remove("pane-closed");
-        $("#right-pane").classList.add("open");
-        $("#artifact-btn").classList.add("active");
+        window.open(viewer, "_blank", "noopener");
     }
 
     async function highlightInLastPdf(searchText) {
@@ -471,7 +455,10 @@
     function showArtifact(payload) {
         const body = $("#artifact-body");
         const empty = $("#artifact-empty");
-        if (!body) return;
+        if (!body) {
+            if (_isHedgeFundArtifact(payload)) _loadContextualNews(payload);
+            return;
+        }
         empty.style.display = "none";
         body.style.display = "block";
 
@@ -494,18 +481,10 @@
         }
         body.prepend(card);
 
-        document.querySelector(".app").classList.remove("pane-closed");
-        $("#right-pane").classList.add("open");
-
         // For hedge fund tables, open News tab with contextual search instead
         const isHfTable = _isHedgeFundArtifact(payload);
         if (isHfTable) {
-            switchRightTab("news");
-            const nb = $("#news-btn"); if (nb) nb.classList.add("active");
-            const ab = $("#artifact-btn"); if (ab) ab.classList.remove("active");
             _loadContextualNews(payload);
-        } else {
-            $("#artifact-btn").classList.add("active");
         }
     }
 
@@ -668,59 +647,17 @@
         document.querySelector(".left-pane").classList.toggle("open");
         document.querySelector(".left-overlay").classList.toggle("visible");
     };
-    window.toggleArtifactPane = () => {
-        const r = $("#right-pane");
-        const app = document.querySelector(".app");
-        if (r.classList.contains("open")) {
-            r.classList.remove("open");
-            app.classList.add("pane-closed");
-            $("#artifact-btn").classList.remove("active");
-        } else {
-            switchRightTab("artifact");
-            r.classList.add("open");
-            app.classList.remove("pane-closed");
-            $("#artifact-btn").classList.add("active");
-        }
-    };
     window.toggleNewsPane = () => {
         const r = $("#right-pane");
-        const app = document.querySelector(".app");
-        if (r.classList.contains("open") && $("#rpane-content-news") && $("#rpane-content-news").style.display !== "none") {
-            r.classList.remove("open");
-            app.classList.add("pane-closed");
-            const nb = $("#news-btn"); if (nb) nb.classList.remove("active");
-        } else {
-            switchRightTab("news");
-            r.classList.add("open");
-            app.classList.remove("pane-closed");
-            const nb = $("#news-btn"); if (nb) nb.classList.add("active");
-            const ab = $("#artifact-btn"); if (ab) ab.classList.remove("active");
-        }
+        if (r) r.classList.add("open");
     };
     window.switchRightTab = (tab) => {
-        const artifact = $("#rpane-content-artifact");
         const news = $("#rpane-content-news");
-        const tabArt = $("#rpane-tab-artifact");
-        const tabNews = $("#rpane-tab-news");
-        if (tab === "news") {
-            if (artifact) artifact.style.display = "none";
-            if (news) news.style.display = "";
-            if (tabArt) tabArt.classList.remove("active");
-            if (tabNews) tabNews.classList.add("active");
-        } else {
-            if (artifact) artifact.style.display = "";
-            if (news) news.style.display = "none";
-            if (tabArt) tabArt.classList.add("active");
-            if (tabNews) tabNews.classList.remove("active");
-        }
+        if (news) news.style.display = "";
     };
     window.closeRightPane = () => {
         const r = $("#right-pane");
-        const app = document.querySelector(".app");
-        r.classList.remove("open");
-        app.classList.add("pane-closed");
-        const ab = $("#artifact-btn"); if (ab) ab.classList.remove("active");
-        const nb = $("#news-btn"); if (nb) nb.classList.remove("active");
+        if (r) r.classList.add("open");
     };
     window.toggleGroup = (id) => {
         const el = document.getElementById(id);

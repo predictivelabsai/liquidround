@@ -2,7 +2,7 @@
 
 Composes left_pane (Sessions / Agents / Workspace / Settings),
 center_pane (header + messages + welcome hero + chat input + sample cards),
-and right_pane (artifact canvas, filled by SSE artifact_show events).
+and right_pane (the always-visible desktop news feed).
 
 Uses the navy+amber palette defined in static/app.css. The JS in
 static/chat.js drives SSE streaming and all interactive behavior
@@ -233,7 +233,7 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
                     Span("Investor Relations", cls="cat-name"),
                     Span("1", cls="cat-count"),
                     Span("▸", cls="cat-arrow"),
-                    cls="cat-toggle",
+                    cls="cat-toggle open",
                     onclick="toggleGroup('sec-investor-relations')",
                     id="btn-sec-investor-relations",
                     type="button",
@@ -242,7 +242,7 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
                     A(Span("✦", cls="bottom-nav-icon"), Span("Press Release Creator", cls="bottom-nav-label"),
                       href="/app/investor-relations/press-release",
                       cls=f"bottom-nav-link{' active' if current_path.startswith('/app/investor-relations/press-release') else ''}"),
-                    cls="agent-list", id="sec-investor-relations",
+                    cls="agent-list open", id="sec-investor-relations",
                 ),
                 cls="agent-group",
             ),
@@ -531,12 +531,6 @@ def center_pane(*, messages: list[dict] | None = None,
                    id="share-chat-btn", cls="chat-action-btn",
                    onclick="shareChat()", type="button"),
         )
-        header_actions += [
-            Button("News", id="news-btn", cls="news-toggle-btn",
-                   onclick="toggleNewsPane()", type="button"),
-            Button("Artifact", id="artifact-btn", cls="artifact-toggle-btn",
-                   onclick="toggleArtifactPane()", type="button"),
-        ]
 
     children = [
         Div(
@@ -581,35 +575,15 @@ def center_pane(*, messages: list[dict] | None = None,
 
 # ───── Right pane ────────────────────────────────────────────────────
 
-def right_pane():
+def right_pane(*, open_by_default: bool = False):
     return Div(
         Div(
             Div(
-                Div(
-                    Button("Artifact", id="rpane-tab-artifact", cls="rpane-tab active",
-                           onclick="switchRightTab('artifact')", type="button"),
-                    Button("News", id="rpane-tab-news", cls="rpane-tab",
-                           onclick="switchRightTab('news')", type="button"),
-                    cls="rpane-tabs",
-                ),
-                Span("", id="artifact-subtitle", cls="right-subtitle"),
+                H3("News", cls="right-title"),
+                Span("Market intelligence", cls="right-subtitle"),
                 cls="right-header-left",
             ),
-            Button("✕", cls="right-close", onclick="closeRightPane()", type="button"),
             cls="right-header",
-        ),
-        # Artifact body
-        Div(
-            Div(
-                Div("◈", cls="artifact-empty-icon"),
-                P("Artifacts appear here as agents produce them — company profiles, "
-                  "DCF tables, match-score matrices, deep-research citations, IC memo previews.",
-                  cls="artifact-empty-text"),
-                id="artifact-empty",
-                cls="artifact-empty",
-            ),
-            Div(id="artifact-body", cls="artifact-body", style="display:none"),
-            id="rpane-content-artifact", cls="right-body",
         ),
         # News body (HTMX auto-refresh)
         Div(
@@ -624,7 +598,7 @@ def right_pane():
                 hx_trigger="load, every 1800s",
                 hx_swap="innerHTML",
                 hx_indicator="#news-loading"),
-            id="rpane-content-news", cls="right-body", style="display:none",
+            id="rpane-content-news", cls="right-body",
         ),
-        id="right-pane", cls="right-pane",
+        id="right-pane", cls=f"right-pane{' open' if open_by_default else ''}",
     )

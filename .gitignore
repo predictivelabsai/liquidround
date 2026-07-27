@@ -212,7 +212,11 @@ screenshots/
 
 # Local Playwright MCP workspace
 .playwright-mcp/
+.playwright-cli/
 .digest_cache.json
+
+# Local Coolify credentials (never commit)
+coolify.finespresso.org
 
 # Baltic company databases (too large for git — copy from pehero/data/)
 data/ee_companies.json
