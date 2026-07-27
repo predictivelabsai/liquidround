@@ -1,0 +1,11 @@
+{
+  "test": "signin_page_content",
+  "checks": {
+    "has_google_btn": true,
+    "has_form": true,
+    "has_register_link": true,
+    "has_forgot_link": true,
+    "has_branding": true,
+    "has_predictive_labs": true
+  }
+}

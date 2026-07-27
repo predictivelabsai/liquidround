@@ -1,8 +1,8 @@
-"""Instructions page — edit + save per-agent system prompts.
+"""Skills page — edit + save per-agent system prompts.
 
-/app/instructions              → list all agents
-/app/instructions/<slug>       → WYSIWYG editor (default) + markdown toggle + version history
-POST /app/instructions/<slug>  → persist to file + liquidround.prompt_versions
+/app/skills              → list all agent skills
+/app/skills/<slug>       → WYSIWYG editor (default) + markdown toggle + version history
+POST /app/skills/<slug>  → persist to file + liquidround.prompt_versions
 
 API:
 GET  /app/api/prompt-versions/<slug>       → version list
@@ -21,6 +21,7 @@ from fasthtml.common import (
 )
 from starlette.requests import Request
 from starlette.responses import JSONResponse
+from starlette.responses import RedirectResponse
 
 from agents.registry import AGENTS, AGENTS_BY_SLUG
 
@@ -110,7 +111,7 @@ def _prompt_db_get(version_id: int) -> dict | None:
 
 # ── List page ──────────────────────────────────────────────────────────
 
-@ar("/app/instructions")
+@ar("/app/skills")
 def instructions_home(session):
     from components.chat_shell import left_pane, right_pane
 
@@ -142,19 +143,19 @@ def instructions_home(session):
                 Span(f"{size}b" if exists else "missing", cls="instr-size"),
                 cls="instr-row",
             ),
-            href=f"/app/instructions/{a.slug}",
+            href=f"/app/skills/{a.slug}",
             cls="instr-link",
         ))
 
     return (
-        Title("Instructions · LiquidRound"),
+        Title("Skills · LiquidRound"),
         Div(cls="left-overlay", id="left-overlay", onclick="toggleLeftPane()"),
         Div(
             left_pane(
                 user_email=email,
                 sessions=sessions_list,
                 current_sid="",
-                current_path="/app/instructions",
+                current_path="/app/skills",
                 current_currency=session.get("currency", "EUR"),
                 current_role=session.get("role", "buyer"),
             ),
@@ -162,7 +163,7 @@ def instructions_home(session):
                 Div(
                     Div(
                         Button("☰", cls="mobile-menu-btn", onclick="toggleLeftPane()", type="button"),
-                        Span("Instructions", cls="chat-header-title"),
+                        Span("Skills", cls="chat-header-title"),
                         Span("·", cls="chat-header-dot"),
                         Span(f"{len(AGENTS)} agents", cls="chat-header-agent"),
                         cls="chat-header-left",
@@ -170,7 +171,7 @@ def instructions_home(session):
                     cls="chat-header",
                 ),
                 Div(
-                    P("Edit system prompts for each agent. Changes take effect immediately.",
+                    P("Manage the skills and operating instructions used by each agent. Changes take effect immediately.",
                       cls="instr-intro"),
                     *items,
                     cls="instr-list",
@@ -186,7 +187,7 @@ def instructions_home(session):
 
 # ── Editor page ────────────────────────────────────────────────────────
 
-@ar("/app/instructions/{slug}")
+@ar("/app/skills/{slug}")
 def instruction_edit(session, slug: str):
     from components.chat_shell import left_pane, right_pane
 
@@ -194,7 +195,7 @@ def instruction_edit(session, slug: str):
     if not spec:
         return Title("Not found"), Div(
             H1("Agent not found"),
-            A("Back", href="/app/instructions"),
+            A("Back", href="/app/skills"),
             style="padding:2rem; color:var(--ink);",
         )
 
@@ -229,7 +230,7 @@ def instruction_edit(session, slug: str):
                 user_email=email,
                 sessions=sessions_list,
                 current_sid="",
-                current_path="/app/instructions",
+                current_path="/app/skills",
                 current_currency=session.get("currency", "EUR"),
                 current_role=session.get("role", "buyer"),
             ),
@@ -237,7 +238,7 @@ def instruction_edit(session, slug: str):
                 Div(
                     Div(
                         Button("☰", cls="mobile-menu-btn", onclick="toggleLeftPane()", type="button"),
-                        A("← Instructions", href="/app/instructions", cls="back-to-chat-btn"),
+                        A("← Skills", href="/app/skills", cls="back-to-chat-btn"),
                         Span("·", cls="chat-header-dot"),
                         Span(spec.name, cls="chat-header-title"),
                         Span(f"v{vc}", cls="instr-version-badge", id="version-badge") if vc else
@@ -270,7 +271,7 @@ def instruction_edit(session, slug: str):
                         Div(id="save-status", cls="save-status"),
                         Button("Save", type="button", cls="chat-send instr-save",
                                onclick="savePrompt()"),
-                        A("Cancel", href="/app/instructions", cls="back-to-chat-btn"),
+                        A("Cancel", href="/app/skills", cls="back-to-chat-btn"),
                         cls="instr-actions",
                     ),
                     Input(type="hidden", id="instr-slug", value=slug),
@@ -288,7 +289,7 @@ def instruction_edit(session, slug: str):
 
 # ── Save endpoint ──────────────────────────────────────────────────────
 
-@ar("/app/instructions/{slug}", methods=["POST"])
+@ar("/app/skills/{slug}", methods=["POST"])
 async def instruction_save(request: Request, slug: str):
     data = await request.json()
     content = data.get("content") or ""
@@ -313,6 +314,17 @@ async def instruction_save(request: Request, slug: str):
         pass
 
     return JSONResponse({"ok": True, "version_count": vc, "version_id": version_id})
+
+
+# Legacy bookmarks remain valid while Skills is the canonical URL.
+@ar("/app/instructions")
+def instructions_legacy():
+    return RedirectResponse("/app/skills", status_code=308)
+
+
+@ar("/app/instructions/{slug}")
+def instruction_legacy(slug: str):
+    return RedirectResponse(f"/app/skills/{slug}", status_code=308)
 
 
 # ── Version API ────────────────────────────────────────────────────────

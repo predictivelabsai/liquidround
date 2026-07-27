@@ -1,0 +1,56 @@
+{
+  "test": "comprehensive_company_profiles",
+  "results": [
+    {
+      "company": {
+        "ticker": "CRM",
+        "name": "Salesforce Inc."
+      },
+      "yfinance_data": {
+        "market_cap": 135863910400,
+        "revenue_ttm": 42829000704,
+        "employees": 83334,
+        "sector": "Technology",
+        "industry": "Software - Application",
+        "business_summary": null,
+        "website": "https://www.salesforce.com"
+      },
+      "polygon_data": null,
+      "exa_search_data": null
+    },
+    {
+      "company": {
+        "ticker": "SNOW",
+        "name": "Snowflake Inc."
+      },
+      "yfinance_data": {
+        "market_cap": 80681549824,
+        "revenue_ttm": 5032822784,
+        "employees": 9250,
+        "sector": "Technology",
+        "industry": "Software - Application",
+        "business_summary": null,
+        "website": "https://www.snowflake.com"
+      },
+      "polygon_data": null,
+      "exa_search_data": null
+    },
+    {
+      "company": {
+        "ticker": "CRWD",
+        "name": "CrowdStrike Holdings"
+      },
+      "yfinance_data": {
+        "market_cap": 173816856576,
+        "revenue_ttm": 5094199808,
+        "employees": 11157,
+        "sector": "Technology",
+        "industry": "Software - Infrastructure",
+        "business_summary": null,
+        "website": "https://www.crowdstrike.com"
+      },
+      "polygon_data": null,
+      "exa_search_data": null
+    }
+  ]
+}

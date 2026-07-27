@@ -1,0 +1,26 @@
+{
+  "test": "scoring_agent",
+  "status": "success",
+  "execution_time": 15.91,
+  "composite_score": 62,
+  "recommendation": "CAUTIOUS",
+  "dimensions": {
+    "revenue_synergies": 7,
+    "cost_synergies": 5,
+    "strategic_fit": 8,
+    "cultural_fit": 4,
+    "financial_health": 8,
+    "integration_risk": 4,
+    "market_timing": 6
+  },
+  "key_risks": [
+    "Antitrust scrutiny on CRM market concentration",
+    "Significant customer and employee overlap driving churn",
+    "Cultural integration failure typical in Salesforce acquisitions"
+  ],
+  "next_steps": [
+    "Conduct detailed customer overlap and retention modeling",
+    "Assess regulatory filing requirements with FTC",
+    "Run cultural compatibility workshops with both leadership teams"
+  ]
+}

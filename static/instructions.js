@@ -152,7 +152,7 @@ async function savePrompt() {
         status.textContent = 'Saving…';
         status.className = 'save-status saving';
 
-        var resp = await fetch('/app/instructions/' + encodeURIComponent(slug), {
+        var resp = await fetch('/app/skills/' + encodeURIComponent(slug), {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({content: content}),

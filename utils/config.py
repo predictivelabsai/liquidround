@@ -1,7 +1,7 @@
 """
 Configuration management for LiquidRound system.
 """
-VERSION = "0.4.0"
+VERSION = "0.5.0"
 
 import os
 from typing import Dict, Any, Optional

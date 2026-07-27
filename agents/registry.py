@@ -1,4 +1,4 @@
-"""Central registry of all 25 LiquidRound specialist agents.
+"""Central registry of all LiquidRound specialist agents.
 
 Each `AgentSpec` is the source of truth for:
   - Routing (prefix, keywords)
@@ -399,6 +399,18 @@ AGENTS: tuple[AgentSpec, ...] = (
             "releases: management changes at Baltic companies",
         ),
     ),
+    AgentSpec(
+        slug="press_release_writer", name="Press Release Writer",
+        category="public_markets", audience="shared", icon="✦", prefix="write-release:",
+        one_liner="Research a topic and draft a publication-ready investor relations press release.",
+        description="Researches companies and current developments on the web, then drafts factual, publication-ready investor relations releases with headlines, quotes, boilerplates, contacts, and source notes.",
+        example_prompts=(
+            "write-release: draft a partnership announcement for Acme and Northstar",
+            "Create an investor relations release about our new CEO appointment",
+            "Research Enefit Green and draft a release about a new solar project",
+            "Draft a product launch press release with a quote from the CEO",
+        ),
+    ),
 )
 
 
@@ -424,4 +436,4 @@ def by_audience(audience: str) -> list[AgentSpec]:
     return [a for a in AGENTS if a.audience == audience or a.audience == "shared"]
 
 
-assert len(AGENTS) == 25, f"expected 25 agents, got {len(AGENTS)}"
+assert len(AGENTS) == 26, f"expected 26 agents, got {len(AGENTS)}"

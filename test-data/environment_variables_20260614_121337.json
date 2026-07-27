@@ -1,0 +1,22 @@
+{
+  "test": "environment_variables",
+  "success": false,
+  "variables": {
+    "OPENAI_API_KEY": {
+      "present": false,
+      "length": 0,
+      "starts_with": ""
+    },
+    "POLYGON_API_KEY": {
+      "present": false,
+      "length": 0,
+      "starts_with": null
+    },
+    "EXA_API_KEY": {
+      "present": true,
+      "length": 36,
+      "starts_with": "[redacted]"
+    }
+  },
+  "all_present": false
+}

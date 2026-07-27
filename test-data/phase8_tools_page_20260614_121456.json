@@ -1,0 +1,13 @@
+{
+  "test": "tools_page",
+  "status": 200,
+  "tools_found": {
+    "Deal Room": true,
+    "CIM Generator": true,
+    "LOI": true,
+    "Due Diligence": true,
+    "Regulatory": true,
+    "Stakeholder": true,
+    "Integration Playbook": true
+  }
+}

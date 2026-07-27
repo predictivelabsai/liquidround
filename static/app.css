@@ -626,6 +626,41 @@ html, body {
 .app.pane-closed .copilot-expand-btn { display: inline-block; }
 
 /* ───── Instructions page ───── */
+
+/* ───── Investor Relations press release creator ───── */
+.ir-scroll { overflow-y:auto; height:calc(100vh - 48px); }
+.ir-wrap { max-width:980px; margin:0 auto; padding:32px 28px 80px; }
+.ir-title { font-size:1.65rem; font-weight:700; color:var(--ink); margin:0 0 8px; }
+.ir-intro { color:var(--ink-muted); line-height:1.6; max-width:760px; margin-bottom:24px; }
+.ir-form,.ir-result { border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:24px; }
+.ir-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.ir-field { margin-bottom:16px; min-width:0; }
+.ir-label { display:block; font-size:.78rem; font-weight:650; color:var(--ink); margin-bottom:6px; }
+.ir-input,.ir-output { width:100%; color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px 12px; font:inherit; box-sizing:border-box; }
+.ir-input:focus,.ir-output:focus { outline:2px solid rgba(37,99,235,.25); border-color:#2563eb; }
+.ir-help { color:var(--ink-muted); font-size:.72rem; margin:5px 0 0; }
+.ir-generate { margin-top:4px; padding:10px 18px; }
+.ir-loading { margin:20px 0; color:var(--ink-muted); }
+.ir-result { margin-top:24px; }
+.ir-result-head { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:14px; }
+.ir-result-title { font-size:1.1rem; color:var(--ink); margin:5px 0; }
+.ir-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; align-items:center; gap:7px; }
+.ir-actions form { margin:0; }
+.ir-action { border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:7px; padding:7px 10px; font-size:.75rem; cursor:pointer; }
+.ir-save { color:#2563eb; }
+.ir-output { min-height:520px; resize:vertical; font-family:"JetBrains Mono",monospace; font-size:.8rem; line-height:1.55; }
+.ir-sources { display:flex; flex-direction:column; gap:5px; margin-top:18px; }
+.ir-source { color:#2563eb; font-size:.78rem; overflow-wrap:anywhere; }
+.ir-success { color:#16a34a; font-size:.75rem; }
+.ir-error { color:#dc2626; font-size:.75rem; }
+@media (max-width:700px) {
+  .ir-wrap { padding:22px 14px 60px; }
+  .ir-grid { grid-template-columns:1fr; gap:0; }
+  .ir-form,.ir-result { padding:16px; }
+  .ir-result-head { display:block; }
+  .ir-actions { justify-content:flex-start; margin-top:10px; }
+  .ir-output { min-height:420px; }
+}
 :root { --accent-deep: #D97706; }
 
 .instr-list { padding: 1rem 1.2rem; max-width: 820px; margin: 0 auto; width: 100%; }

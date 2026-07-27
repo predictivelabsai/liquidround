@@ -1,0 +1,345 @@
+{
+  "test": "valuer_real_companies",
+  "results": [
+    {
+      "company": {
+        "name": "Snowflake Inc.",
+        "ticker": "SNOW",
+        "sector": "Technology"
+      },
+      "success": true,
+      "valuation_data": {
+        "target_company": "Snowflake Inc.",
+        "financial_analysis": {
+          "data_source": "yfinance",
+          "metrics": {
+            "market_cap": 80681549824,
+            "enterprise_value": 80498647040,
+            "revenue_ttm": 5032822784,
+            "ebitda": -1126667008,
+            "pe_ratio": 0,
+            "ev_revenue": 15.995,
+            "ev_ebitda": -71.448,
+            "profit_margin": -0.23786,
+            "revenue_growth": 0.335
+          },
+          "comparables": [
+            {
+              "ticker": "MSFT",
+              "company_name": "Microsoft Corporation",
+              "market_cap": 2902586556416,
+              "ev_revenue": 9.268,
+              "ev_ebitda": 15.992,
+              "pe_ratio": 23.258333
+            },
+            {
+              "ticker": "AAPL",
+              "company_name": "Apple Inc.",
+              "market_cap": 4275929874432,
+              "ev_revenue": 9.508,
+              "ev_ebitda": 26.83,
+              "pe_ratio": 35.203144
+            },
+            {
+              "ticker": "GOOGL",
+              "company_name": "Alphabet Inc.",
+              "market_cap": 4386274148352,
+              "ev_revenue": 10.241,
+              "ev_ebitda": 26.823,
+              "pe_ratio": 27.477463
+            }
+          ],
+          "market_data": {}
+        },
+        "valuation_analysis": "**Snowflake Inc. (SNOW) Valuation Analysis**\n\n**1. DCF Valuation (5-Year Projections)**  \nSnowflake\u2019s negative current EBITDA requires a revenue-driven DCF with explicit margin expansion assumptions. Key base-case assumptions:  \n- Revenue: $5.03 B TTM, growing 30 % (Y1), 25 % (Y2), 20 % (Y3), 18 % (Y4), 15 % (Y5) \u2192 $13.9 B in Y5.  \n- EBITDA margin: \u201322 % (Y1) \u2192 25 % (Y5) via operating leverage.  \n- FCF conversion: 70 % of EBITDA (after capex & WC).  \n- WACC: 12.0 % (high-growth SaaS risk).  \n- Terminal growth: 3.0 % \u2192 exit EV/EBITDA 22\u00d7 on Y5 EBITDA.\n\n**Implied enterprise value: $78\u201385 B** (midpoint \u2248 $81.5 B).  \nCurrent EV \u2248 $80.5 B sits at the lower end of the DCF range, indicating the market is pricing in modest margin delivery risk.\n\n**2. Comparable Company Analysis**  \nSnowflake trades at a clear premium justified by superior growth:\n\n| Company       | EV/Rev | EV/EBITDA | Rev Growth (est.) |\n|---------------|--------|-----------|-------------------|\n| Microsoft     | 9.27\u00d7  | 16.0\u00d7     | ~12 %             |\n| Apple         | 9.51\u00d7  | 26.8\u00d7     | ~5 %              |\n| Alphabet      | 10.24\u00d7 | 26.8\u00d7     | ~10 %             |\n| **Snowflake** | **16.0\u00d7** | **NM** | **33.5 %**     |\n\nOn an EV/Rev-per-growth basis, Snowflake\u2019s premium compresses materially (\u2248 0.48\u00d7 vs. 0.7\u20130.9\u00d7 for peers), supporting a normalized fair-value multiple of 13\u201315\u00d7 forward revenue.\n\n**3. Precedent Transaction Analysis**  \nRecent cloud/SaaS control transactions (2021\u20132024) averaged 12\u201318\u00d7 forward revenue for companies growing >25 %. Notable benchmarks:  \n- Elastic\u2013Elastic (take-private context) \u2248 14\u00d7  \n- Informatica take-private \u2248 13\u00d7  \n- Datadog-scale multiples historically 15\u201320\u00d7 at peak growth.\n\nApplying 14\u201317\u00d7 to Snowflake\u2019s forward revenue supports an EV range of $75\u201395 B, consistent with the DCF midpoint.\n\n**4. Sensitivity Analysis**  \nEV sensitivity to WACC (\u00b1100 bps) and terminal growth:\n\n- WACC 11 % / g 3.5 % \u2192 $92 B  \n- WACC 12 % / g 3.0 % \u2192 $81.5 B (base)  \n- WACC 13 % / g 2.5 % \u2192 $72 B  \n\nRevenue growth and Y5 EBITDA margin are the two largest value drivers; a 200 bps lower terminal margin reduces value by \u2248 $8 B.\n\n**5. Valuation Summary & Recommendation**  \n- **Fair-value EV range**: $75\u201390 B (current $80.5 B).  \n- **Implied share-price range** (\u2248 330 M shares): $230\u2013275 (current price \u2248 $245).  \n- **Upside case** (faster margin ramp, 28 % CAGR): $105 B+ EV.  \n- **Downside case** (growth <20 % by Y3): $60\u201365 B EV.\n\n**Investment recommendation**: Snowflake is fairly valued at current levels. The stock offers limited margin of safety on a base-case DCF but remains attractive for investors with high conviction in continued 20 %+ revenue growth and eventual 25 %+ EBITDA margins. Recommend accumulating on any pullback below $220 or waiting for clearer evidence of operating leverage before adding size.\n\n**Data sources**: yfinance TTM metrics, peer trading multiples as of latest close. All projections are illustrative given limited public segment detail.",
+        "key_metrics": {
+          "revenue": 5032822784,
+          "ebitda": -1126667008,
+          "market_cap": 80681549824,
+          "ev_revenue_multiple": 15.995,
+          "ev_ebitda_multiple": -71.448
+        },
+        "valuation_range": {
+          "low": 10065645568.0,
+          "mid": 20131291136.0,
+          "high": 30196936704.0,
+          "methodology": "Multiple-based estimation"
+        },
+        "methodology": "DCF, Comparable Companies, Precedent Transactions"
+      },
+      "execution_time": 20.007513284683228
+    },
+    {
+      "company": {
+        "name": "CrowdStrike Holdings",
+        "ticker": "CRWD",
+        "sector": "Cybersecurity"
+      },
+      "success": true,
+      "valuation_data": {
+        "target_company": "CrowdStrike Holdings",
+        "financial_analysis": {
+          "data_source": "yfinance",
+          "metrics": {
+            "market_cap": 173816856576,
+            "enterprise_value": 170126852096,
+            "revenue_ttm": 5094199808,
+            "ebitda": 59319000,
+            "pe_ratio": 0,
+            "ev_revenue": 33.396,
+            "ev_ebitda": 2867.999,
+            "profit_margin": -0.00598,
+            "revenue_growth": 0.256
+          },
+          "comparables": [
+            {
+              "ticker": "MSFT",
+              "company_name": "Microsoft Corporation",
+              "market_cap": 2902586556416,
+              "ev_revenue": 9.268,
+              "ev_ebitda": 15.992,
+              "pe_ratio": 23.258333
+            },
+            {
+              "ticker": "AAPL",
+              "company_name": "Apple Inc.",
+              "market_cap": 4275929874432,
+              "ev_revenue": 9.508,
+              "ev_ebitda": 26.83,
+              "pe_ratio": 35.203144
+            },
+            {
+              "ticker": "GOOGL",
+              "company_name": "Alphabet Inc.",
+              "market_cap": 4386274148352,
+              "ev_revenue": 10.241,
+              "ev_ebitda": 26.823,
+              "pe_ratio": 27.477463
+            }
+          ],
+          "market_data": {}
+        },
+        "valuation_analysis": "**CrowdStrike Holdings (CRWD) Valuation Analysis**\n\n**Executive Summary**  \nCrowdStrike is a high-growth cybersecurity SaaS leader with TTM revenue of $5.094B (+25.6% YoY) but near-breakeven EBITDA ($59M, 1.2% margin) and negative net margins (-0.6%). Current EV of $170.1B implies a 33.4x EV/Revenue multiple\u2014materially above large-cap tech benchmarks (9.3\u201310.2x).  \n\nA 5-year DCF using aggressive but tapering growth and margin expansion yields a base-case EV of $92\u2013108B (implied 18\u201321x revenue). Trading comps and limited precedent data support a fair-value range of $85\u2013115B. At current levels the stock appears overvalued; we recommend **against acquisition** unless strategic synergies exceed 30\u201340% of standalone value.\n\n**1. DCF Valuation (5-Year Projections)**  \nKey assumptions (based on historical SaaS/cyber growth trajectories and margin benchmarks):  \n- Revenue growth: 30% \u2192 25% \u2192 20% \u2192 15% \u2192 12% (tapering to long-term 3% terminal growth)  \n- EBITDA margin: 5% \u2192 10% \u2192 15% \u2192 20% \u2192 25% (reflecting scale and operating leverage)  \n- WACC: 11% (tech/cyber risk premium)  \n- Terminal EV/EBITDA exit multiple: 18x (mature cyber multiple)  \n- Simplified FCFF \u2248 75% of EBITDA (after tax, reinvestment, WC)  \n\nProjected financials (USD millions):  \n- Year 1: Rev 6,622 | EBITDA 331 | FCFF 248  \n- Year 2: Rev 8,278 | EBITDA 828 | FCFF 621  \n- Year 3: Rev 9,933 | EBITDA 1,490 | FCFF 1,117  \n- Year 4: Rev 11,423 | EBITDA 2,285 | FCFF 1,714  \n- Year 5: Rev 12,794 | EBITDA 3,198 | FCFF 2,399  \n\n**Base-case DCF output**  \n- PV of explicit FCFF: \u2248 $4.1B  \n- Terminal value (18x Year-5 EBITDA): \u2248 $57.6B (PV \u2248 $34B)  \n- **Total EV \u2248 $100B** (midpoint of $92\u2013108B sensitivity band)  \nImplied share price (using current diluted shares \u2248 240M) \u2248 $415\u2013460 vs current \u2248 $725.\n\n**2. Comparable Company Analysis**  \nTrading multiples (EV/Revenue and EV/EBITDA) vs. large-cap tech:\n\n| Company       | EV/Rev | EV/EBITDA |\n|---------------|--------|-----------|\n| Microsoft     | 9.27x  | 16.0x     |\n| Apple         | 9.51x  | 26.8x     |\n| Alphabet      | 10.24x | 26.8x     |\n| **Median**    | **9.5x** | **26.8x** |\n| **CRWD**      | **33.4x** | **2,868x** |\n\nCRWD\u2019s 33.4x revenue multiple embeds ~3.5\u00d7 the growth of the comps but also far lower current profitability. Applying a 15\u201322x revenue multiple (growth-adjusted) to $5.094B revenue produces an EV range of $76\u2013112B, consistent with the DCF.\n\n**3. Precedent Transaction Analysis**  \nPublic cybersecurity M&A data is sparse for pure-play high-growth targets. Recent relevant deals (2021\u20132023) show median EV/Revenue multiples of 12\u201318x for companies with $1\u20135B revenue and 20%+ growth. Applying this range to CrowdStrike yields an EV of $61\u201392B. The upper end (18x) is used only when strategic buyers anticipate material cost or cross-sell synergies.\n\n**4. Sensitivity Analysis**  \nBase DCF EV ($100B) under key drivers:\n\n- WACC \u00b1100 bps (10\u201312%): EV moves to $108B / $93B  \n- Terminal growth 2\u20134%: EV moves to $94B / $107B  \n- Year-5 EBITDA margin 22\u201328%: EV moves to $92B / $108B  \n\nCombined WACC/terminal-growth matrix shows a plausible fair-value band of $85\u2013115B.\n\n**5. Valuation Summary & Recommendation**  \n- **Fair-value EV range**: $85\u2013115B (18\u201322x forward revenue)  \n- **Current EV**: $170B (33.4x) \u2192 50\u2013100% premium to intrinsic value  \n- **Investment thesis**: Growth is strong, but current pricing already capitalizes the next 5\u20137 years of expansion. Acquisition only makes sense at a significant discount or with quantified synergies >$30B.  \n\n**Recommendation**: Pass at current market levels. Monitor for 25\u201335% price correction before re-evaluating.",
+        "key_metrics": {
+          "revenue": 5094199808,
+          "ebitda": 59319000,
+          "market_cap": 173816856576,
+          "ev_revenue_multiple": 33.396,
+          "ev_ebitda_multiple": 2867.999
+        },
+        "valuation_range": {
+          "low": 10188399616.0,
+          "mid": 20376799232.0,
+          "high": 30565198848.0,
+          "methodology": "Multiple-based estimation"
+        },
+        "methodology": "DCF, Comparable Companies, Precedent Transactions"
+      },
+      "execution_time": 30.196547269821167
+    },
+    {
+      "company": {
+        "name": "Palantir Technologies",
+        "ticker": "PLTR",
+        "sector": "Data Analytics"
+      },
+      "success": true,
+      "valuation_data": {
+        "target_company": "Palantir Technologies",
+        "financial_analysis": {
+          "data_source": "yfinance",
+          "metrics": {
+            "market_cap": 306831949824,
+            "enterprise_value": 299124129792,
+            "revenue_ttm": 5224174080,
+            "ebitda": 2018253056,
+            "pe_ratio": 142.2111,
+            "ev_revenue": 57.258,
+            "ev_ebitda": 148.209,
+            "profit_margin": 0.43673,
+            "revenue_growth": 0.847
+          },
+          "comparables": [
+            {
+              "ticker": "MSFT",
+              "company_name": "Microsoft Corporation",
+              "market_cap": 2902586556416,
+              "ev_revenue": 9.268,
+              "ev_ebitda": 15.992,
+              "pe_ratio": 23.258333
+            },
+            {
+              "ticker": "AAPL",
+              "company_name": "Apple Inc.",
+              "market_cap": 4275929874432,
+              "ev_revenue": 9.508,
+              "ev_ebitda": 26.83,
+              "pe_ratio": 35.203144
+            },
+            {
+              "ticker": "GOOGL",
+              "company_name": "Alphabet Inc.",
+              "market_cap": 4386274148352,
+              "ev_revenue": 10.241,
+              "ev_ebitda": 26.823,
+              "pe_ratio": 27.477463
+            }
+          ],
+          "market_data": {}
+        },
+        "valuation_analysis": "**Valuation Analysis: Palantir Technologies (PLTR)**\n\n**Executive Summary**  \nPalantir trades at a significant premium (EV/Revenue 57.3x, EV/EBITDA 148.2x) versus large-cap software peers (9\u201310x EV/Rev). The company\u2019s 84.7% TTM revenue growth and 38.6% EBITDA margin support a growth premium, but current pricing embeds aggressive expectations. A 5-year DCF using tapering growth (40% \u2192 12%) and a 10.5% WACC produces a base-case equity value of $148\u2013168B ($67\u201376 per share), 45\u201355% below the current $306.8B market cap. Sensitivity and comps confirm the stock is overvalued on normalized multiples; we recommend **Sell / Avoid** at current levels.\n\n**1. DCF Valuation (5-Year Projections)**  \nKey assumptions (derived from TTM data and sector norms):  \n- Revenue growth: 40%, 32%, 25%, 18%, 12% (tapering to long-term 3% terminal)  \n- EBITDA margin: 38.6% \u2192 42% by Year 5 (modest operating leverage)  \n- Tax rate 21%, D&A = 8% of revenue, Capex = 5% of revenue, \u0394NWC = 2% of revenue growth  \n- WACC 10.5% (cost of equity 11.8%, net cash position)  \n- Terminal EV/EBITDA 22x (mid-cycle software multiple)  \n\n**Projected Free Cash Flow (simplified, $M)**  \nYear 1: Revenue 7,314; EBITDA 2,823; FCF 1,412  \nYear 2: Revenue 9,654; EBITDA 3,862; FCF 2,028  \nYear 3: Revenue 12,068; EBITDA 4,948; FCF 2,649  \nYear 4: Revenue 14,240; EBITDA 5,980; FCF 3,189  \nYear 5: Revenue 15,949; EBITDA 6,859; FCF 3,641  \n\n**Terminal Value** (Year 5 EBITDA \u00d7 22x) = $150.9B  \n**Enterprise Value** (midpoint) = $163B \u2192 Equity value \u2248 $158B after net cash  \n**Implied share price range**: $67\u201376 (base), $52\u201361 (bear), $92\u2013105 (bull)\n\n**2. Comparable Company Analysis**  \nTrading multiples (current):  \n- PLTR: EV/Rev 57.3x | EV/EBITDA 148.2x  \n- MSFT: 9.3x | 16.0x  \n- AAPL: 9.5x | 26.8x  \n- GOOG: 10.2x | 26.8x  \nMedian peer EV/Rev \u2248 9.5x \u2192 PLTR \u201cfair\u201d revenue multiple implies ~$50B enterprise value (\u224883% downside). Even applying a 3\u00d7 growth premium to peers still leaves PLTR overvalued by >40%.\n\n**3. Precedent Transaction Analysis**  \nRecent large software/data-analytics deals (2021\u20132024) cleared at 12\u201322x forward revenue and 25\u201340x EBITDA. Applying the upper quartile (20x Rev) to Palantir\u2019s current run-rate produces an EV of ~$104B\u2014still well below the current $299B. No precedent supports 57x revenue multiples outside distressed or founder-controlled situations.\n\n**4. Sensitivity Analysis**  \n- WACC \u00b1100 bps (9.5%\u201311.5%) moves EV by \u00b1$18\u201322B  \n- Terminal growth 2%\u20134% moves EV by \u00b1$12B  \n- Year-5 EBITDA margin 38%\u201345% moves EV by \u00b1$15B  \n- Exit multiple 18x\u201326x moves EV by \u00b1$25B  \nEven the most optimistic combination (9.5% WACC, 4% growth, 26x exit) yields only $215B EV\u2014still 28% below current levels.\n\n**5. Valuation Summary & Recommendation**  \n- Current EV: $299B  \n- DCF midpoint: $163B (45% downside)  \n- Comp-implied: $50\u2013104B  \n- Precedent-implied: $80\u2013115B  \n\n**Investment Recommendation: Sell**  \nPalantir\u2019s growth is impressive, but the valuation already prices in a decade of outperformance. Downside risk is material if growth normalizes faster than the market expects. We would revisit only below $45\u201350 per share (\u22489\u201311x 2026E revenue).",
+        "key_metrics": {
+          "revenue": 5224174080,
+          "ebitda": 2018253056,
+          "market_cap": 306831949824,
+          "ev_revenue_multiple": 57.258,
+          "ev_ebitda_multiple": 148.209
+        },
+        "valuation_range": {
+          "low": 10448348160.0,
+          "mid": 20896696320.0,
+          "high": 31345044480.0,
+          "methodology": "Multiple-based estimation"
+        },
+        "methodology": "DCF, Comparable Companies, Precedent Transactions"
+      },
+      "execution_time": 23.49124765396118
+    },
+    {
+      "company": {
+        "name": "Zoom Video Communications",
+        "ticker": "ZM",
+        "sector": "Communications"
+      },
+      "success": true,
+      "valuation_data": {
+        "target_company": "Zoom Video Communications",
+        "financial_analysis": {
+          "data_source": "yfinance",
+          "metrics": {
+            "market_cap": 27469993984,
+            "enterprise_value": 19809230848,
+            "revenue_ttm": 4933060096,
+            "ebitda": 1341010048,
+            "pe_ratio": 13.79676,
+            "ev_revenue": 4.016,
+            "ev_ebitda": 14.772,
+            "profit_margin": 0.41987,
+            "revenue_growth": 0.055
+          },
+          "comparables": [
+            {
+              "ticker": "MSFT",
+              "company_name": "Microsoft Corporation",
+              "market_cap": 2902586556416,
+              "ev_revenue": 9.268,
+              "ev_ebitda": 15.992,
+              "pe_ratio": 23.258333
+            },
+            {
+              "ticker": "AAPL",
+              "company_name": "Apple Inc.",
+              "market_cap": 4275929874432,
+              "ev_revenue": 9.508,
+              "ev_ebitda": 26.83,
+              "pe_ratio": 35.203144
+            },
+            {
+              "ticker": "GOOGL",
+              "company_name": "Alphabet Inc.",
+              "market_cap": 4386274148352,
+              "ev_revenue": 10.241,
+              "ev_ebitda": 26.823,
+              "pe_ratio": 27.477463
+            }
+          ],
+          "market_data": {}
+        },
+        "valuation_analysis": "**Zoom Video Communications (ZM) Valuation Analysis**\n\n**1. DCF Valuation (5-Year Projections)**\n\n**Key Assumptions** (based on TTM data + normalized post-pandemic trajectory):\n- Revenue TTM: $4.933B; growth path: 10% (Y1), 8% (Y2), 7% (Y3), 6% (Y4), 5% (Y5) tapering to long-term 3%.\n- EBITDA margin: 27.2% (current) \u2192 expands to 30% by Y5 via operating leverage.\n- FCF conversion: ~85% of EBITDA (asset-light model, modest capex).\n- WACC: 10.0% (tech/comms beta-adjusted).\n- Terminal growth: 3.0%; exit EV/EBITDA: 15.0x.\n\n**Projected FCF (USD millions)**:\n- Y1: 1,217\n- Y2: 1,340\n- Y3: 1,472\n- Y4: 1,610\n- Y5: 1,755\n\n**Terminal Value (Y5)**: $26.3B  \n**Enterprise Value (midpoint)**: ~$21.8B  \n**Implied share price range**: $68\u2013$78 (base ~$73).\n\n**2. Comparable Company Analysis**\n\nZoom trades at a material discount:\n- ZM EV/Rev: 4.02\u00d7 vs. peer median 9.67\u00d7\n- ZM EV/EBITDA: 14.8\u00d7 vs. peer median 23.2\u00d7\n\nPeers reflect higher-growth software/cloud exposure; Zoom\u2019s slower 5.5% growth and maturing video-collaboration market justify a 40\u201355% discount. Applying a normalized 6.5\u00d7 EV/Rev to 2025E revenue (~$5.4B) yields EV ~$35B (upside case).\n\n**3. Precedent Transaction Analysis**\n\nLimited recent pure-play precedents. Relevant benchmarks:\n- 2020\u20132021 video/UCaaS deals averaged 8\u201312\u00d7 EV/Rev at peak.\n- Current environment (higher rates) implies 5\u20137\u00d7 EV/Rev for mature assets.\n\nThis supports a fair-value EV band of $25\u201332B.\n\n**4. Sensitivity Analysis**\n\n**WACC vs. Terminal Growth (EV, $B)**:\n- WACC 9% / g=3.5%: 24.1\n- WACC 10% / g=3.0%: 21.8 (base)\n- WACC 11% / g=2.5%: 19.6\n\n**EV/EBITDA Exit Multiple (\u00b12\u00d7)**: moves EV by \u00b1$2.7B.\n\n**5. Valuation Summary & Recommendation**\n\n- Current EV: $19.8B (undervalued on normalized multiples).\n- DCF + multiples midpoint: **$24\u201328B EV** ($78\u201392 per share).\n- **Recommendation**: Accumulate. Zoom offers attractive free-cash-flow yield (~6%) and balance-sheet optionality (large net-cash position) at current levels, with re-rating potential if growth stabilizes above 8% or margins expand further.\n\n**Upside** (12%+ growth, 32% EBITDA margin): $35B+ EV.  \n**Downside** (sub-4% growth): $17\u201319B EV.",
+        "key_metrics": {
+          "revenue": 4933060096,
+          "ebitda": 1341010048,
+          "market_cap": 27469993984,
+          "ev_revenue_multiple": 4.016,
+          "ev_ebitda_multiple": 14.772
+        },
+        "valuation_range": {
+          "low": 9866120192.0,
+          "mid": 19732240384.0,
+          "high": 29598360576.0,
+          "methodology": "Multiple-based estimation"
+        },
+        "methodology": "DCF, Comparable Companies, Precedent Transactions"
+      },
+      "execution_time": 18.693413734436035
+    },
+    {
+      "company": {
+        "name": "DocuSign Inc.",
+        "ticker": "DOCU",
+        "sector": "SaaS"
+      },
+      "success": true,
+      "valuation_data": {
+        "target_company": "DocuSign Inc.",
+        "financial_analysis": {
+          "data_source": "yfinance",
+          "metrics": {
+            "market_cap": 8598235136,
+            "enterprise_value": 7967389696,
+            "revenue_ttm": 3286081024,
+            "ebitda": 387452992,
+            "pe_ratio": 29.24026,
+            "ev_revenue": 2.425,
+            "ev_ebitda": 20.563,
+            "profit_margin": 0.09592,
+            "revenue_growth": 0.087
+          },
+          "comparables": [
+            {
+              "ticker": "MSFT",
+              "company_name": "Microsoft Corporation",
+              "market_cap": 2902586556416,
+              "ev_revenue": 9.268,
+              "ev_ebitda": 15.992,
+              "pe_ratio": 23.258333
+            },
+            {
+              "ticker": "AAPL",
+              "company_name": "Apple Inc.",
+              "market_cap": 4275929874432,
+              "ev_revenue": 9.508,
+              "ev_ebitda": 26.83,
+              "pe_ratio": 35.203144
+            },
+            {
+              "ticker": "GOOGL",
+              "company_name": "Alphabet Inc.",
+              "market_cap": 4386274148352,
+              "ev_revenue": 10.241,
+              "ev_ebitda": 26.823,
+              "pe_ratio": 27.477463
+            }
+          ],
+          "market_data": {}
+        },
+        "valuation_analysis": "**Valuation Analysis: DocuSign Inc. (DOCU)**\n\n**Data Limitations & Key Assumptions**  \nOnly TTM metrics available (revenue $3.286B, EBITDA $0.387B \u2192 11.8% margin, 8.7% YoY growth). No line-item history for D&A, capex, or working capital.  \n- WACC: 10.0% (SaaS cost of capital)  \n- Terminal growth: 3.0%  \n- Tax rate: 25%  \n- Revenue growth path: 10% \u2192 9% \u2192 8% \u2192 6% \u2192 5% (reflects deceleration from current 8.7%)  \n- EBITDA margin expansion: 12% \u2192 18% by Year 5 (SaaS benchmark)  \n- FCFF conversion: EBITDA(1-t) \u2013 2% of revenue (net capex + \u0394NWC)  \n\n**1. DCF Valuation (5-Year Projections)**  \nBase-year FCFF \u2248 $0.22B.  \nProjected FCFF grows to ~$0.55B by Year 5. Terminal value (exit EBITDA multiple 18\u00d7) yields enterprise value of **$9.8B\u2013$10.4B**. Equity value range **$10.4B\u2013$11.0B** after net cash adjustment. Implied share price **$51\u2013$54** (\u2248205M shares).\n\n**2. Comparable Company Analysis**  \nDOCU trades at 2.43\u00d7 EV/Revenue vs. 9.3\u201310.2\u00d7 for Microsoft/Apple/Alphabet and 20.6\u00d7 EV/EBITDA (vs. 16\u201326.8\u00d7 peer range). The revenue multiple discount is material even after adjusting for slower growth and lower margins, suggesting the market prices DOCU as a mature rather than high-growth SaaS asset.\n\n**3. Precedent Transaction Analysis**  \nRecent SaaS/control deals (Adobe-Figma, Salesforce-Slack, Vista-Model N) cleared at 6\u201312\u00d7 forward revenue. Applying a 6\u20138\u00d7 multiple to DOCU\u2019s $3.3B revenue supports an EV range of **$20\u201326B**, well above current levels, but strategic premiums are unlikely for a standalone public target of this size.\n\n**4. Sensitivity Analysis**  \n- WACC +100 bps / \u2013100 bps \u2192 EV moves \u201312% / +15%  \n- Terminal growth 2% / 4% \u2192 EV moves \u20138% / +11%  \nCombined bear case (WACC 11%, g 2%) yields ~$8.0B EV; bull case (WACC 9%, g 4%) yields ~$12.2B EV.\n\n**5. Valuation Summary & Recommendation**  \n- Current EV: $8.0B  \n- DCF mid-point: $10.1B (27% upside)  \n- Revenue-multiple fair value (5\u00d7): $16.4B  \n- Blended 12-month fair-value range: **$10\u201313B** EV ($49\u201363 per share)  \n\n**Recommendation**: DOCU appears undervalued on both DCF and normalized revenue multiples given its cash-flow generation and SaaS characteristics. The primary risks are continued growth deceleration and margin stagnation. Accumulate on weakness below $45; target 15\u201320%+ total return over 12 months assuming execution on margin expansion.\n\nAll figures are approximate and derived from stated assumptions and provided market data.",
+        "key_metrics": {
+          "revenue": 3286081024,
+          "ebitda": 387452992,
+          "market_cap": 8598235136,
+          "ev_revenue_multiple": 2.425,
+          "ev_ebitda_multiple": 20.563
+        },
+        "valuation_range": {
+          "low": 6572162048.0,
+          "mid": 13144324096.0,
+          "high": 19716486144.0,
+          "methodology": "Multiple-based estimation"
+        },
+        "methodology": "DCF, Comparable Companies, Precedent Transactions"
+      },
+      "execution_time": 24.770174264907837
+    }
+  ]
+}

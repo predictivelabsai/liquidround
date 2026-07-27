@@ -1,0 +1,5 @@
+{
+  "test": "google_oauth_configured",
+  "status": 302,
+  "redirects_to_google": true
+}

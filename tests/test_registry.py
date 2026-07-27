@@ -14,7 +14,7 @@ from agents.base import load_system_prompt
 # ── Shape invariants ────────────────────────────────────────────────────
 
 def test_exactly_25_agents():
-    assert len(AGENTS) == 25, f"expected 25 agents, got {len(AGENTS)}"
+    assert len(AGENTS) == 26, f"expected 26 agents, got {len(AGENTS)}"
 
 
 def test_unique_slugs():

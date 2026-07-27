@@ -1,0 +1,7 @@
+{
+  "test": "exa_api_connectivity",
+  "success": false,
+  "api_key_present": true,
+  "error": "API returned status 403: {\"requestId\":\"867d9820d597ef5a27bbf0e89b0c32d2\",\"error\":\"The following requested domains are not available: reuters.com, bloomberg.com. Remove them from includeDomains and try again.\",\"tag\":\"SOURCE_NOT_AVAILABLE\"}",
+  "error_type": "Exception"
+}

@@ -1,0 +1,11 @@
+{
+  "test": "tavily_search",
+  "result_count": 8,
+  "elapsed": 2.29,
+  "error": null,
+  "sample_titles": [
+    "Precedent Transactions: Healthcare vs. SaaS Valuation - Phoenix Strategy Group",
+    "SaaS M&A and Public Market Report | Software Equity Group",
+    "Key trends that will shape healthcare M&A activity in 2026: PwC"
+  ]
+}

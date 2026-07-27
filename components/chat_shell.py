@@ -98,7 +98,7 @@ def _agent_freeform(spec):
 
 
 def agent_browser():
-    """All 25 agents grouped by 6 categories — collapsible."""
+    """All registered agents grouped by category — collapsible."""
     groups = []
     for cat in CATEGORIES:
         agents = AGENTS_BY_CATEGORY.get(cat["key"], [])
@@ -143,7 +143,7 @@ _WORKSPACE_ITEMS = [
     ("Data Room",      "/app/dataroom",       "▣"),
     ("Documents",      "/page/documents",     "▦"),
     ("Deal history",   "/page/deals",         "∑"),
-    ("Instructions",   "/app/instructions",   "✎"),
+    ("Skills",         "/app/skills",         "✎"),
     ("User Guide",     "/app/user-guide",     "?"),
 ]
 
@@ -229,9 +229,29 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
             Hr(cls="left-hr"),
             Div(
                 Button(
+                    Span("✦", cls="cat-icon"),
+                    Span("Investor Relations", cls="cat-name"),
+                    Span("1", cls="cat-count"),
+                    Span("▸", cls="cat-arrow"),
+                    cls="cat-toggle",
+                    onclick="toggleGroup('sec-investor-relations')",
+                    id="btn-sec-investor-relations",
+                    type="button",
+                ),
+                Div(
+                    A(Span("✦", cls="bottom-nav-icon"), Span("Press Release Creator", cls="bottom-nav-label"),
+                      href="/app/investor-relations/press-release",
+                      cls=f"bottom-nav-link{' active' if current_path.startswith('/app/investor-relations/press-release') else ''}"),
+                    cls="agent-list", id="sec-investor-relations",
+                ),
+                cls="agent-group",
+            ),
+            Hr(cls="left-hr"),
+            Div(
+                Button(
                     Span("◧", cls="cat-icon"),
                     Span("Public Markets", cls="cat-name"),
-                    Span("6", cls="cat-count"),
+                    Span("7", cls="cat-count"),
                     Span("▸", cls="cat-arrow"),
                     cls="cat-toggle",
                     onclick="toggleGroup('sec-public-markets')",

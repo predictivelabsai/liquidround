@@ -1,0 +1,31 @@
+{
+  "test": "xlsx_parse",
+  "parsed": {
+    "type": "xlsx",
+    "filename": "test_upload.xlsx",
+    "sheets": {
+      "Financials": [
+        [
+          "Metric",
+          "2024",
+          "2025"
+        ],
+        [
+          "Revenue",
+          "50000000",
+          "65000000"
+        ],
+        [
+          "EBITDA",
+          "12000000",
+          "16000000"
+        ]
+      ]
+    },
+    "sheet_names": [
+      "Financials"
+    ],
+    "summary": "Excel workbook with 1 sheet(s): Financials"
+  },
+  "text_length": 105
+}

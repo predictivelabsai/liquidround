@@ -1,0 +1,54 @@
+{
+  "test": "auth_redirect",
+  "protected_routes": {
+    "/": {
+      "status": 303,
+      "redirects_to_signin": true
+    },
+    "/targets": {
+      "status": 303,
+      "redirects_to_signin": true
+    },
+    "/buyers": {
+      "status": 303,
+      "redirects_to_signin": true
+    },
+    "/ipo": {
+      "status": 303,
+      "redirects_to_signin": true
+    },
+    "/score": {
+      "status": 303,
+      "redirects_to_signin": true
+    },
+    "/market": {
+      "status": 303,
+      "redirects_to_signin": true
+    },
+    "/settings": {
+      "status": 303,
+      "redirects_to_signin": true
+    },
+    "/upload": {
+      "status": 303,
+      "redirects_to_signin": true
+    },
+    "/deals": {
+      "status": 303,
+      "redirects_to_signin": true
+    },
+    "/company": {
+      "status": 303,
+      "redirects_to_signin": true
+    },
+    "/tools": {
+      "status": 303,
+      "redirects_to_signin": true
+    },
+    "/profile": {
+      "status": 303,
+      "redirects_to_signin": true
+    }
+  },
+  "all_redirect": true
+}

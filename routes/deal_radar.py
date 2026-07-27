@@ -189,7 +189,7 @@ def _synergies_content():
                  style=f"font-size:12px;color:{MUTED};"),
             A("Methodology →", href="/app/methodology",
               style=f"color:{AMBER};font-size:12px;font-weight:600;margin-left:16px;"),
-            A("Edit prompt →", href="/app/instructions/deal_radar_synergy",
+            A("Edit skill →", href="/app/skills/deal_radar_synergy",
               style=f"color:{AMBER};font-size:12px;font-weight:600;margin-left:12px;"),
             A("Data coverage →", href="/app/data-coverage",
               style=f"color:{AMBER};font-size:12px;font-weight:600;margin-left:12px;"),

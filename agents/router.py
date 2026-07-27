@@ -1,4 +1,4 @@
-"""Intent router — maps a user message to one of the 25 agent slugs.
+"""Intent router — maps a user message to a specialist agent slug.
 
 Order of preference:
   1. Forced slug (caller already knows which agent)
@@ -131,6 +131,8 @@ def _best_in_category_for(message: str) -> str | None:
     if "def 14a" in lower or "xbrl" in lower:
         return "filing_analyst"
     if "press release" in lower or "news release" in lower or "globenewswire" in lower:
+        if any(word in lower for word in ("write", "draft", "create", "prepare", "compose")):
+            return "press_release_writer"
         return "press_release_analyst"
     if "euronext news" in lower or "omx news" in lower or "baltic news" in lower:
         return "press_release_analyst"

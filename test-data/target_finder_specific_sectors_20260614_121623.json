@@ -1,0 +1,199 @@
+{
+  "test": "target_finder_specific_sectors",
+  "results": [
+    {
+      "query": "Find fintech companies with $50-200M revenue for acquisition",
+      "expected_sector": "fintech",
+      "success": true,
+      "targets_found": 12,
+      "sample_targets": [
+        {
+          "company_name": "Marqeta",
+          "location": "Oakland, CA, USA",
+          "estimated_revenue": "165",
+          "estimated_ebitda_margin": "3%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Modern card issuing & payment platform; strong API infrastructure for embedded finance synergies",
+          "source_rationale": "Public filings & earnings (2022-23 est.); fits payments vertical integration"
+        },
+        {
+          "company_name": "Toast",
+          "location": "Boston, MA, USA",
+          "estimated_revenue": "175",
+          "estimated_ebitda_margin": "6%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Restaurant/hospitality vertical SaaS + payments; high retention & upsell potential",
+          "source_rationale": "SEC filings & investor reports; proven fintech + vertical software model"
+        },
+        {
+          "company_name": "Flywire",
+          "location": "Boston, MA, USA",
+          "estimated_revenue": "145",
+          "estimated_ebitda_margin": "8%",
+          "strategic_fit_score": "4",
+          "investment_highlights": "Cross-border payments & receivables; strong education & healthcare verticals",
+          "source_rationale": "Earnings releases (2023 est.); geographic & product expansion fit"
+        }
+      ],
+      "execution_time": 26.87373185157776
+    },
+    {
+      "query": "Looking for healthcare SaaS companies to acquire",
+      "expected_sector": "healthcare",
+      "success": true,
+      "targets_found": 10,
+      "sample_targets": [
+        {
+          "company_name": "Redox",
+          "location": "Madison, WI",
+          "estimated_revenue": "65",
+          "estimated_ebitda_margin": "18%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Leading healthcare interoperability platform with 1,000+ integrations; strong network effects and sticky customer base in EHR connectivity",
+          "source_rationale": "Publicly known healthcare data exchange leader; high strategic value for data/platform expansion"
+        },
+        {
+          "company_name": "Innovaccer",
+          "location": "San Francisco, CA",
+          "estimated_revenue": "120",
+          "estimated_ebitda_margin": "12%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Unified healthcare data platform with strong AI/analytics capabilities; serves large health systems and payers",
+          "source_rationale": "Well-documented Series E/F funding and customer base in value-based care"
+        },
+        {
+          "company_name": "SimplePractice",
+          "location": "Santa Monica, CA",
+          "estimated_revenue": "95",
+          "estimated_ebitda_margin": "28%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Dominant SaaS practice management for behavioral health and therapy practices; high retention and recurring revenue",
+          "source_rationale": "Widely recognized leader in mental health SaaS; strong fit for vertical expansion"
+        }
+      ],
+      "execution_time": 21.54429006576538
+    },
+    {
+      "query": "Find cybersecurity companies with strong cloud offerings",
+      "expected_sector": "cybersecurity",
+      "success": true,
+      "targets_found": 10,
+      "sample_targets": [
+        {
+          "company_name": "Wiz",
+          "location": "Tel Aviv, Israel",
+          "estimated_revenue": "350",
+          "estimated_ebitda_margin": "-15%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Leading CNAPP platform with agentless CSPM, CIEM, and KSPM; rapid growth in multi-cloud environments; strong synergies with existing cloud security portfolios",
+          "source_rationale": "Public market data & funding rounds (2023 valuation ~$10B)"
+        },
+        {
+          "company_name": "Orca Security",
+          "location": "Tel Aviv, Israel",
+          "estimated_revenue": "120",
+          "estimated_ebitda_margin": "-20%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Agentless cloud security for AWS/Azure/GCP with deep workload visibility; high customer retention in enterprise segment",
+          "source_rationale": "Funding announcements & industry reports (2023)"
+        },
+        {
+          "company_name": "Snyk",
+          "location": "London, UK",
+          "estimated_revenue": "180",
+          "estimated_ebitda_margin": "-25%",
+          "strategic_fit_score": "4.5",
+          "investment_highlights": "Developer-first cloud & container security (SCA, SAST, IaC); strong product-led growth and integrations with CI/CD pipelines",
+          "source_rationale": "Public funding disclosures (Series G, 2022-23)"
+        }
+      ],
+      "execution_time": 20.846785068511963
+    },
+    {
+      "query": "Identify AI/ML companies for strategic acquisition",
+      "expected_sector": "artificial intelligence",
+      "success": true,
+      "targets_found": 10,
+      "sample_targets": [
+        {
+          "company_name": "Scale AI",
+          "location": "San Francisco, USA",
+          "estimated_revenue": "250",
+          "estimated_ebitda_margin": "-15%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Leading provider of high-quality training data for ML models; strong moat in autonomous systems and enterprise AI; rapid revenue growth",
+          "source_rationale": "Industry reports (CB Insights, PitchBook 2023-2024)",
+          "ticker": "SA",
+          "market_cap": 3017747200,
+          "sector": "Basic Materials",
+          "industry": "Gold",
+          "revenue_ttm": "N/A",
+          "employees": "N/A",
+          "website": "https://www.seabridgegold.com"
+        },
+        {
+          "company_name": "Hugging Face",
+          "location": "New York/Paris",
+          "estimated_revenue": "70",
+          "estimated_ebitda_margin": "-35%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Dominant open-source ML platform and model hub; community network effect; strategic value in foundational models and MLOps",
+          "source_rationale": "Company announcements and public funding disclosures"
+        },
+        {
+          "company_name": "DataRobot",
+          "location": "Boston, USA",
+          "estimated_revenue": "180",
+          "estimated_ebitda_margin": "0%",
+          "strategic_fit_score": "4",
+          "investment_highlights": "Automated ML platform with broad enterprise adoption; complementary to existing AI stacks for vertical integration",
+          "source_rationale": "Revenue estimates from funding rounds and analyst reports"
+        }
+      ],
+      "execution_time": 28.06551504135132
+    },
+    {
+      "query": "Find e-commerce platform companies to buy",
+      "expected_sector": "e-commerce",
+      "success": true,
+      "targets_found": 10,
+      "sample_targets": [
+        {
+          "company_name": "BigCommerce",
+          "location": "Austin, TX, USA",
+          "estimated_revenue": "310",
+          "estimated_ebitda_margin": "-8",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Open SaaS platform with strong API ecosystem, mid-market focus, multi-channel capabilities",
+          "source_rationale": "Public company; strong strategic fit for scaling platform technology and market share"
+        },
+        {
+          "company_name": "Shopware",
+          "location": "Sch\u00f6ppingen, Germany",
+          "estimated_revenue": "120",
+          "estimated_ebitda_margin": "15",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Leading European headless/B2B commerce solution with deep ERP integrations and DACH dominance",
+          "source_rationale": "Fast-growing independent player ideal for geographic expansion into Europe"
+        },
+        {
+          "company_name": "Sana Commerce",
+          "location": "Rotterdam, Netherlands",
+          "estimated_revenue": "80",
+          "estimated_ebitda_margin": "12",
+          "strategic_fit_score": "4",
+          "investment_highlights": "B2B-focused platform with native SAP, Oracle, and Microsoft Dynamics integrations",
+          "source_rationale": "High synergy for buyers targeting complex B2B verticals and ERP-heavy clients",
+          "ticker": "SANA",
+          "market_cap": 745821440,
+          "sector": "Healthcare",
+          "industry": "Biotechnology",
+          "revenue_ttm": "N/A",
+          "employees": 142,
+          "website": "https://www.sana.com"
+        }
+      ],
+      "execution_time": 30.81861972808838
+    }
+  ]
+}

@@ -109,7 +109,7 @@ def generate_pdf(sections: list[dict], out: Path):
         canvas.rect(0, 0, A4[0], A4[1], fill=1, stroke=0)
         canvas.setFillColor(muted_c)
         canvas.setFont("Helvetica", 7)
-        canvas.drawString(20 * mm, 10 * mm, "LiquidRound v0.4.0 — Predictive Labs Ltd")
+        canvas.drawString(20 * mm, 10 * mm, "LiquidRound v0.5.0 — Predictive Labs Ltd")
         canvas.drawRightString(A4[0] - 20 * mm, 10 * mm, f"Page {doc.page}")
         canvas.restoreState()
 
@@ -121,7 +121,7 @@ def generate_pdf(sections: list[dict], out: Path):
     # Cover page
     story.append(Spacer(1, 60 * mm))
     story.append(Paragraph("LiquidRound", styles["LR_Title"]))
-    story.append(Paragraph("User Guide v0.4.0", styles["LR_H2"]))
+    story.append(Paragraph("User Guide v0.5.0", styles["LR_H2"]))
     story.append(Spacer(1, 10 * mm))
     story.append(Paragraph(
         "AI-powered M&A, IPO readiness, and hedge fund intelligence platform",
@@ -285,7 +285,7 @@ def generate_pptx(sections: list[dict], out: Path):
                  "LiquidRound", font_size=48, bold=True, color=amber_rgb,
                  alignment=PP_ALIGN.CENTER)
     add_text_box(slide, Inches(1), Inches(3.5), Inches(11), Inches(0.8),
-                 "User Guide v0.4.0", font_size=28, color=white_rgb,
+                 "User Guide v0.5.0", font_size=28, color=white_rgb,
                  alignment=PP_ALIGN.CENTER)
     add_text_box(slide, Inches(1), Inches(4.5), Inches(11), Inches(0.6),
                  "AI-powered M&A, IPO readiness, and hedge fund intelligence",

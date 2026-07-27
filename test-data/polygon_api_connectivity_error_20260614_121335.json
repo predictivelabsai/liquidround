@@ -1,0 +1,7 @@
+{
+  "test": "polygon_api_connectivity",
+  "success": false,
+  "api_key_present": false,
+  "error": "POLYGON_API_KEY not found in environment",
+  "error_type": "ValueError"
+}

@@ -1,0 +1,26 @@
+{
+  "test": "scoring_agent",
+  "status": "success",
+  "execution_time": 12.67,
+  "composite_score": 60,
+  "recommendation": "CAUTIOUS",
+  "dimensions": {
+    "revenue_synergies": 8,
+    "cost_synergies": 5,
+    "strategic_fit": 7,
+    "cultural_fit": 4,
+    "financial_health": 7,
+    "integration_risk": 3,
+    "market_timing": 6
+  },
+  "key_risks": [
+    "Significant customer and revenue overlap leading to churn",
+    "Cultural integration failure and talent attrition",
+    "Potential antitrust scrutiny in CRM market"
+  ],
+  "next_steps": [
+    "Conduct detailed customer overlap and retention modeling",
+    "Perform cultural due diligence and integration planning",
+    "Engage antitrust counsel for preliminary regulatory assessment"
+  ]
+}

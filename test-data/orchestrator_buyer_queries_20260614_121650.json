@@ -1,0 +1,42 @@
+{
+  "test": "orchestrator_buyer_queries",
+  "total_queries": 5,
+  "successful": 5,
+  "results": [
+    {
+      "query": "Find fintech companies to acquire with $20-100M revenue",
+      "success": true,
+      "workflow_type": "buyer_ma",
+      "rationale": "Workflow: BUYER_MA\nRationale: Query explicitly seeks fintech targets for acquisition, matching BUYER_MA criteria with \"acquire\" keyword and buyer intent.",
+      "execution_time": 5.186288118362427
+    },
+    {
+      "query": "Looking for SaaS acquisition targets in healthcare",
+      "success": true,
+      "workflow_type": "buyer_ma",
+      "rationale": "Workflow: BUYER_MA\nRationale: Query explicitly seeks acquisition targets (buyer-side M&A intent with matching keywords like \"acquisition\" and \"targets\").",
+      "execution_time": 4.288556814193726
+    },
+    {
+      "query": "Want to buy a cybersecurity company",
+      "success": true,
+      "workflow_type": "buyer_ma",
+      "rationale": "Workflow: BUYER_MA\nRationale: Query directly expresses intent to purchase (\"buy\") a company, aligning with buyer-side M&A keywords and examples.",
+      "execution_time": 5.430627822875977
+    },
+    {
+      "query": "Identify AI/ML startups for strategic acquisition",
+      "success": true,
+      "workflow_type": "buyer_ma",
+      "rationale": "Workflow: BUYER_MA\nRationale: Query explicitly seeks targets for strategic acquisition, matching buyer-side M&A intent and keywords.",
+      "execution_time": 4.224742412567139
+    },
+    {
+      "query": "Find manufacturing companies for acquisition",
+      "success": true,
+      "workflow_type": "buyer_ma",
+      "rationale": "Workflow: BUYER_MA\nRationale: Query explicitly seeks targets for acquisition, matching buyer-side M&A intent with no ambiguity.",
+      "execution_time": 5.698792934417725
+    }
+  ]
+}

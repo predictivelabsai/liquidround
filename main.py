@@ -170,6 +170,10 @@ filings_router.to_app(app)
 from routes.press_releases import ar as press_releases_router
 press_releases_router.to_app(app)
 
+# Register Investor Relations drafting tools
+from routes.investor_relations import ar as investor_relations_router
+investor_relations_router.to_app(app)
+
 # Register SPAC tracker (/app/spacs)
 from routes.spacs import ar as spacs_router
 spacs_router.to_app(app)
@@ -178,7 +182,7 @@ spacs_router.to_app(app)
 from routes.help import ar as help_router
 help_router.to_app(app)
 
-# Register instructions editor + prompt versioning API
+# Register skills editor + prompt versioning API
 from routes.instructions import ar as instructions_router
 instructions_router.to_app(app)
 
@@ -876,8 +880,8 @@ def _nav_section(session):
                         _nav_page_link("Documents", "/page/documents"),
                         _nav_page_link("Deal History", "/page/deals"),
                         _nav_page_link("M&A Tools", "/page/tools"),
-                        A("Instructions",
-                          href="/app/instructions",
+                        A("Skills",
+                          href="/app/skills",
                           cls="text-left text-xs text-gray-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-1.5 rounded transition-colors w-full block"),
                         A("Daily Digest",
                           href="/app/digest",

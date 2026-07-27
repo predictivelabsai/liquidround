@@ -1,0 +1,416 @@
+{
+  "test": "target_finder_revenue_filters",
+  "results": [
+    {
+      "query": "Find SaaS companies with $10-50M annual revenue",
+      "success": true,
+      "targets_found": 11,
+      "revenue_analysis": [
+        {
+          "company": "Webflow",
+          "estimated_revenue": "48",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Retool",
+          "estimated_revenue": "32",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Coda",
+          "estimated_revenue": "28",
+          "ticker": "CODA",
+          "market_cap": 123135584,
+          "revenue_ttm": 28063524
+        },
+        {
+          "company": "Vercel (early-stage subset)",
+          "estimated_revenue": "22",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Pipedrive",
+          "estimated_revenue": "45",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Linear",
+          "estimated_revenue": "18",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Airbyte",
+          "estimated_revenue": "15",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "ChartMogul",
+          "estimated_revenue": "12",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Productboard",
+          "estimated_revenue": "38",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Fusebill",
+          "estimated_revenue": "14",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Whatagraph",
+          "estimated_revenue": "11",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        }
+      ],
+      "execution_time": 27.19806170463562
+    },
+    {
+      "query": "Looking for fintech companies with $50-200M revenue",
+      "success": true,
+      "targets_found": 10,
+      "revenue_analysis": [
+        {
+          "company": "Flywire",
+          "estimated_revenue": "180",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Pagaya Technologies",
+          "estimated_revenue": "150",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Remitly",
+          "estimated_revenue": "120",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Tipalti",
+          "estimated_revenue": "100",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "nCino",
+          "estimated_revenue": "90",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Melio",
+          "estimated_revenue": "80",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Amount",
+          "estimated_revenue": "110",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Thought Machine",
+          "estimated_revenue": "70",
+          "ticker": "TM",
+          "market_cap": 228019044352,
+          "revenue_ttm": 50684951003136
+        },
+        {
+          "company": "Mambu",
+          "estimated_revenue": "60",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Veem",
+          "estimated_revenue": "55",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        }
+      ],
+      "execution_time": 21.5340838432312
+    },
+    {
+      "query": "Identify cybersecurity companies with $100-500M revenue",
+      "success": true,
+      "targets_found": 12,
+      "revenue_analysis": [
+        {
+          "company": "Arctic Wolf Networks",
+          "estimated_revenue": "450",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Tanium",
+          "estimated_revenue": "380",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Darktrace",
+          "estimated_revenue": "480",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Varonis Systems",
+          "estimated_revenue": "500",
+          "ticker": "VS",
+          "market_cap": 6813331,
+          "revenue_ttm": 2001368
+        },
+        {
+          "company": "Qualys",
+          "estimated_revenue": "520",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "ExtraHop",
+          "estimated_revenue": "220",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Snyk",
+          "estimated_revenue": "300",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Recorded Future",
+          "estimated_revenue": "350",
+          "ticker": "RF",
+          "market_cap": 24978419712,
+          "revenue_ttm": 7177999872
+        },
+        {
+          "company": "Secureworks",
+          "estimated_revenue": "480",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Tufin",
+          "estimated_revenue": "120",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Menlo Security",
+          "estimated_revenue": "150",
+          "ticker": "MS",
+          "market_cap": 337602052096,
+          "revenue_ttm": 73173999616
+        },
+        {
+          "company": "ThreatConnect",
+          "estimated_revenue": "110",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        }
+      ],
+      "execution_time": 21.05543088912964
+    },
+    {
+      "query": "Find healthcare companies with $20-100M revenue",
+      "success": true,
+      "targets_found": 10,
+      "revenue_analysis": [
+        {
+          "company": "Precision Diagnostics Corp",
+          "estimated_revenue": "48",
+          "ticker": "PDC",
+          "market_cap": 17998364,
+          "revenue_ttm": 339401376
+        },
+        {
+          "company": "CardioTech Devices",
+          "estimated_revenue": "82",
+          "ticker": "CD",
+          "market_cap": 377358048,
+          "revenue_ttm": 2349549
+        },
+        {
+          "company": "GenoMed Analytics",
+          "estimated_revenue": "25",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Apex Medical Labs",
+          "estimated_revenue": "35",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Summit Pharmaceutical Services",
+          "estimated_revenue": "28",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Nova Rehabilitation Centers",
+          "estimated_revenue": "55",
+          "ticker": "NRC",
+          "market_cap": 423464544,
+          "revenue_ttm": 138642000
+        },
+        {
+          "company": "TeleHealth Plus",
+          "estimated_revenue": "33",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Women's Health Partners",
+          "estimated_revenue": "45",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "VitaCare Home Health",
+          "estimated_revenue": "72",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "OrthoPro Supplies",
+          "estimated_revenue": "60",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        }
+      ],
+      "execution_time": 30.5105459690094
+    },
+    {
+      "query": "Looking for AI companies with $5-25M revenue",
+      "success": true,
+      "targets_found": 10,
+      "revenue_analysis": [
+        {
+          "company": "Snorkel AI",
+          "estimated_revenue": "14",
+          "ticker": "SA",
+          "market_cap": 3017747200,
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Runway",
+          "estimated_revenue": "22",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "V7",
+          "estimated_revenue": "8",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Labelbox",
+          "estimated_revenue": "19",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Symbl.ai",
+          "estimated_revenue": "7",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Cresta",
+          "estimated_revenue": "11",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Diffbot",
+          "estimated_revenue": "9",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Observe.AI",
+          "estimated_revenue": "10",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Primer",
+          "estimated_revenue": "13",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        },
+        {
+          "company": "Ross Intelligence",
+          "estimated_revenue": "6",
+          "ticker": "N/A",
+          "market_cap": "N/A",
+          "revenue_ttm": "N/A"
+        }
+      ],
+      "execution_time": 30.81795620918274
+    }
+  ]
+}

@@ -1,0 +1,199 @@
+{
+  "test": "target_finder_specific_sectors",
+  "results": [
+    {
+      "query": "Find fintech companies with $50-200M revenue for acquisition",
+      "expected_sector": "fintech",
+      "success": true,
+      "targets_found": 10,
+      "sample_targets": [
+        {
+          "company_name": "Brex",
+          "location": "San Francisco, CA",
+          "estimated_revenue": "145",
+          "estimated_ebitda_margin": "12%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Corporate cards & spend management platform with rapid SMB adoption; scalable tech infrastructure",
+          "source_rationale": "Industry reports (CB Insights, PitchBook 2023 estimates)"
+        },
+        {
+          "company_name": "Plaid",
+          "location": "San Francisco, CA",
+          "estimated_revenue": "195",
+          "estimated_ebitda_margin": "22%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Financial data connectivity API; critical infrastructure for fintech ecosystem with sticky enterprise clients",
+          "source_rationale": "Public filings & analyst estimates (2023)"
+        },
+        {
+          "company_name": "Ramp",
+          "location": "New York, NY",
+          "estimated_revenue": "95",
+          "estimated_ebitda_margin": "8%",
+          "strategic_fit_score": "4",
+          "investment_highlights": "AI-driven corporate card & expense automation; high gross margins and efficient customer acquisition",
+          "source_rationale": "Venture funding disclosures & growth metrics",
+          "ticker": "RAMP",
+          "market_cap": 2260505344,
+          "sector": "Technology",
+          "industry": "Software - Infrastructure",
+          "revenue_ttm": 812940032,
+          "employees": 1300,
+          "website": "https://liveramp.com"
+        }
+      ],
+      "execution_time": 34.34371089935303
+    },
+    {
+      "query": "Looking for healthcare SaaS companies to acquire",
+      "expected_sector": "healthcare",
+      "success": true,
+      "targets_found": 10,
+      "sample_targets": [
+        {
+          "company_name": "Phreesia",
+          "location": "New York, NY",
+          "estimated_revenue": "280",
+          "estimated_ebitda_margin": "14%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Leading patient intake/engagement platform; strong ambulatory footprint and high switching costs",
+          "source_rationale": "Public healthcare SaaS with proven product-market fit in provider workflows"
+        },
+        {
+          "company_name": "Health Catalyst",
+          "location": "Salt Lake City, UT",
+          "estimated_revenue": "310",
+          "estimated_ebitda_margin": "9%",
+          "strategic_fit_score": "4",
+          "investment_highlights": "Healthcare data analytics and quality improvement platform; sticky enterprise contracts",
+          "source_rationale": "Public company with differentiated data capabilities and recurring revenue"
+        },
+        {
+          "company_name": "Waystar",
+          "location": "Lehi, UT",
+          "estimated_revenue": "450",
+          "estimated_ebitda_margin": "28%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Revenue cycle management SaaS serving hospitals and physician groups; high margins and scalability",
+          "source_rationale": "Strong strategic fit for payment automation and provider efficiency"
+        }
+      ],
+      "execution_time": 27.498990774154663
+    },
+    {
+      "query": "Find cybersecurity companies with strong cloud offerings",
+      "expected_sector": "cybersecurity",
+      "success": true,
+      "targets_found": 10,
+      "sample_targets": [
+        {
+          "company_name": "Zscaler",
+          "location": "San Jose, CA",
+          "estimated_revenue": "2,100",
+          "estimated_ebitda_margin": "28%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Market leader in cloud-native Zero Trust and SASE; high-growth recurring revenue with strong net retention",
+          "source_rationale": "Public filings & analyst reports (FY2024)"
+        },
+        {
+          "company_name": "CrowdStrike",
+          "location": "Austin, TX",
+          "estimated_revenue": "3,200",
+          "estimated_ebitda_margin": "32%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Falcon platform fully cloud-delivered; dominant endpoint + cloud workload protection with AI differentiation",
+          "source_rationale": "Public filings & earnings transcripts"
+        },
+        {
+          "company_name": "Cloudflare",
+          "location": "San Francisco, CA",
+          "estimated_revenue": "1,400",
+          "estimated_ebitda_margin": "22%",
+          "strategic_fit_score": "4.5",
+          "investment_highlights": "Broad cloud security portfolio (WAF, DDoS, Zero Trust); massive global edge network and developer ecosystem",
+          "source_rationale": "Public filings & Gartner reports"
+        }
+      ],
+      "execution_time": 23.34284496307373
+    },
+    {
+      "query": "Identify AI/ML companies for strategic acquisition",
+      "expected_sector": "artificial intelligence",
+      "success": true,
+      "targets_found": 11,
+      "sample_targets": [
+        {
+          "company_name": "Hugging Face",
+          "location": "New York, USA / Paris, France",
+          "estimated_revenue": "80",
+          "estimated_ebitda_margin": "-25%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Dominant open-source ML/AI platform with 1M+ developers; strong ecosystem in NLP and generative models; natural acquirer target for cloud or enterprise AI players",
+          "source_rationale": "Public reports (2023 funding/valuation data); widely cited as top AI infrastructure target"
+        },
+        {
+          "company_name": "Scale AI",
+          "location": "San Francisco, USA",
+          "estimated_revenue": "180",
+          "estimated_ebitda_margin": "8%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Leading provider of high-quality training data for LLMs and autonomous systems; major DoD and auto contracts; vertical integration opportunity",
+          "source_rationale": "Revenue estimates from CB Insights/TechCrunch 2023-24 coverage",
+          "ticker": "SA",
+          "market_cap": 3017747200,
+          "sector": "Basic Materials",
+          "industry": "Gold",
+          "revenue_ttm": "N/A",
+          "employees": "N/A",
+          "website": "https://www.seabridgegold.com"
+        },
+        {
+          "company_name": "Cohere",
+          "location": "Toronto, Canada",
+          "estimated_revenue": "45",
+          "estimated_ebitda_margin": "-15%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Enterprise-focused LLM developer with strong data privacy and customization; fits strategic need for sovereign/vertical AI capabilities",
+          "source_rationale": "Funding announcements and analyst estimates (2024)"
+        }
+      ],
+      "execution_time": 23.240854501724243
+    },
+    {
+      "query": "Find e-commerce platform companies to buy",
+      "expected_sector": "e-commerce",
+      "success": true,
+      "targets_found": 10,
+      "sample_targets": [
+        {
+          "company_name": "BigCommerce",
+          "location": "Austin, TX, USA",
+          "estimated_revenue": "310",
+          "estimated_ebitda_margin": "8%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Enterprise-grade headless commerce, strong API ecosystem, omnichannel capabilities",
+          "source_rationale": "Public company with mid-market positioning; natural take-private candidate for platform consolidation"
+        },
+        {
+          "company_name": "Shopware",
+          "location": "Sch\u00f6ppingen, Germany",
+          "estimated_revenue": "65",
+          "estimated_ebitda_margin": "15%",
+          "strategic_fit_score": "5",
+          "investment_highlights": "Leading open-source European platform, strong DACH market share, B2B features",
+          "source_rationale": "Regional expansion opportunity; high strategic value for global buyer seeking EU footprint"
+        },
+        {
+          "company_name": "Squarespace",
+          "location": "New York, NY, USA",
+          "estimated_revenue": "920",
+          "estimated_ebitda_margin": "22%",
+          "strategic_fit_score": "4",
+          "investment_highlights": "Design-centric SMB platform with integrated payments and marketing tools",
+          "source_rationale": "Public company; bolt-on for design-focused e-commerce growth"
+        }
+      ],
+      "execution_time": 24.943840265274048
+    }
+  ]
+}
