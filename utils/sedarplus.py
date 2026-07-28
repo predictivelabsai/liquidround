@@ -92,6 +92,7 @@ class SedarDocument:
             "jurisdiction": self.jurisdiction,
             "file_size": self.file_size,
             "download_url": self.download_url,
+            "matched_query": self.raw.get("matched_query", ""),
         }
 
 
@@ -246,8 +247,10 @@ class SedarplusClient:
     # ------------------------------------------------------------------ fillers
     def _fill_content_search(self, query: str) -> None:
         page = self._page
-        loc = page.get_by_role("textbox", name=re.compile("Document content search")).first
+        loc = page.locator("#DocumentContent")
         loc.fill(query)
+        # SEDAR+'s server-side form framework commits this value on change.
+        loc.blur()
         self._sleep()
 
     def _fill_document_type(self, doc_type: str) -> None:
@@ -298,8 +301,11 @@ class SedarplusClient:
                 before,
                 timeout=self.timeout_ms,
             )
-        except Exception:
-            page.wait_for_timeout(5000)
+        except Exception as exc:
+            raise RuntimeError(
+                "SEDAR+ search results did not refresh; refusing to ingest "
+                "the unfiltered latest-filings table"
+            ) from exc
         self._sleep()
 
     # ------------------------------------------------------------------ results
@@ -516,14 +522,20 @@ def discover_documents(
                     rows = active_client.search_documents(
                         content_query=query or "",
                         document_type=doc_type or "",
-                        date_from=date_from,
-                        date_to=date_to,
+                        # Date inputs trigger extra server round-trips and make
+                        # the ShieldSquare-protected form unreliable. Results
+                        # are newest-first; enforce the range locally below.
                         limit=limit,
                     )
                 except Exception as exc:  # noqa: BLE001
                     log.warning("SEDAR+ search '%s' / '%s' failed: %s", query, doc_type, exc)
                     continue
                 for row in rows:
+                    if row.submitted_date and (
+                        row.submitted_date < date_from or row.submitted_date > date_to
+                    ):
+                        continue
+                    row.raw["matched_query"] = query or ""
                     key = row.download_url or f"{row.profile_number}|{row.document_name}|{row.submitted_date}"
                     if key in seen:
                         continue
@@ -553,6 +565,10 @@ def fetch_document_text(url: str, *, headless: bool = True,
     else:
         with SedarplusClient(headless=headless) as owned_client:
             content = owned_client.download_document(url)
+    if _looks_html_body(content):
+        raise RuntimeError(
+            "SEDAR+ returned an HTML viewer/challenge instead of document bytes"
+        )
     filename = _filename_from_url(url)
     return parse_authorized_document(content, filename)
 

@@ -244,14 +244,20 @@ def candidate_from_sedar(document: dict, *, text: str = "") -> dict:
     (profile_name, profile_number, document_name, submitted_date,
     jurisdiction, download_url).
     """
+    matched_query = document.get("matched_query", "")
+    evidence_text = "\n".join(part for part in (text, matched_query) if part)
     analysis = classify_sedar_filing(
-        text, document_name=document.get("document_name", ""),
+        evidence_text, document_name=document.get("document_name", ""),
         company_name=document.get("profile_name", ""),
     )
     terms = extract_transaction_terms(text, public_company=document.get("profile_name", ""))
-    url = document.get("download_url") or document.get("source_url") or ""
+    resource_url = document.get("download_url") or document.get("source_url") or ""
     profile_number = document.get("profile_number", "")
-    key_seed = profile_number or url or document.get("document_name", "")
+    url = (
+        f"https://www.sedarplus.ca/csa-party/{profile_number}.html?_locale=en"
+        if profile_number else resource_url
+    )
+    key_seed = profile_number or resource_url or document.get("document_name", "")
     status = "completed" if analysis["completed"] else "announced" if terms["announced"] else "candidate"
     return {
         "transaction_key": f"sedar:{hashlib.sha1(key_seed.encode()).hexdigest()[:20]}",
@@ -280,6 +286,9 @@ def candidate_from_sedar(document: dict, *, text: str = "") -> dict:
             "principal_jurisdiction": document.get("jurisdiction", ""),
             "file_size": document.get("file_size", ""),
             "extraction": "sedar_text_v1",
+            "matched_query": matched_query,
+            "document_text_available": bool(text),
+            "resource_url": resource_url,
         },
     }
 
@@ -308,29 +317,36 @@ def discover_sedarplus_candidates(days: int = 365, limit: int = 40,
     (i.e. not bare ``candidate``) are returned, matching the EDGAR discovery
     contract.
     """
-    from utils.sedarplus import discover_documents, fetch_document_text
+    from utils.sedarplus import SedarplusClient, discover_documents, fetch_document_text
 
-    documents = discover_documents(days=days, limit=limit * 2, headless=headless)
     records: list[dict] = []
-    for doc in documents:
-        url = doc.download_url
-        try:
-            parsed = fetch_document_text(url, headless=headless) if url else {"text": "", "sha256": ""}
-        except Exception as exc:  # noqa: BLE001
-            log.warning("SEDAR+ document parse failed for %s: %s", url, exc)
-            parsed = {"text": "", "sha256": ""}
-        record = candidate_from_sedar(doc.to_dict(), text=parsed.get("text", ""))
-        record["document_hash"] = parsed.get("sha256", "")
-        record["detected_items"] = sorted(parsed.get("sections", {}))
-        record["metadata"].update({
-            "document_count": 1,
-            "document_types": [doc.document_name] if doc.document_name else [],
-            "section_items": sorted(parsed.get("sections", {})),
-        })
-        if record["transaction_type"] != "candidate":
-            records.append(record)
-        if len(records) >= limit:
-            break
+    # SEDAR+ resource URLs contain session-bound DRM keys, so discovery and
+    # download must share one browser context.
+    with SedarplusClient(headless=headless) as client:
+        documents = discover_documents(
+            days=days, limit=limit * 2, headless=headless, client=client
+        )
+        for doc in documents:
+            url = doc.download_url
+            try:
+                parsed = fetch_document_text(
+                    url, headless=headless, client=client
+                ) if url else {"text": "", "sha256": ""}
+            except Exception as exc:  # noqa: BLE001
+                log.warning("SEDAR+ document parse failed for %s: %s", url, exc)
+                parsed = {"text": "", "sha256": ""}
+            record = candidate_from_sedar(doc.to_dict(), text=parsed.get("text", ""))
+            record["document_hash"] = parsed.get("sha256", "")
+            record["detected_items"] = sorted(parsed.get("sections", {}))
+            record["metadata"].update({
+                "document_count": 1,
+                "document_types": [doc.document_name] if doc.document_name else [],
+                "section_items": sorted(parsed.get("sections", {})),
+            })
+            if record["transaction_type"] != "candidate":
+                records.append(record)
+            if len(records) >= limit:
+                break
     return records
 
 

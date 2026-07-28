@@ -158,6 +158,8 @@ def test_candidate_from_sedar_builds_ca_record():
     assert record["status"] == "completed"
     assert record["transaction_key"].startswith("sedar:")
     assert record["source_type"] == "SEDAR+"
+    assert record["source_url"] == "https://www.sedarplus.ca/csa-party/000123456.html?_locale=en"
+    assert "drmKey=k1" in record["metadata"]["resource_url"]
     assert record["metadata"]["ingestion"] == "sedarplus_scraper"
     assert record["metadata"]["document_mirrored"] is False
     assert record["private_target"] == "Acme Operating Ltd."
@@ -177,3 +179,18 @@ def test_candidate_from_sedar_candidate_is_not_persisted_by_discovery():
         text="This is a routine annual report with no transaction language.",
     )
     assert record["transaction_type"] == "candidate"
+
+
+def test_candidate_from_sedar_uses_full_text_search_match_as_evidence():
+    record = candidate_from_sedar({
+        "profile_name": "Example Mining Inc.",
+        "profile_number": "000123456",
+        "document_name": "Management information circular - English.pdf",
+        "submitted_date": "2026-07-01",
+        "jurisdiction": "British Columbia",
+        "download_url": "https://www.sedarplus.ca/example",
+        "matched_query": "reverse takeover",
+    })
+    assert record["transaction_type"] == "ca_rto"
+    assert record["metadata"]["matched_query"] == "reverse takeover"
+    assert record["metadata"]["document_text_available"] is False
