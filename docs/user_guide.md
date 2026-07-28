@@ -6,7 +6,7 @@
 
 <p class="subtitle">M&A · IPO · Public Markets · Investor Relations</p>
 <p class="subtitle">31 specialist agents · 7 categories · chat-first workspace</p>
-<p class="meta">Predictive Labs Ltd · LiquidRound v0.6.0</p>
+<p class="meta">Predictive Labs Ltd · LiquidRound v0.7.0</p>
 
 </div>
 
@@ -161,9 +161,16 @@ target, structure, evidence, and deal value. Subtabs separate traditional revers
 mergers from the SPAC comparison and explain the classification methodology.
 
 The three-year US monitor uses SEC EDGAR evidence, especially Form 8-K Items 1.01,
-2.01, 5.01, 5.06, and 9.01. Canadian records are reviewed manual citations until a
-licensed bulk source is connected; LiquidRound does not scrape or mirror SEDAR+.
-Use `rto:` to ask the Reverse Merger Analyst.
+2.01, 5.01, 5.06, and 9.01. Canadian records are discovered from sedarplus.ca via
+a headless Chromium scraper that reads the public document search and parses
+downloaded filings through the same document-intelligence pipeline as EDGAR. Only
+metadata and a content hash are stored; documents are not mirrored. Click **Sync
+SEDAR+ (CA)** to run the scraper, or use `rto:` to ask the Reverse Merger Analyst.
+See [docs/sedarplus_ingestion.md](#) for the full pipeline documentation.
+
+The **Merger news** subtab monitors merger-specific releases from GlobeNewswire,
+Business Wire, and PR Newswire RSS. Filter releases by wire and transaction stage;
+the same normalized feed is available to the Reverse Merger Analyst.
 
 ![Reverse Merger monitor](img/reverse-mergers-overview-desktop.png)
 
@@ -239,4 +246,4 @@ IR skills: IR Event Triage, Press Release Writer, IR Compliance Reviewer, IR Pub
 
 Generated from platform state on **2026-07-28**. Prior editions archived under `docs/archive/`. The `regenerate-liquidround-demo` skill archives, audits, refreshes, and produces timestamped MD + PDF + PPTX.
 
-LiquidRound v0.6.0 — Predictive Labs Ltd
+LiquidRound v0.7.0 — Predictive Labs Ltd

@@ -1,5 +1,7 @@
 -- Reverse-merger / RTO intelligence. US records are discovered from SEC EDGAR.
--- Canadian records are manual or supplied by a licensed provider; SEDAR+ is not scraped.
+-- Canadian records are discovered from sedarplus.ca via a headless Chromium
+-- scraper (utils/sedarplus.py) and supplemented by reviewed manual imports.
+-- Only metadata + a content hash are stored; documents are never mirrored.
 
 CREATE TABLE IF NOT EXISTS liquidround.reverse_merger_transactions (
     id                  BIGSERIAL PRIMARY KEY,

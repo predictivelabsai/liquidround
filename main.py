@@ -75,6 +75,12 @@ _AUTH_EXEMPT_PREFIXES = ("/app/news",)
 
 def _auth_gate(req, session):
     path = req.url.path
+    local_auth_bypass = (
+        os.getenv("ENVIRONMENT", "").lower() != "production"
+        and os.getenv("LOCAL_AUTH_BYPASS", "").lower() in {"1", "true", "yes"}
+    )
+    if local_auth_bypass:
+        return None
     if path.startswith("/app"):
         if not any(path.startswith(p) for p in _AUTH_EXEMPT_PREFIXES):
             user = session.get("user")

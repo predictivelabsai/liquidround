@@ -1,5 +1,44 @@
 # LiquidRound Change Log
 
+## 0.7.0 — 2026-07-28
+
+Investor Relations agent squad, platform demo regeneration, DB timeout fix, and
+Coolify memory limit.
+
+### Added
+- Investor Relations & Communications category with 5 agents: IR Event Triage
+  (`ir-triage:`), Press Release Writer (`write-release:`), IR Compliance Reviewer
+  (`ir-compliance:`), IR Publish Agent (`ir-publish:`), IR Distribution Planner
+  (`ir-distribute:`)
+- Agent count bumped from 26 to 30 across 7 categories
+- SEDAR+ ingestion pipeline documentation (`docs/sedarplus_ingestion.md`)
+- Platform demo regenerated as landscape PDF (dark navy theme), PPTX, and
+  Markdown with screenshots on every page
+- `.opencode/skills/` directory consolidating codex and claude skills into
+  opencode format (5 skills: liquidround-release, regenerate-liquidround-demo,
+  validate-liquidround-ui, alpaca-trading-backtest, fasthtml-user-guide)
+
+### Changed
+- `gen_platform_demo.py` rewritten to use pandoc + WeasyPrint for dark navy
+  landscape PDF (matching the original user guide CSS) instead of ReportLab
+- `capture_screenshots.py` updated with login flow for auth-gated routes and
+  4 new IR screenshots
+- `docs/user_guide.md` rewritten with screenshot per page, shortened text,
+  explicit page breaks between sections
+- `docs/assets/guide.css` updated with full-page dark background, h2 page breaks,
+  cover page styling
+
+### Fixed
+- `utils/database.py get_conn()` — added `connect_timeout=10` and
+  `statement_timeout=30000` to prevent prod server hangs on unreachable DB
+- `routes/ipo_map.py _load_df()` — consolidated 3 year-by-year DB queries into
+  single `get_ipo_data_since()` query
+- `agents/router.py strip_prefix()` — fixed regex to handle hyphenated prefixes
+  (`ir-triage:`, `write-release:`)
+
+### Infrastructure
+- Coolify container memory limit set to 512m for predictivelabsai/liquidround
+
 ## 0.6.0 — 2026-07-28
 
 Public-markets and Investor Relations expansion introducing a full disclosure

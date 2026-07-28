@@ -65,6 +65,7 @@ CATEGORY_HINTS: dict[str, list[str]] = {
         "shell company", "backdoor listing", "back-door listing",
         "qualifying transaction", "capital pool company", "cpc transaction",
         "de-spac", "de spac",
+        "sedar", "sedarplus", "sedar+", "canadian filing", "csa filing",
     ],
     "investor_relations": [
         "investor relations", "ir triage", "materiality", "disclosure",

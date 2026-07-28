@@ -174,3 +174,9 @@ def get_filing_text(url: str, max_chars: int = 50000) -> str:
     text = re.sub(r'\s+', ' ', text).strip()
     text = re.sub(r'(&nbsp;|\xa0)+', ' ', text)
     return text[:max_chars]
+
+
+def get_filing_submission(url: str, max_chars: int = 5_000_000) -> str:
+    """Download the complete EDGAR submission for document-level parsing."""
+    response = _get(url, headers={"Accept": "text/plain, text/html"})
+    return response.text[:max_chars]

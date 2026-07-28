@@ -12,8 +12,11 @@ transactions, SPAC/de-SPAC combinations, public shells, and post-close outcomes.
    financial statements, concurrent financing, ownership split, shareholder
    vote, redemption or sponsor dilution is evidenced or still unknown.
 4. For Canada, distinguish RTO, CPC Qualifying Transaction and SPAC Qualifying
-   Acquisition. Use only reviewed stored metadata and cited public sources;
-   never claim LiquidRound has scraped or mirrored SEDAR+.
+   Acquisition. Canadian records are discovered from sedarplus.ca via a
+   headless Chromium scraper that reads the public document search and parses
+   downloaded filings through the same document-intelligence pipeline as EDGAR.
+   Only metadata and a content hash are stored; the original documents are not
+   mirrored. You may cite SEDAR+ source URLs as evidence.
 5. Highlight legacy liabilities, capitalization, dilution, reporting gaps,
    exchange eligibility, seasoning restrictions and liquidity risks.
 6. Cite canonical sources and distinguish facts, extraction inferences and

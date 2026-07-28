@@ -117,6 +117,12 @@ def _run_activist_sync():
     log.info("Activist filings: %s", result)
 
 
+def _run_merger_news():
+    from utils.merger_news import fetch_merger_news, upsert_merger_news
+    stored = upsert_merger_news(fetch_merger_news())
+    log.info("Merger news: synchronized %d RSS releases", stored)
+
+
 def _run_treemap_refresh():
     from utils.hedge_fund_db import get_treemap_data
     data = get_treemap_data(min_value=0, fund_filter="", limit=500)
@@ -138,6 +144,7 @@ JOBS = {
     "dk_register":      {"fn": _run_dk_register,       "hour": CANDIDATE_HOUR},
     "ipo_pipeline":     {"fn": _run_ipo_pipeline,      "hour": CANDIDATE_HOUR},
     "activist_sync":    {"fn": _run_activist_sync,     "hour": CANDIDATE_HOUR},
+    "merger_news":      {"fn": _run_merger_news,       "hour": CANDIDATE_HOUR},
     "treemap_refresh":  {"fn": _run_treemap_refresh,   "hour": CANDIDATE_HOUR},
 }
 

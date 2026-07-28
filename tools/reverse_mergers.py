@@ -66,4 +66,73 @@ search_reverse_merger_filings_tool = StructuredTool.from_function(
     args_schema=FilingArgs,
 )
 
-REVERSE_MERGER_TOOLS = [search_reverse_mergers_tool, search_reverse_merger_filings_tool]
+
+class NewsArgs(BaseModel):
+    source: str = Field(default="", description="globenewswire, businesswire, prnewswire, or blank")
+    stage: str = Field(default="", description="announced, proposed, approved, completed, terminated, other, or blank")
+
+
+def _search_news(source: str = "", stage: str = "") -> str:
+    from utils.merger_news import list_merger_news
+    rows = list_merger_news(source=source, stage=stage, limit=40)
+    data = [{
+        "date": str(row.get("published_at") or "")[:10],
+        "source": row["source"],
+        "stage": row["event_stage"],
+        "headline": row["title"],
+        "target": row.get("target") or "—",
+        "deal_value": row.get("deal_value") or "—",
+        "link": row["source_url"],
+    } for row in rows]
+    return emit(kind="table", title="Merger News Monitor",
+                subtitle=f"{len(data)} filtered wire releases",
+                columns=["date", "source", "stage", "headline", "target", "deal_value", "link"],
+                rows=data)
+
+
+search_merger_news_tool = StructuredTool.from_function(
+    func=_search_news, name="search_merger_news",
+    description="Search merger releases ingested from GlobeNewswire, Business Wire, and PR Newswire RSS.",
+    args_schema=NewsArgs,
+)
+
+
+class SedarArgs(BaseModel):
+    query: str = Field(default="reverse takeover",
+                       description="Free-text document content search (e.g. 'reverse takeover', 'qualifying transaction', 'capital pool company')")
+    days: int = Field(default=365, description="Look-back window in days for submitted documents")
+
+
+def _search_sedar(query: str = "reverse takeover", days: int = 365) -> str:
+    from utils.sedarplus import discover_documents
+    try:
+        docs = discover_documents(content_queries=(query,), days=days, limit=20)
+    except Exception as exc:  # noqa: BLE001
+        return f"SEDAR+ search unavailable: {exc}"
+    rows = [{
+        "date": d.submitted_date,
+        "profile": d.profile_name,
+        "jurisdiction": d.jurisdiction,
+        "document": d.document_name,
+        "source": d.download_url,
+    } for d in docs]
+    if not rows:
+        return "No matching SEDAR+ documents found for that query."
+    return emit(kind="table", title=f"SEDAR+ document search: {query}",
+                subtitle=f"{len(rows)} recent Canadian filings",
+                columns=["date", "profile", "jurisdiction", "document", "source"], rows=rows)
+
+
+search_sedarplus_filings_tool = StructuredTool.from_function(
+    func=_search_sedar, name="search_sedarplus_filings",
+    description="Search sedarplus.ca for Canadian regulatory filings (RTO, CPC qualifying transaction, SPAC qualifying acquisition).",
+    args_schema=SedarArgs,
+)
+
+
+REVERSE_MERGER_TOOLS = [
+    search_reverse_mergers_tool,
+    search_reverse_merger_filings_tool,
+    search_sedarplus_filings_tool,
+    search_merger_news_tool,
+]
