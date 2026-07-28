@@ -9,7 +9,8 @@ log = logging.getLogger(__name__)
 ar = APIRouter()
 
 
-def _shell(session, request, rows, tab, news_rows=None, news_source="", news_stage=""):
+def _shell(session, request, rows, tab, news_rows=None, news_source="", news_stage="",
+           filters=None):
     from components.chat_shell import left_pane, right_pane
     from components.reverse_mergers import page_content
 
@@ -31,10 +32,12 @@ def _shell(session, request, rows, tab, news_rows=None, news_source="", news_sta
                       current_path="/app/reverse-mergers",
                       current_currency=session.get("currency", "EUR"),
                       current_role=session.get("role", "buyer")),
-            Div(header, Div(page_content(rows, tab, news_rows, news_source, news_stage),
+            Div(header, Div(page_content(rows, tab, news_rows, news_source, news_stage, filters),
                             cls="overflow-y-auto flex-1"), cls="center-pane"),
-            right_pane(open_by_default=True),
-            cls="app",
+            right_pane(open_by_default=True, title="Deal context",
+                       subtitle="GlobeNewswire · FT · Bloomberg",
+                       feed_url="/app/reverse-mergers/context-news"),
+            cls="app rto-shell",
         ),
         Script(src="/chat.js?v=3"),
     )
@@ -78,7 +81,72 @@ def reverse_mergers_page(session, request):
         rows = [r for r in rows if r.get("deal_value") in (None, "")]
     if query:
         rows = [r for r in rows if query in " ".join(str(r.get(k, "")) for k in ("public_company", "private_target", "public_ticker")).lower()]
-    return _shell(session, request, rows, tab, news_rows, news_source, news_stage)
+    return _shell(session, request, rows, tab, news_rows, news_source, news_stage, {
+        "jurisdiction": jurisdiction, "status": status,
+        "has_target": has_target, "has_value": has_value,
+        "q": params.get("q", ""),
+    })
+
+
+@ar("/app/reverse-mergers/context-news")
+async def reverse_merger_context_news():
+    """Merger wires plus FT/Bloomberg market context; intentionally no ERR."""
+    import re
+    from datetime import datetime, timezone
+    from utils.merger_news import list_merger_news
+    from utils.news import fetch_news
+
+    def ago(value) -> str:
+        try:
+            dt = value if isinstance(value, datetime) else datetime.fromisoformat(str(value))
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            seconds = (datetime.now(timezone.utc) - dt).total_seconds()
+            if seconds < 3600:
+                return f"{max(1, int(seconds // 60))}m ago"
+            if seconds < 86400:
+                return f"{int(seconds // 3600)}h ago"
+            return f"{int(seconds // 86400)}d ago"
+        except Exception:
+            return ""
+
+    items = [{
+        "icon": "GNW", "title": row["title"], "url": row["source_url"],
+        "summary": row.get("summary") or "", "published": row.get("published_at"),
+    } for row in list_merger_news(source="globenewswire", limit=12)]
+
+    market_news = [
+        article for article in await fetch_news()
+        if article["icon"] in {"FT", "BBG"}
+    ]
+    deal_pattern = re.compile(
+        r"\b(merger|acqui(?:re|res|red|sition)|takeover|spac|buyout|"
+        r"take-private|stake sale|acquisition bid)\b",
+        re.IGNORECASE,
+    )
+    contextual = [
+        article for article in market_news
+        if deal_pattern.search(f"{article['title']} {article.get('summary', '')}")
+    ]
+    for article in contextual:
+        if len(items) >= 30:
+            break
+        if not any(item["url"] == article["url"] for item in items):
+            items.append(article)
+    items.sort(key=lambda item: str(item.get("published") or ""), reverse=True)
+
+    return Div(*(
+        A(
+            Div(Span(item["icon"], cls="news-source"),
+                Span(ago(item.get("published")), cls="news-time"),
+                cls="news-item-header"),
+            Div(item["title"], cls="news-item-title"),
+            Div(re.sub(r"<[^>]+>", "", item.get("summary", ""))[:140],
+                cls="news-item-summary") if item.get("summary") else None,
+            href=item["url"], target="_blank", rel="noopener", cls="news-item",
+        )
+        for item in items[:30]
+    ))
 
 
 @ar("/app/reverse-mergers/import", methods=["POST"])

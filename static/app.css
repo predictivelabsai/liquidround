@@ -665,20 +665,34 @@ html, body {
 
 /* Reverse Mergers workspace */
 .rto-page { padding:1.25rem; color:var(--ink); max-width:1500px; margin:0 auto; }
+.app.rto-shell { grid-template-columns:260px minmax(0,1fr); padding-right:340px; }
+.rto-shell .right-pane { width:340px; right:-360px; }
+.rto-shell .right-pane.open { right:0; }
 .rto-hero { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; flex-wrap:wrap; margin-bottom:18px; }
-.rto-tabs { display:flex; gap:6px; overflow-x:auto; border-bottom:1px solid var(--line); margin-bottom:12px; }
+.rto-tabs { display:flex; gap:4px; overflow-x:auto; border-bottom:1px solid var(--line); margin-bottom:12px; scrollbar-width:none; }
+.rto-tabs::-webkit-scrollbar { display:none; }
 .rto-tab { color:var(--ink-muted); padding:9px 11px; font-size:.75rem; text-decoration:none; white-space:nowrap; border-bottom:2px solid transparent; }
 .rto-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
-.rto-filters { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+.rto-filters { display:grid; grid-template-columns:repeat(4,minmax(120px,1fr)) minmax(180px,1.35fr) auto; gap:8px; margin-bottom:14px; }
 .rto-control { min-width:130px; background:var(--bg); color:var(--ink); border:1px solid var(--line); border-radius:7px; padding:8px 10px; box-sizing:border-box; font:inherit; font-size:.78rem; }
 .rto-control:focus { outline:2px solid var(--accent-dim); border-color:var(--accent); }
 .rto-primary,.rto-secondary { border:1px solid var(--accent); border-radius:7px; padding:8px 11px; font-size:.75rem; font-weight:700; cursor:pointer; text-decoration:none; }
 .rto-primary { background:var(--accent); color:var(--bg); }
 .rto-secondary { background:transparent; color:var(--accent); }
 .rto-table-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:10px; background:var(--surface); }
-.rto-table { width:100%; min-width:980px; border-collapse:collapse; }
+.rto-search { min-width:0; width:100%; }
+.rto-table { width:100%; min-width:820px; table-layout:fixed; border-collapse:collapse; }
+.rto-table th:nth-child(1) { width:25%; }
+.rto-table th:nth-child(2) { width:14%; }
+.rto-table th:nth-child(3) { width:8%; }
+.rto-table th:nth-child(4) { width:18%; }
+.rto-table th:nth-child(5) { width:11%; }
+.rto-table th:nth-child(6) { width:9%; }
+.rto-table th:nth-child(7) { width:9%; }
+.rto-table th:nth-child(8) { width:8%; }
 .rto-th { color:var(--ink-dim); font-size:.65rem; text-transform:uppercase; letter-spacing:.07em; text-align:left; padding:10px; border-bottom:2px solid var(--line); }
-.rto-td { color:var(--ink-muted); font-size:.72rem; padding:10px; border-bottom:1px solid var(--line); }
+.rto-td { color:var(--ink-muted); font-size:.72rem; padding:10px; border-bottom:1px solid var(--line); overflow:hidden; }
+.rto-company-name { color:var(--ink); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:block; }
 .rto-empty { text-align:center; padding:52px 20px; background:var(--surface); border:1px solid var(--line); border-radius:10px; }
 .rto-method-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
 .rto-method-grid>div { background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:16px; }
@@ -963,3 +977,20 @@ blockquote.guide-quote, .guide-content blockquote {
 .prospectus-actions { display: flex; align-items: center; gap: .6rem; margin: 1rem 0; }
 .prospectus-output-bar { display: flex; align-items: center; gap: 1rem; margin-bottom: .6rem; }
 .prospectus-pdf { width: 100%; height: 720px; border: 1px solid var(--line); border-radius: .5rem; background: #fff; }
+
+@media (max-width: 1250px) and (min-width: 961px) {
+  .app.rto-shell { grid-template-columns:240px minmax(0,1fr); padding-right:300px; }
+  .rto-shell .right-pane { width:300px; }
+  .rto-filters { grid-template-columns:repeat(2,minmax(150px,1fr)); }
+}
+@media (max-width: 960px) {
+  .app.rto-shell { grid-template-columns:1fr; padding-right:0; }
+  .rto-shell .right-pane,
+  .rto-shell .right-pane.open { width:92vw; right:-95vw; }
+  .rto-filters { grid-template-columns:1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .rto-page { padding:.65rem; }
+  .rto-filters { grid-template-columns:1fr; }
+  .rto-hero { margin-bottom:12px; }
+}

@@ -16,10 +16,14 @@ TYPE_LABELS = {
 
 
 def _money(value) -> str:
-    if value in (None, ""):
+    if value in (None, "", 0, 0.0):
         return "—"
     value = float(value)
-    return f"${value / 1e9:.1f}B" if value >= 1e9 else f"${value / 1e6:.1f}M"
+    if value >= 1e9:
+        return f"${value / 1e9:.1f}B"
+    if value >= 1e6:
+        return f"${value / 1e6:.1f}M"
+    return f"${value / 1e3:.0f}K" if value >= 1e3 else "<$1K"
 
 
 def _badge(text: str, color: str = BLUE):
@@ -45,7 +49,8 @@ def summary_cards(rows: list[dict]):
     ), style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-bottom:18px;")
 
 
-def filter_bar(active_tab: str = "all"):
+def filter_bar(active_tab: str = "all", filters: dict | None = None):
+    filters = filters or {}
     tabs = (
         ("all", "All transactions"),
         ("reverse", "Reverse mergers / RTOs"),
@@ -61,21 +66,24 @@ def filter_bar(active_tab: str = "all"):
             for key, label in tabs
         ), cls="rto-tabs"),
         Form(
-            Select(Option("All jurisdictions", value=""), Option("United States", value="US"),
-                   Option("Canada", value="CA"), name="jurisdiction", cls="rto-control"),
-            Select(Option("Completed + not completed", value=""),
-                   Option("Completed", value="completed"),
-                   Option("Not completed", value="not_completed"),
+            Select(Option("All jurisdictions", value="", selected=not filters.get("jurisdiction")),
+                   Option("United States", value="US", selected=filters.get("jurisdiction") == "US"),
+                   Option("Canada", value="CA", selected=filters.get("jurisdiction") == "CA"),
+                   name="jurisdiction", cls="rto-control"),
+            Select(Option("Completed + not completed", value="", selected=not filters.get("status")),
+                   Option("Completed", value="completed", selected=filters.get("status") == "completed"),
+                   Option("Not completed", value="not_completed", selected=filters.get("status") == "not_completed"),
                    name="status", cls="rto-control"),
-            Select(Option("Targets: all", value=""),
-                   Option("Target identified", value="yes"),
-                   Option("Target missing", value="no"),
+            Select(Option("Targets: all", value="", selected=not filters.get("has_target")),
+                   Option("Target identified", value="yes", selected=filters.get("has_target") == "yes"),
+                   Option("Target missing", value="no", selected=filters.get("has_target") == "no"),
                    name="has_target", cls="rto-control"),
-            Select(Option("Deal value: all", value=""),
-                   Option("Deal value disclosed", value="yes"),
-                   Option("Deal value missing", value="no"),
+            Select(Option("Deal value: all", value="", selected=not filters.get("has_value")),
+                   Option("Deal value disclosed", value="yes", selected=filters.get("has_value") == "yes"),
+                   Option("Deal value missing", value="no", selected=filters.get("has_value") == "no"),
                    name="has_value", cls="rto-control"),
-            Input(name="q", placeholder="Company, target, ticker…", cls="rto-control"),
+            Input(name="q", value=filters.get("q", ""),
+                  placeholder="Company, target, ticker…", cls="rto-control rto-search"),
             Input(type="hidden", name="tab", value=active_tab),
             Button("Apply", type="submit", cls="rto-primary"),
             method="get", action="/app/reverse-mergers", cls="rto-filters",
@@ -98,7 +106,8 @@ def transaction_table(rows: list[dict]):
         source = row.get("source_url", "")
         body.append(Tr(
             Td(Div(Span(row.get("public_ticker") or "—", style=f"color:{AMBER};font-weight:700;"),
-                   Span(row.get("public_company") or "—", style=f"color:{INK};font-size:12px;"),
+                   Span(row.get("public_company") or "—",
+                        title=row.get("public_company") or "", cls="rto-company-name"),
                    style="display:flex;flex-direction:column;gap:2px;"), cls="rto-td"),
             Td(_badge(TYPE_LABELS.get(kind, kind.replace("_", " ")), color), cls="rto-td"),
             Td(_badge(row.get("jurisdiction", "—"), GREEN if row.get("jurisdiction") == "CA" else BLUE), cls="rto-td"),
@@ -233,7 +242,8 @@ def merger_news_panel(news_rows: list[dict], source: str = "", stage: str = ""):
 
 
 def page_content(rows: list[dict], active_tab: str, news_rows: list[dict] | None = None,
-                 news_source: str = "", news_stage: str = ""):
+                 news_source: str = "", news_stage: str = "",
+                 filters: dict | None = None):
     if active_tab == "methodology":
         content = methodology_panel()
     elif active_tab == "import":
@@ -258,7 +268,7 @@ def page_content(rows: list[dict], active_tab: str, news_rows: list[dict] | None
             cls="rto-hero",
         ),
         summary_cards(rows),
-        filter_bar(active_tab),
+        filter_bar(active_tab, filters),
         content,
         cls="rto-page",
     )

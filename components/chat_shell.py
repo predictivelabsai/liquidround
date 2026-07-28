@@ -583,12 +583,14 @@ def center_pane(*, messages: list[dict] | None = None,
 
 # ───── Right pane ────────────────────────────────────────────────────
 
-def right_pane(*, open_by_default: bool = False):
+def right_pane(*, open_by_default: bool = False, title: str = "News",
+               subtitle: str = "Market intelligence",
+               feed_url: str = "/app/news/html"):
     return Div(
         Div(
             Div(
-                H3("News", cls="right-title"),
-                Span("Market intelligence", cls="right-subtitle"),
+                H3(title, cls="right-title"),
+                Span(subtitle, cls="right-subtitle"),
                 cls="right-header-left",
             ),
             cls="right-header",
@@ -599,10 +601,10 @@ def right_pane(*, open_by_default: bool = False):
                 Div("◌", cls="news-loading-icon"),
                 P("Loading news...", cls="news-loading-text"),
                 id="news-loading",
-                cls="news-loading",
+                cls="news-loading htmx-indicator",
             ),
             Div(id="news-body",
-                hx_get="/app/news/html",
+                hx_get=feed_url,
                 hx_trigger="load, every 1800s",
                 hx_swap="innerHTML",
                 hx_indicator="#news-loading"),
