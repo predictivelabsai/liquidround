@@ -5,15 +5,12 @@ import pytest
 import json
 from pathlib import Path
 
-import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), 'agents'))
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-
 from utils.state import create_initial_state
-from orchestrator import OrchestratorAgent
-from target_finder import TargetFinderAgent
-from valuer import ValuerAgent
+from agents.orchestrator import OrchestratorAgent
+from agents.target_finder import TargetFinderAgent
+from agents.valuer import ValuerAgent
+
+pytestmark = pytest.mark.integration
 
 
 @pytest.fixture

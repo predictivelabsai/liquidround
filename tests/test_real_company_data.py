@@ -6,12 +6,15 @@ import os
 import sys
 import yfinance as yf
 import requests
+import pytest
 from datetime import datetime
 from pathlib import Path
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
+
+pytestmark = pytest.mark.integration
 
 # Add project paths
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))

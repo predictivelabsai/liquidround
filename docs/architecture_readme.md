@@ -67,7 +67,7 @@ flowchart TB
 
 ## 2. ECM Agent Squad — Multi-Agent Router
 
-23 specialist agents organised into 6 categories. The router uses a
+31 specialist agents organised into 7 categories. The router uses a
 strict priority chain: prefix match → keyword heuristics → LLM fallback.
 
 ```mermaid

@@ -35,14 +35,13 @@ _FILTER_KEYS = ["region", "country", "exchange", "sector"]
 
 def _load_df(n_years: int = 3) -> pd.DataFrame:
     year = datetime.now().year
-    frames = []
-    for y in range(year, year - n_years, -1):
-        df = db_service.get_ipo_data(year=y)
-        if not df.empty:
-            frames.append(df)
-    if not frames:
+    min_year = year - n_years + 1
+    try:
+        df = db_service.get_ipo_data_since(min_year)
+    except Exception:
         return pd.DataFrame()
-    df = pd.concat(frames, ignore_index=True).drop_duplicates(subset=["ticker"])
+    if df.empty:
+        return df
     # backfill region/country for any legacy rows
     df["country"] = df["country"].fillna("United States")
     df["region"] = df.apply(

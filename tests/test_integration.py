@@ -6,19 +6,16 @@ import pytest
 import json
 import asyncio
 import os
-import sys
 from datetime import datetime
 from pathlib import Path
 
-# Add project paths
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), 'agents'))
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-
 from utils.state import create_initial_state
-from orchestrator import OrchestratorAgent
-from target_finder import TargetFinderAgent
-from valuer import ValuerAgent
-from workflow import LiquidRoundWorkflow
+from agents.orchestrator import OrchestratorAgent
+from agents.target_finder import TargetFinderAgent
+from agents.valuer import ValuerAgent
+from agents.workflow import LiquidRoundWorkflow
+
+pytestmark = pytest.mark.integration
 
 
 class TestIntegration:

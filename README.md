@@ -53,7 +53,7 @@ flowchart TB
 
 ## AI Agent Squad
 
-23 specialist agents across 6 categories. The auto-router picks the right agent from natural language, or use a prefix shortcut (`scan:`, `dcf:`, `memo:`, `hedgefunds:`, etc.).
+31 specialist agents across 7 categories. The auto-router picks the right agent from natural language, or use a prefix shortcut (`scan:`, `dcf:`, `memo:`, `hedgefunds:`, `rto:`, `ir-triage:`, etc.).
 
 ```mermaid
 flowchart TD

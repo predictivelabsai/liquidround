@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import time
 import json
 from functools import lru_cache
@@ -70,26 +71,32 @@ def search_filings(query: str, forms: str = "", ticker: str = "",
         cik = ticker_to_cik(ticker)
         if cik:
             params["ciks"] = cik
-    if start_date:
+    if start_date or end_date:
         params["dateRange"] = "custom"
+    if start_date:
         params["startdt"] = start_date
     if end_date:
-        params["dateRange"] = "custom"
         params["enddt"] = end_date
     r = _get(f"https://efts.sec.gov/LATEST/search-index?{urlencode(params)}")
     data = r.json()
     hits = data.get("hits", {})
     total = hits.get("total", {}).get("value", 0)
     results = []
-    for h in hits.get("hits", []):
+    for h in hits.get("hits", [])[:min(limit, 40)]:
         src = h.get("_source", {})
+        ciks = src.get("ciks") or [""]
+        cik = ciks[0]
+        adsh = src.get("adsh", "")
+        display_names = src.get("display_names") or [""]
+        entity_name = re.sub(r"\s+\(.*$", "", display_names[0]).strip()
+        accession_dir = adsh.replace("-", "")
         results.append({
-            "form_type": src.get("form_type", ""),
-            "entity_name": src.get("entity_name", ""),
+            "form_type": src.get("form") or src.get("file_type", ""),
+            "entity_name": entity_name,
             "filing_date": src.get("file_date", ""),
-            "accession_number": src.get("file_num", ""),
-            "description": src.get("display_names", [""])[0] if src.get("display_names") else "",
-            "file_url": f"https://www.sec.gov/Archives/edgar/data/{src.get('ciks', [''])[0]}/{src.get('adsh', '').replace('-', '')}/{src.get('file_name', '')}",
+            "accession_number": adsh,
+            "description": src.get("file_description") or display_names[0],
+            "file_url": f"https://www.sec.gov/Archives/edgar/data/{cik}/{accession_dir}/{adsh}.txt",
         })
     return {"total": total, "results": results}
 

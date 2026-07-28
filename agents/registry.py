@@ -66,6 +66,12 @@ CATEGORIES: list[dict] = [
         "blurb": "SEC 13F filings, institutional ownership, activist stakes.",
         "icon": "◉",
     },
+    {
+        "key": "investor_relations",
+        "name": "Investor Relations & Communications",
+        "blurb": "Triage material events, draft and publish disclosure-compliant press releases.",
+        "icon": "✉",
+    },
 ]
 
 
@@ -355,7 +361,7 @@ AGENTS: tuple[AgentSpec, ...] = (
     ),
 
     # ─────────────────────────────────────────────────────────────────────
-    # Public Markets & Hedge Funds (3)
+    # Public Markets & Hedge Funds (4)
     # ─────────────────────────────────────────────────────────────────────
     AgentSpec(
         slug="hedge_fund_analyst", name="Hedge Fund Analyst",
@@ -400,8 +406,35 @@ AGENTS: tuple[AgentSpec, ...] = (
         ),
     ),
     AgentSpec(
+        slug="reverse_merger_analyst", name="Reverse Merger Analyst",
+        category="public_markets", audience="shared", icon="⇄", prefix="rto:",
+        one_liner="US reverse mergers, Canadian RTOs and SPAC/de-SPAC comparison.",
+        description="Discovers and analyzes reverse mergers from SEC EDGAR, compares them with SPAC/de-SPAC transactions, and evaluates reviewed Canadian RTO and CPC records.",
+        example_prompts=(
+            "rto: recent US reverse mergers in the last 90 days",
+            "rto: compare traditional reverse mergers with de-SPACs",
+            "rto: show completed Canadian RTO and CPC transactions",
+            "Analyze shell, dilution and seasoning risks for this reverse merger",
+        ),
+    ),
+    # ─────────────────────────────────────────────────────────────────────
+    # Investor Relations & Communications (5)
+    # ─────────────────────────────────────────────────────────────────────
+    AgentSpec(
+        slug="ir_triage", name="IR Event Triage",
+        category="investor_relations", audience="shared", icon="⚖", prefix="ir-triage:",
+        one_liner="Is this material enough to disclose? Go / no-go against disclosure rules.",
+        description="Triages an incoming event, news item, or rumor against materiality thresholds and disclosure obligations (EU MAR, US Reg FD, exchange rules). Returns a go / no-go on whether a press release is required, with a rationale, urgency window, and recommended disclosure channel.",
+        example_prompts=(
+            "ir-triage: our CFO resigned unexpectedly — do we need to disclose?",
+            "ir-triage: a competitor just filed a patent infringement suit against us",
+            "ir-triage: we missed Q3 guidance by 8% — material?",
+            "ir-triage: a major customer notified us they are switching suppliers",
+        ),
+    ),
+    AgentSpec(
         slug="press_release_writer", name="Press Release Writer",
-        category="public_markets", audience="shared", icon="✦", prefix="write-release:",
+        category="investor_relations", audience="shared", icon="✦", prefix="write-release:",
         one_liner="Research a topic and draft a publication-ready investor relations press release.",
         description="Researches companies and current developments on the web, then drafts factual, publication-ready investor relations releases with headlines, quotes, boilerplates, contacts, and source notes.",
         example_prompts=(
@@ -409,6 +442,42 @@ AGENTS: tuple[AgentSpec, ...] = (
             "Create an investor relations release about our new CEO appointment",
             "Research Enefit Green and draft a release about a new solar project",
             "Draft a product launch press release with a quote from the CEO",
+        ),
+    ),
+    AgentSpec(
+        slug="ir_compliance", name="IR Compliance Reviewer",
+        category="investor_relations", audience="shared", icon="⚠", prefix="ir-compliance:",
+        one_liner="Reg FD / MAR / exchange disclosure check before publish.",
+        description="Reviews a draft press release for compliance with US Reg FD, EU MAR (Market Abuse Regulation), and major exchange disclosure rules (Nasdaq Nordic/Baltic, NYSE, Euronext). Flags selective disclosure risks, forward-looking statement shortfalls, missing cautionary language, and inside-information handling issues.",
+        example_prompts=(
+            "ir-compliance: check this draft earnings release for Reg FD issues",
+            "ir-compliance: review our CEO appointment release for MAR compliance",
+            "ir-compliance: does this M&A release meet Nasdaq Stockholm disclosure rules?",
+            "ir-compliance: flag any selective disclosure risks in this draft",
+        ),
+    ),
+    AgentSpec(
+        slug="ir_publish", name="IR Publish Agent",
+        category="investor_relations", audience="shared", icon="⇒", prefix="ir-publish:",
+        one_liner="Approved draft → final publication-ready release with formatting and checklist.",
+        description="Takes an approved draft press release and produces the final publication-ready artifact: exchange-compliant formatting, wire-service fields (headline, subhead, dateline, body, about, contacts), a pre-publish checklist (embargo timing, exchange notification, investor list, website posting), and a distribution-ready package.",
+        example_prompts=(
+            "ir-publish: finalize the approved Q3 earnings release",
+            "ir-publish: produce the final wire-ready package for the CEO appointment",
+            "ir-publish: format this M&A release for GlobeNewswire submission",
+            "ir-publish: generate the pre-publish checklist for our product launch release",
+        ),
+    ),
+    AgentSpec(
+        slug="ir_distribute", name="IR Distribution Planner",
+        category="investor_relations", audience="shared", icon="☂", prefix="ir-distribute:",
+        one_liner="Distribution plan — wire services, exchanges, investor lists, timing.",
+        description="Plans the distribution of a finalized press release: wire-service routing (GlobeNewswire, PR Newswire, Business Wire), exchange notifications (Nasdaq, Euronext, NYSE), investor and analyst contact lists, media targeting, social/website posting schedule, and embargo/timing strategy across time zones.",
+        example_prompts=(
+            "ir-distribute: plan distribution for our Q3 earnings release across Nordic exchanges",
+            "ir-distribute: which wire service should we use for a Euronext-listed company?",
+            "ir-distribute: build the investor contact list for our M&A announcement",
+            "ir-distribute: schedule a cross-timezone release for a US + Nordic dual-listed company",
         ),
     ),
 )
@@ -436,4 +505,4 @@ def by_audience(audience: str) -> list[AgentSpec]:
     return [a for a in AGENTS if a.audience == audience or a.audience == "shared"]
 
 
-assert len(AGENTS) == 26, f"expected 26 agents, got {len(AGENTS)}"
+assert len(AGENTS) == 31, f"expected 31 agents, got {len(AGENTS)}"

@@ -178,6 +178,10 @@ investor_relations_router.to_app(app)
 from routes.spacs import ar as spacs_router
 spacs_router.to_app(app)
 
+# Register reverse-merger / RTO monitor (/app/reverse-mergers)
+from routes.reverse_mergers import ar as reverse_mergers_router
+reverse_mergers_router.to_app(app)
+
 # Register help page (/app/help)
 from routes.help import ar as help_router
 help_router.to_app(app)

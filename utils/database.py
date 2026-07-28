@@ -33,8 +33,13 @@ def _get_db_url():
 
 @contextmanager
 def get_conn():
-    """Get a PostgreSQL connection with auto-close."""
-    conn = psycopg2.connect(_get_db_url())
+    """Get a PostgreSQL connection with auto-close.
+
+    Includes a 10-second connect timeout and 30-second statement timeout
+    so that unreachable or locked DB queries don't hang the worker forever.
+    """
+    conn = psycopg2.connect(_get_db_url(), connect_timeout=10,
+                            options="-c statement_timeout=30000")
     try:
         yield conn
         conn.commit()
@@ -441,6 +446,16 @@ class DatabaseService:
             params.append(limit)
         with get_conn() as conn:
             df = pd.read_sql_query(query, conn, params=params)
+        return df
+
+    def get_ipo_data_since(self, min_year: int):
+        """Load IPO data for all years >= min_year in a single query."""
+        import pandas as pd
+        query = ("SELECT * FROM liquidround.ipo_data "
+                 "WHERE EXTRACT(YEAR FROM ipo_date) >= %s "
+                 "ORDER BY market_cap DESC")
+        with get_conn() as conn:
+            df = pd.read_sql_query(query, conn, params=[min_year])
         return df
 
     def log_ipo_refresh(self, refresh_type: str, status: str, records_processed: int = 0,

@@ -1,4 +1,0 @@
-interface:
-  display_name: "LiquidRound Release"
-  short_description: "Version, document, commit, and push LiquidRound"
-  default_prompt: "Use $liquidround-release to bump the version, update the change log, validate, commit, and push the current LiquidRound changes."

@@ -164,6 +164,11 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
               current_sid: str = "", current_path: str = "",
               current_currency: str = "EUR", current_role: str = "buyer"):
     """Composes the full left pane — pehero-faithful."""
+    public_markets_open = current_path.startswith((
+        "/app/ipo-map", "/app/ipo-pipeline", "/app/spacs",
+        "/app/reverse-mergers", "/app/prospectus", "/app/filings",
+        "/app/press-releases",
+    ))
     if user_email:
         signin_block = Div(
             Span("◇", cls="user-mark"),
@@ -253,7 +258,7 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
                     Span("Public Markets", cls="cat-name"),
                     Span("7", cls="cat-count"),
                     Span("▸", cls="cat-arrow"),
-                    cls="cat-toggle",
+                    cls=f"cat-toggle{' open' if public_markets_open else ''}",
                     onclick="toggleGroup('sec-public-markets')",
                     id="btn-sec-public-markets",
                     type="button",
@@ -268,6 +273,9 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
                     A(Span("◇", cls="bottom-nav-icon"), Span("SPACs", cls="bottom-nav-label"),
                       href="/app/spacs",
                       cls=f"bottom-nav-link{' active' if current_path.startswith('/app/spacs') else ''}"),
+                    A(Span("⇄", cls="bottom-nav-icon"), Span("Reverse Mergers", cls="bottom-nav-label"),
+                      href="/app/reverse-mergers",
+                      cls=f"bottom-nav-link{' active' if current_path.startswith('/app/reverse-mergers') else ''}"),
                     A(Span("◰", cls="bottom-nav-icon"), Span("Prospectus", cls="bottom-nav-label"),
                       href="/app/prospectus",
                       cls=f"bottom-nav-link{' active' if current_path.startswith('/app/prospectus') else ''}"),
@@ -277,7 +285,7 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
                     A(Span("◩", cls="bottom-nav-icon"), Span("Press Releases", cls="bottom-nav-label"),
                       href="/app/press-releases",
                       cls=f"bottom-nav-link{' active' if current_path.startswith('/app/press-releases') else ''}"),
-                    cls="agent-list", id="sec-public-markets",
+                    cls=f"agent-list{' open' if public_markets_open else ''}", id="sec-public-markets",
                 ),
                 cls="agent-group",
             ),

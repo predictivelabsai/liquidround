@@ -1,4 +1,4 @@
-"""LangChain StructuredTools used by the 22 specialist agents.
+"""LangChain StructuredTools used by the 31 specialist agents.
 
 Each tool wraps an existing utility (utils/yfinance_util, utils/research_tools,
 utils/document_parser, utils/ipo_utils) and where relevant emits a structured

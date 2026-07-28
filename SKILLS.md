@@ -289,11 +289,16 @@ python -m scripts.daily_deals --all               # send to all opted-in users
 3. Check `POSTMARK_API_TOKEN` is set and valid.
 4. Run `--dry-run` to verify content generation works.
 
-## CI/CD (Coolify)
+## CI/CD — autodeploy via Coolify
 
-Deployment is automated via GitHub Actions + Coolify webhook.
+**Autodeploy is on.** Every push to `main` auto-deploys to production with no manual step.
 
-**Pipeline:** push to `main` -> GitHub Actions (`.github/workflows/deploy.yml`) -> Coolify webhook -> Docker build from `Dockerfile` -> deploy.
+**Pipeline:** push to `main` -> GitHub Actions (`.github/workflows/deploy.yml`) -> Coolify webhook (`COOLIFY_WEBHOOK_URL` + `COOLIFY_TOKEN` secrets) -> Docker build from `Dockerfile` -> deploy to both domains.
+
+**Domains — both wired to the same Coolify service:**
+- `liquidround.com` — A record `72.62.88.13`. Live and current; should match `VERSION` in `utils/config.py` within ~2 min of a push.
+- `liquidround.ai` — A record `72.62.88.13` (same server). Live releases are served through the Coolify proxy (Traefik) with Let's Encrypt.
+- Both domains are listed in the Coolify service's Domains field: `https://liquidround.com,https://liquidround.ai`.
 
 **GitHub repo:** `predictivelabsai/liquidround` (origin)
 
@@ -309,17 +314,57 @@ on:
 # Triggers: curl GET to COOLIFY_WEBHOOK_URL with Bearer token
 ```
 
-**Verifying deployment:**
-1. After push, check GitHub Actions: `gh run list --limit 1`
-2. Check if the action succeeded: `gh run view <run-id>`
-3. Verify the live site responds: `curl -s -o /dev/null -w '%{http_code}' https://liquidround.com/`
-4. Spot-check a recent change on the live site via Playwright against `https://liquidround.com`
+**Verifying an autodeploy:**
+1. After push, confirm the action ran: `gh run list --limit 1` then `gh run view <run-id>`.
+2. Confirm both live sites respond and are current:
+   ```
+   curl -s https://liquidround.com/ | grep -oE 'v0\.[0-9]+\.[0-9]+'
+   curl -s https://liquidround.ai/  | grep -oE 'v0\.[0-9]+\.[0-9]+'
+   ```
+   Both must match `VERSION` in `utils/config.py`.
+3. Spot-check the shipped change on the live site via Playwright against `https://liquidround.com` (per the UI-validation skill).
 
 **Docker build:**
 - `Dockerfile` — Python 3.13-slim, installs system deps (gcc, libpq-dev), pip installs from `requirements.txt`, runs `python main.py`
 - `docker-compose.yml` — local dev with port mapping
 
-**Rollback:** push a revert commit to `main`, or redeploy a previous image in Coolify dashboard.
+**Rollback:** push a revert commit to `main` (autodeploy will ship it), or redeploy a previous image in the Coolify dashboard.
+
+**Before shipping a user-facing change to autodeploy:** the mandatory local Playwright validation (`.opencode/skills/validate-liquidround-ui/SKILL.md`) must pass — never push to `main` while it is failing.
+
+### Coolify dashboard admin
+
+**URL:** `https://coolify.finespresso.org`
+**Credentials:** in `.secrets` (gitignored) under `COOLIFY_DASHBOARD_EMAIL` / `COOLIFY_DASHBOARD_PASSWORD`.
+
+**Coolify project/service path:**
+- Project: `predictive labs apps` (ID: `d4wgogcokwsgw4oc4k0cco8c`)
+- Application: `predictivelabsai/liquidround` (ID: `h48go0swc8gs0w8wg8oo0w8c`)
+- Server: `finespresso-server` (ID: `psks0gwws484gkk4w4w4osk0`)
+- Direct link: `https://coolify.finespresso.org/project/d4wgogcokwsgw4oc4k0cco8c/environment/hg4wgcgwkg8oc8kkwoo8wwks/application/h48go0swc8gs0w8wg8oo0w8c`
+
+**Key admin actions via dashboard:**
+- **Change domains:** General tab -> Domains field -> edit -> Save. Then Redeploy.
+- **Redeploy:** Click "Redeploy" button on the General tab.
+- **Restart proxy** (fixes expired SSL certs): Server -> finespresso-server -> click "Restart Proxy" -> confirm. Wait ~60s for Traefik to reissue Let's Encrypt certs.
+- **View deployments:** Application -> Deployments tab.
+- **View logs:** Application -> Logs tab.
+
+**Driving Coolify with Playwright:** the dashboard is a standard web app. Use the credentials from `.secrets`, navigate to the URLs above, and interact with buttons/inputs. Screenshots go in `screenshots/coolify-*.png`.
+
+### Namecheap DNS admin
+
+**Domain:** `liquidround.ai` (registered at Namecheap)
+**Credentials:** in `.secrets` (gitignored) under `NAMECHEAP_USERNAME` / `NAMECHEAP_EMAIL` / `NAMECHEAP_PASSWORD`.
+**Login URL:** `https://www.namecheap.com/myaccount/login/`
+**DNS panel:** Advanced DNS tab. The A record `@ -> 72.62.88.13` must be present for the domain to resolve to the Coolify server.
+
+**When DNS changes are needed:**
+1. Log into Namecheap.
+2. Go to Domain List -> Manage -> Advanced DNS.
+3. Add/edit the A record. TTL: Automatic.
+4. Wait for DNS propagation (`dig +short liquidround.ai A` should show `72.62.88.13`).
+5. If SSL cert is expired after a DNS change, restart the Coolify proxy (see above).
 
 ## Cleanup
 

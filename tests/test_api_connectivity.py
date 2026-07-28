@@ -296,3 +296,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n💥 API connectivity tests failed: {e}")
         raise
+pytestmark = pytest.mark.integration

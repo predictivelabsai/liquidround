@@ -395,7 +395,7 @@ def pillars_section():
             H2("One system. Every stage. Both sides.",
                cls="text-3xl md:text-4xl font-bold tightest text-center mb-4",
                style=f"color:{INK};"),
-            P("Your AI ECM / IB analyst squad spans 5 workflow categories.",
+            P("Your AI ECM / IB analyst squad spans 7 workflow categories.",
               cls="text-center mb-12", style=f"color:{INK_MUTED};"),
             Div(
                 *[category_pillar(c["icon"], c["name"], c["blurb"], emph.get(c["key"], ""))

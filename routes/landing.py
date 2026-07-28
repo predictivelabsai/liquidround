@@ -55,7 +55,7 @@ def landing_platform(sess):
                 H1("The platform.",
                    cls="text-4xl md:text-5xl font-bold tightest text-center mb-4",
                    style=f"color:{INK};"),
-                P("Your AI ECM / IB analyst squad — specialists across 5 workflow categories (sourcing, underwriting, diligence, capital, portfolio). ECM stands for Equity Capital Markets. Same app for buyers and sellers.",
+                P("Your AI ECM / IB analyst squad — specialists across 7 workflow categories (sourcing, underwriting, diligence, capital, portfolio, public markets, investor relations). ECM stands for Equity Capital Markets. Same app for buyers and sellers.",
                   cls="text-lg text-center max-w-2xl mx-auto mb-12",
                   style=f"color:{INK_MUTED};"),
                 cls="max-w-4xl mx-auto px-6 pt-20 pb-8 text-center",
@@ -107,7 +107,7 @@ def landing_agents(sess):
         Div(
             Div(
                 Span("◈", cls="mono mr-2", style=f"color:{CTA}"),
-                Span("ECM Agent Squad · 5 categories · both sides of the deal",
+                Span("ECM Agent Squad · 7 categories · both sides of the deal",
                      cls="text-xs mono uppercase tracking-widest", style=f"color:{INK_MUTED}"),
                 cls="flex items-center justify-center mb-6 pt-20",
             ),

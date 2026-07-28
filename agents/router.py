@@ -61,6 +61,18 @@ CATEGORY_HINTS: dict[str, list[str]] = {
         "press release", "press releases", "news release", "announcement",
         "globenewswire", "euronext news", "omx news", "baltic news",
         "prnewswire", "pr newswire",
+        "reverse merger", "reverse takeover", "rto", "public shell",
+        "shell company", "backdoor listing", "back-door listing",
+        "qualifying transaction", "capital pool company", "cpc transaction",
+        "de-spac", "de spac",
+    ],
+    "investor_relations": [
+        "investor relations", "ir triage", "materiality", "disclosure",
+        "reg fd", "mar article 17", "inside information",
+        "disclosure obligation", "press release draft", "publish release",
+        "wire service", "globenewswire submission", "pr newswire submission",
+        "exchange notification", "investor list", "distribution plan",
+        "compliance review", "selective disclosure",
     ],
 }
 
@@ -130,12 +142,28 @@ def _best_in_category_for(message: str) -> str | None:
         return "filing_analyst"
     if "def 14a" in lower or "xbrl" in lower:
         return "filing_analyst"
+    if any(term in lower for term in (
+        "reverse merger", "reverse takeover", "public shell", "shell company",
+        "qualifying transaction", "capital pool company", "de-spac", "de spac",
+    )):
+        return "reverse_merger_analyst"
     if "press release" in lower or "news release" in lower or "globenewswire" in lower:
         if any(word in lower for word in ("write", "draft", "create", "prepare", "compose")):
             return "press_release_writer"
         return "press_release_analyst"
     if "euronext news" in lower or "omx news" in lower or "baltic news" in lower:
         return "press_release_analyst"
+    # ── Investor Relations & Communications ──────────────────────────────
+    if "ir-triage" in lower or ("materiality" in lower and "disclose" in lower) or "reg fd" in lower or "mar article 17" in lower:
+        return "ir_triage"
+    if "ir-compliance" in lower or "compliance review" in lower or "selective disclosure" in lower:
+        return "ir_compliance"
+    if "ir-publish" in lower or ("publish" in lower and "release" in lower) or "wire-ready" in lower or "pre-publish checklist" in lower:
+        return "ir_publish"
+    if "ir-distribute" in lower or "distribution plan" in lower or ("wire service" in lower and "routing" in lower) or "exchange notification" in lower:
+        return "ir_distribute"
+    if "investor relations" in lower and not any(p in lower for p in ("triage", "compliance", "publish", "distribute")):
+        return "press_release_writer"
     return None
 
 
@@ -189,13 +217,16 @@ def route(message: str, forced_slug: str | None = None) -> str:
 
 
 def has_specialist_prefix(message: str) -> bool:
-    """True if the message starts with one of the 25 agent prefixes."""
+    """True if the message starts with a registered agent prefix."""
     return _prefix_match(message) is not None
 
 
 def strip_prefix(message: str) -> str:
-    """Remove the leading `xxx:` prefix from a message, if present."""
-    m = re.match(r"^\s*([a-z]{2,12}):\s*", message, flags=re.IGNORECASE)
+    """Remove the leading `<prefix>:` from a message, if present.
+
+    Supports hyphenated prefixes (e.g. `ir-triage:`, `write-release:`).
+    """
+    m = re.match(r"^\s*([a-z][a-z-]{1,15}):\s*", message, flags=re.IGNORECASE)
     if m and (m.group(1).lower() + ":") in _PREFIX_MAP:
         return message[m.end():]
     return message

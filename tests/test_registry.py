@@ -1,4 +1,4 @@
-"""Tests for the 25-agent registry + router — pure unit, no network."""
+"""Tests for the 31-agent registry + router — pure unit, no network."""
 from __future__ import annotations
 
 import pytest
@@ -13,8 +13,8 @@ from agents.base import load_system_prompt
 
 # ── Shape invariants ────────────────────────────────────────────────────
 
-def test_exactly_25_agents():
-    assert len(AGENTS) == 26, f"expected 26 agents, got {len(AGENTS)}"
+def test_exact_agent_count():
+    assert len(AGENTS) == 31, f"expected 31 agents, got {len(AGENTS)}"
 
 
 def test_unique_slugs():
@@ -121,6 +121,12 @@ PREFIX_CASES = [
     ("hedgefunds: top funds by AUM",         "hedge_fund_analyst"),
     ("filings: AAPL 10-K filings",            "filing_analyst"),
     ("releases: recent M&A announcements",     "press_release_analyst"),
+    ("write-release: draft a CEO appointment",  "press_release_writer"),
+    ("ir-triage: CFO resigned — do we disclose?", "ir_triage"),
+    ("ir-compliance: check this draft for Reg FD", "ir_compliance"),
+    ("ir-publish: finalize the approved Q3 release", "ir_publish"),
+    ("ir-distribute: plan distribution for earnings release", "ir_distribute"),
+    ("rto: recent reverse mergers",             "reverse_merger_analyst"),
 ]
 
 
@@ -133,6 +139,7 @@ FREEFORM_CASES = [
     ("Find acquisition targets in the Nordics",  "target_scanner"),
     ("Draft the investment committee memo",       "ic_memo_writer"),
     ("What are the synergies between A and B?",   "synergy_analyst"),
+    ("Compare reverse mergers with de-SPACs",      "reverse_merger_analyst"),
 ]
 
 

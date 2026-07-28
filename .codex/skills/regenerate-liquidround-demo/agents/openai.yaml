@@ -1,4 +1,0 @@
-interface:
-  display_name: "Regenerate LiquidRound Demo"
-  short_description: "Archive and rebuild LiquidRound demo guides"
-  default_prompt: "Use $regenerate-liquidround-demo to archive prior versions, audit the live product, and regenerate a timestamped platform demo guide."

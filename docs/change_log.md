@@ -1,5 +1,45 @@
 # LiquidRound Change Log
 
+## 0.6.0 — 2026-07-28
+
+Public-markets and Investor Relations expansion introducing a full disclosure
+lifecycle and reverse-merger intelligence.
+
+### Added
+
+- Reverse Mergers workspace with traditional RTO, Canadian reviewed-record, and
+  SPAC/de-SPAC comparison subtabs.
+- Three-year US EDGAR discovery and evidence classification based on relevant
+  Form 8-K items, shell-exit language, and transaction signals.
+- Reverse Merger Analyst with the `rto:` prefix and source-linked tools.
+- Reviewed Canadian RTO/CPC manual imports with a replaceable licensed-provider
+  boundary; SEDAR+ is cited but not scraped or mirrored.
+- IR Event Triage, Compliance, Publish, and Distribution agents around the
+  existing Press Release Writer.
+- Landscape Platform Demo generation with PDF and editable PPTX outputs.
+
+### Changed
+
+- Expanded the platform to 31 specialist agents across seven categories.
+- Consolidated SPAC and reverse-merger exploration into a comparable normalized UX.
+- Moved the Press Release Writer into the dedicated Investor Relations category.
+- Rationalized real-provider tests behind an explicit `integration` marker and
+  fixed legacy workflow package imports.
+- Refreshed repository guidance, architecture, screenshots, and user documentation.
+
+### Verification
+
+- Default unit suite, agent registry, Python compilation, JavaScript syntax, and
+  reverse-merger classification tests passed.
+- Desktop and mobile Playwright validation covered the combined navigation,
+  Reverse Mergers workspace, Canadian import validation, and Investor Relations.
+
+### Operations
+
+- Apply `sql/18-reverse-mergers.sql` before running EDGAR synchronization or
+  storing reviewed Canadian records.
+- Canadian bulk automation requires a licensed data-distribution agreement.
+
 ## 0.5.1 — 2026-07-28
 
 News-first chat workspace update making investor-relations access and market

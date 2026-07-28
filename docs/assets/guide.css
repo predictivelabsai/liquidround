@@ -1,76 +1,159 @@
-/* LiquidRound User Guide — A4 landscape slide-deck */
+/* LiquidRound AI Platform Demo — A4 landscape, dark slide-deck */
+
+/* ── Page setup ──────────────────────────────────────────────────── */
 @page {
   size: A4 landscape;
-  margin: 20mm 25mm;
+  margin: 0;
+  background: #0B1220;
   @bottom-center {
     content: "LiquidRound — Predictive Labs Ltd";
     font-size: 8pt;
     color: #64748B;
+    margin-bottom: 6mm;
   }
   @bottom-right {
     content: counter(page) " / " counter(pages);
     font-size: 8pt;
     color: #64748B;
+    margin-bottom: 6mm;
+    margin-right: 22mm;
   }
+}
+
+@page :first {
+  background: #0B1220;
+  @bottom-center { content: none; }
+  @bottom-right { content: none; }
+}
+
+/* ── Root layout ─────────────────────────────────────────────────── */
+html {
+  background: #0B1220;
 }
 
 body {
   font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-  font-size: 12pt;
-  line-height: 1.5;
+  font-size: 11pt;
+  line-height: 1.45;
   color: #E5E7EB;
   background: #0B1220;
-  margin: 0 auto;
-  padding: 40px 60px;
-  max-width: 1200px;
+  margin: 0;
+  padding: 18mm 22mm;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
-/* --- = page break */
+/* ── Page breaks ─────────────────────────────────────────────────── */
+
+/* hr = explicit page break in markdown — we use --- between sections */
 hr {
   break-after: page;
   border: none;
   height: 0;
   margin: 0;
   padding: 0;
+  visibility: hidden;
 }
 
-/* Slide titles */
-h1 {
-  font-size: 28pt;
+/* h2 does NOT force its own break — we rely on hr for that.
+   This avoids double-break blank pages. */
+h2 {
+  break-before: avoid;
+  break-after: avoid;
+}
+
+h3, h4 {
+  break-after: avoid;
+  break-before: auto;
+}
+
+/* Avoid breaking inside tables, images, and list items */
+table, tr, img, li {
+  break-inside: avoid;
+}
+
+/* ── Cover page ──────────────────────────────────────────────────── */
+
+.cover-page {
+  background: #0B1220;
+  color: #F8FAFC;
+  text-align: center;
+  padding-top: 55mm;
+  break-after: avoid;
+  margin: -18mm -22mm 0 -22mm;
+  padding-left: 22mm;
+  padding-right: 22mm;
+  page-break-after: avoid;
+}
+
+/* Suppress pandoc's auto-generated title block — we have our own cover */
+#title-block-header {
+  display: none;
+}
+
+.cover-page h1 {
+  font-size: 40pt;
   font-weight: 800;
   color: #F59E0B;
-  margin: 0 0 12pt 0;
-  padding-bottom: 6pt;
+  border-bottom: none;
+  margin-bottom: 12pt;
+  letter-spacing: -0.02em;
+}
+
+.cover-page .subtitle {
+  font-size: 16pt;
+  color: #94A3B8;
+  margin: 8pt 0;
+}
+
+.cover-page .meta {
+  font-size: 12pt;
+  color: #64748B;
+  margin-top: 30pt;
+}
+
+/* ── Headings ────────────────────────────────────────────────────── */
+
+h1 {
+  font-size: 26pt;
+  font-weight: 800;
+  color: #F59E0B;
+  margin: 0 0 10pt 0;
+  padding-bottom: 5pt;
   border-bottom: 4px solid #F59E0B;
   letter-spacing: -0.02em;
 }
 
 h2 {
-  font-size: 20pt;
+  font-size: 18pt;
   font-weight: 700;
   color: #F59E0B;
-  margin: 20pt 0 8pt 0;
+  margin: 0 0 8pt 0;
   padding-bottom: 4pt;
   border-bottom: 3px solid #1E293B;
 }
 
 h3 {
-  font-size: 14pt;
+  font-size: 13pt;
   font-weight: 600;
   color: #F8FAFC;
-  margin: 14pt 0 6pt 0;
+  margin: 12pt 0 5pt 0;
 }
 
 h4 {
-  font-size: 12pt;
+  font-size: 11pt;
   font-weight: 600;
   color: #CBD5E1;
-  margin: 10pt 0 4pt 0;
+  margin: 8pt 0 3pt 0;
 }
 
+/* ── Body text ───────────────────────────────────────────────────── */
+
 p {
-  margin: 0 0 8pt 0;
+  margin: 0 0 6pt 0;
   color: #CBD5E1;
+  orphans: 2;
+  widows: 2;
 }
 
 a {
@@ -86,14 +169,15 @@ em {
   color: #94A3B8;
 }
 
-/* Bullet lists */
+/* ── Lists ───────────────────────────────────────────────────────── */
+
 ul, ol {
-  margin: 4pt 0 10pt 0;
-  padding-left: 20pt;
+  margin: 3pt 0 8pt 0;
+  padding-left: 18pt;
 }
 
 li {
-  margin-bottom: 4pt;
+  margin-bottom: 3pt;
   color: #CBD5E1;
 }
 
@@ -101,59 +185,46 @@ li strong {
   color: #F59E0B;
 }
 
-/* Screenshots float right */
+/* ── Screenshots ─────────────────────────────────────────────────── */
+
+/* Float right, take up ~48% of the page width */
 img {
   max-width: 48%;
   float: right;
-  margin: 0 0 10pt 16pt;
+  margin: 0 0 6pt 12pt;
   border-radius: 6px;
   border: 1px solid #1E293B;
   box-shadow: 0 4px 16px rgba(0,0,0,0.4);
 }
 
-/* Cover slide */
-.cover {
-  text-align: center;
-  padding-top: 60pt;
-}
-
-.cover img {
+/* When image is alone on a page (no text), go full width */
+img.full-width {
+  max-width: 88%;
   float: none;
-  max-width: 60%;
-  margin: 20pt auto;
   display: block;
+  margin: 12pt auto;
 }
 
-.cover h1 {
-  font-size: 36pt;
-  border-bottom: none;
-  margin-bottom: 8pt;
-}
+/* ── Tables ──────────────────────────────────────────────────────── */
 
-.cover p {
-  font-size: 14pt;
-  color: #94A3B8;
-}
-
-/* Tables */
 table {
   width: 100%;
   border-collapse: collapse;
-  margin: 8pt 0 12pt 0;
-  font-size: 10pt;
+  margin: 6pt 0 10pt 0;
+  font-size: 9.5pt;
 }
 
 th {
   background: #1E293B;
   color: #F59E0B;
-  padding: 6pt 10pt;
+  padding: 5pt 8pt;
   text-align: left;
   font-weight: 600;
   border-bottom: 2px solid #F59E0B;
 }
 
 td {
-  padding: 5pt 10pt;
+  padding: 4pt 8pt;
   border-bottom: 1px solid #1E293B;
   color: #CBD5E1;
 }
@@ -162,10 +233,11 @@ tr:nth-child(even) td {
   background: rgba(30, 41, 59, 0.3);
 }
 
-/* Code / command blocks */
+/* ── Code / commands ─────────────────────────────────────────────── */
+
 code {
   font-family: "JetBrains Mono", "Fira Code", monospace;
-  font-size: 10pt;
+  font-size: 9.5pt;
   background: #1E293B;
   color: #F59E0B;
   padding: 1pt 4pt;
@@ -174,7 +246,7 @@ code {
 
 pre {
   background: #1E293B;
-  padding: 10pt 14pt;
+  padding: 8pt 12pt;
   border-radius: 6px;
   border: 1px solid #334155;
   overflow-x: auto;
@@ -187,12 +259,13 @@ pre code {
   padding: 0;
 }
 
-/* Tip / note boxes */
+/* ── Tip / note boxes ────────────────────────────────────────────── */
+
 blockquote {
   background: rgba(245, 158, 11, 0.08);
   border-left: 4px solid #F59E0B;
-  margin: 8pt 0;
-  padding: 8pt 14pt;
+  margin: 6pt 0;
+  padding: 6pt 12pt;
   border-radius: 0 6px 6px 0;
   color: #CBD5E1;
 }
@@ -201,10 +274,15 @@ blockquote strong {
   color: #F59E0B;
 }
 
-/* Print-friendly overrides */
+/* ── Print color preservation ────────────────────────────────────── */
+
 @media print {
-  body {
+  html, body {
     background: #0B1220;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  * {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }

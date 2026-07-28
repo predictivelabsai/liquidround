@@ -5,15 +5,11 @@ from typing import Dict, Any, Literal
 from langgraph.graph import StateGraph, END
 # Checkpointing disabled (was SqliteSaver, now using PostgreSQL)
 
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from ..utils.state import State, create_initial_state, add_message
-from ..utils.logging import get_logger
-from .orchestrator import OrchestratorAgent
-from .target_finder import TargetFinderAgent
-from .valuer import ValuerAgent
+from utils.state import State, create_initial_state, add_message
+from utils.logging import get_logger
+from agents.orchestrator import OrchestratorAgent
+from agents.target_finder import TargetFinderAgent
+from agents.valuer import ValuerAgent
 
 logger = get_logger("workflow")
 
