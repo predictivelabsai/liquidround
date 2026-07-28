@@ -384,6 +384,7 @@ CREATE TABLE liquidround.reverse_merger_filings (
 - **pdfplumber** — included in `requirements.txt` (PDF text extraction)
 - **PostgreSQL** — `liquidround` schema with `sql/18-reverse-mergers.sql` applied
 - **Headless browser environment** — X11 not required; Chromium runs headless by default
+- **Residential proxy** (if behind WAF) — SEDAR+ is behind a PerimeterX/Shieldsquare WAF that blocks datacenter IPs. If you get a 403, set `SEDARPLUS_PROXY=http://user:pass@proxy.host:8080` in the environment.
 
 ---
 
@@ -413,3 +414,4 @@ CREATE TABLE liquidround.reverse_merger_filings (
 - **Review workflow**: All discovered records start with `review_status='unreviewed'`; manual imports start with `review_status='reviewed'`
 - **Headless by default**: Chromium runs headless in production; use `--no-headless` for selector debugging
 - **DRM keys**: SEDAR+ document download URLs contain `drmKey` and `drr` parameters that are session-bound — downloads must go through the browser context, not plain HTTP
+- **WAF / IP blocking**: SEDAR+ is behind a PerimeterX/Shieldsquare WAF that may block datacenter IPs with a 403 Forbidden response. The client detects this and raises a clear error. To bypass, set the `SEDARPLUS_PROXY` environment variable to a residential proxy URL. The search page URL is `https://www.sedarplus.ca/csa-party/service/create.html?service=searchDocuments&targetAppCode=csa-party&_locale=en`

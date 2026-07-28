@@ -1,9 +1,9 @@
 """SEDAR+ (sedarplus.ca) document discovery client — Playwright headless.
 
 SEDAR+ is the Canadian Securities Administrators' public filing system. The
-public search UI is a JavaScript-rendered "viewInstance" application, so plain
-HTTP clients cannot enumerate results. This module drives a real headless
-Chromium browser via Playwright to:
+public search UI is a JavaScript-rendered application, so plain HTTP clients
+cannot enumerate results. This module drives a real headless Chromium browser
+via Playwright to:
 
   1. navigate to the public document-search page,
   2. fill document-type / content-search / date-range filters,
@@ -18,15 +18,20 @@ Throttling: SEDAR+ has no published rate limit; we sleep ~1.5s between page
 actions and cap concurrent document downloads to be polite. The browser is
 reused for the whole discovery run and closed on exit.
 
+SEDAR+ is behind a PerimeterX/Shieldsquare WAF that may block datacenter IPs.
+If you get a 403, set the ``SEDARPLUS_PROXY`` environment variable to a
+residential proxy URL (e.g. ``http://user:pass@proxy.host:8080``).
+
 Public document search page:
-    https://www.sedarplus.ca/csa-party/viewInstance/view.html?id=0c11f8b7998bcd96fb9cb36b800b9dfdd7cbf07b7cf2bde3
+    https://www.sedarplus.ca/csa-party/service/create.html?service=searchDocuments&targetAppCode=csa-party&_locale=en
 
 Document download URL pattern:
-    https://www.sedarplus.ca/csa-party/viewInstance/resource.html?node=...&drmKey=...&drr=...&id=...
+    https://www.sedarplus.ca/csa-party/.../resource.html?node=...&drmKey=...&drr=...&id=...
 """
 from __future__ import annotations
 
 import logging
+import os
 import re
 import time
 from dataclasses import dataclass, field
@@ -36,10 +41,11 @@ from urllib.parse import urlparse
 log = logging.getLogger(__name__)
 
 SEARCH_PAGE_URL = (
-    "https://www.sedarplus.ca/csa-party/viewInstance/view.html?"
-    "id=0c11f8b7998bcd96fb9cb36b800b9dfdd7cbf07b7cf2bde3"
+    "https://www.sedarplus.ca/csa-party/relay.html?target=csa-party&"
+    "url=https%3A%2F%2Fwww.sedarplus.ca%2Fcsa-party%2Fservice%2Fcreate.html"
+    "%3FtargetAppCode%3Dcsa-party%26service%3DsearchDocuments"
 )
-LANDING_URL = "https://sedarplus.ca/home/"
+LANDING_URL = "https://www.sedarplus.ca/home/"
 
 # Document-type labels on SEDAR+ that are most likely to surface reverse-merger
 # / RTO / CPC-qualifying-transaction / SPAC-QA events. Used as free-text filters
@@ -100,10 +106,11 @@ class SedarplusClient:
     """
 
     def __init__(self, *, headless: bool = True, timeout_ms: int = 45_000,
-                 action_sleep: float = 1.5):
+                 action_sleep: float = 1.5, proxy: str = ""):
         self.headless = headless
         self.timeout_ms = timeout_ms
         self.action_sleep = action_sleep
+        self.proxy = proxy or os.environ.get("SEDARPLUS_PROXY", "")
         self._pw = None
         self._browser = None
         self._page = None
@@ -113,13 +120,31 @@ class SedarplusClient:
         from playwright.sync_api import sync_playwright
 
         self._pw = sync_playwright().start()
-        self._browser = self._pw.chromium.launch(headless=self.headless)
-        self._page = self._browser.new_page(
+        launch_kwargs: dict = {
+            "headless": self.headless,
+            "channel": "chrome",
+            "args": [
+                "--disable-blink-features=AutomationControlled",
+                "--no-sandbox",
+            ],
+        }
+        if self.proxy:
+            launch_kwargs["proxy"] = {"server": self.proxy}
+            log.info("SEDAR+ using proxy: %s", self.proxy)
+        self._browser = self._pw.chromium.launch(**launch_kwargs)
+        ctx = self._browser.new_context(
             user_agent=(
                 "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
                 "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
             ),
+            viewport={"width": 1400, "height": 900},
+            locale="en-CA",
             accept_downloads=True,
+        )
+        self._page = ctx.new_page()
+        # Remove webdriver detection flag
+        self._page.add_init_script(
+            'Object.defineProperty(navigator, "webdriver", {get: () => undefined})'
         )
         self._page.set_default_timeout(self.timeout_ms)
         return self
@@ -140,8 +165,22 @@ class SedarplusClient:
     def _goto_search(self) -> None:
         """Navigate to the document-search page and wait for it to render."""
         page = self._page
-        page.goto(SEARCH_PAGE_URL, wait_until="domcontentloaded")
-        # The viewInstance app renders asynchronously; wait for the search
+        resp = page.goto(SEARCH_PAGE_URL, wait_until="domcontentloaded")
+        # Detect WAF 403 block (PerimeterX/Shieldsquare)
+        if resp and resp.status == 403:
+            body_text = ""
+            try:
+                body_text = page.inner_text("body")[:200]
+            except Exception:
+                pass
+            if "403" in body_text or "Forbidden" in body_text:
+                raise RuntimeError(
+                    "SEDAR+ returned 403 Forbidden — the site's WAF "
+                    "(PerimeterX/Shieldsquare) is blocking this IP. "
+                    "Set the SEDARPLUS_PROXY environment variable to a "
+                    "residential proxy URL to bypass the block."
+                )
+        # The search app renders asynchronously; wait for the search
         # form anchor that every variant of the page exposes.
         try:
             page.wait_for_selector("text=Search and download documents",
@@ -207,9 +246,7 @@ class SedarplusClient:
     # ------------------------------------------------------------------ fillers
     def _fill_content_search(self, query: str) -> None:
         page = self._page
-        # The content-search box has a placeholder mentioning "content".
-        sel = "[name='documentContentSearch'], input[placeholder*='content' i], textarea[placeholder*='content' i]"
-        loc = page.locator(sel).first
+        loc = page.get_by_role("textbox", name=re.compile("Document content search")).first
         loc.fill(query)
         self._sleep()
 
@@ -230,32 +267,39 @@ class SedarplusClient:
 
     def _fill_date(self, which: str, value: str) -> None:
         page = self._page
-        sel = f"input[name='date{which.capitalize()}'], input[placeholder*='{which}' i]"
-        loc = page.locator(sel).first
-        loc.fill(value)
+        from datetime import datetime
+        display_value = datetime.strptime(value, "%Y-%m-%d").strftime("%d/%m/%Y")
+        page.get_by_role("textbox", name=f"{which.capitalize()} date").fill(display_value)
         self._sleep()
 
     def _fill_profile(self, name: str) -> None:
         page = self._page
-        sel = "[name='profileName'], input[placeholder*='profile' i]"
-        page.locator(sel).first.fill(name)
+        page.get_by_role("textbox", name="Profile name or number").fill(name)
         self._sleep()
 
     def _click_search(self) -> None:
         page = self._page
-        # The Search button is a submit-style link/button.
-        for sel in ("button:has-text('Search')", "a:has-text('Search')",
-                    "input[type='submit'][value='Search']"):
-            try:
-                page.locator(sel).first.click(timeout=5000)
-                break
-            except Exception:
-                continue
-        # Wait for results table or an explicit empty-state message.
+        before = ""
         try:
-            page.wait_for_selector("table", timeout=self.timeout_ms)
+            before = page.locator("table tbody tr").first.inner_text(timeout=2000)
         except Exception:
-            page.wait_for_load_state("networkidle", timeout=self.timeout_ms)
+            pass
+        page.get_by_role("button", name="Search", exact=True).click()
+        # A results table is already present on initial load. Wait for SEDAR+'s
+        # AJAX search to replace it instead of accepting that stale table.
+        try:
+            page.wait_for_function(
+                """previous => {
+                    const row = document.querySelector('table tbody tr');
+                    const body = document.body.innerText;
+                    return (row && row.innerText !== previous) ||
+                           /no (matching )?documents|no results/i.test(body);
+                }""",
+                before,
+                timeout=self.timeout_ms,
+            )
+        except Exception:
+            page.wait_for_timeout(5000)
         self._sleep()
 
     # ------------------------------------------------------------------ results
@@ -286,11 +330,13 @@ class SedarplusClient:
                 cells = tr.locator("td").all()
                 if len(cells) < 4:
                     continue
-                profile_text = cells[0].inner_text(timeout=2000).strip()
-                doc_text = cells[1].inner_text(timeout=2000).strip()
-                submitted = cells[2].inner_text(timeout=2000).strip()
-                jurisdiction = cells[3].inner_text(timeout=2000).strip() if len(cells) > 3 else ""
-                file_size = cells[4].inner_text(timeout=2000).strip() if len(cells) > 4 else ""
+                # Current SEDAR+ table starts with a selection-checkbox column.
+                offset = 1 if len(cells) >= 6 else 0
+                profile_text = cells[offset].inner_text(timeout=2000).strip()
+                doc_text = cells[offset + 1].inner_text(timeout=2000).strip()
+                submitted = cells[offset + 2].inner_text(timeout=2000).strip()
+                jurisdiction = cells[offset + 3].inner_text(timeout=2000).strip()
+                file_size = cells[offset + 4].inner_text(timeout=2000).strip()
             except Exception:
                 continue
             profile_name, profile_number = _split_profile(profile_text)
@@ -345,17 +391,16 @@ class SedarplusClient:
         page = self._page
         if not url:
             raise ValueError("download_document requires a non-empty URL")
-        with page.expect_response(re.escape(url), timeout=self.timeout_ms) as resp_info:
-            page.goto(url, wait_until="domcontentloaded")
-        resp = resp_info.value
+        resp = page.context.request.get(url, timeout=self.timeout_ms)
+        if not resp.ok:
+            raise RuntimeError(f"SEDAR+ document returned HTTP {resp.status}")
         body = resp.body()
         # If the URL serves HTML (e.g. a viewer page), try the first PDF link.
         if _looks_html(resp.headers.get("content-type", "")) or _looks_html_body(body):
             pdf_url = _find_pdf_link_in(page)
             if pdf_url:
-                with page.expect_response(re.escape(pdf_url), timeout=self.timeout_ms) as r2:
-                    page.goto(pdf_url, wait_until="domcontentloaded")
-                return r2.value.body()
+                r2 = page.context.request.get(pdf_url, timeout=self.timeout_ms)
+                return r2.body()
         return body
 
 
@@ -373,8 +418,13 @@ def _split_profile(text: str) -> tuple[str, str]:
 def _norm_date(value: str) -> str:
     """Best-effort normalization of SEDAR+ submitted-date strings to ISO."""
     clean = re.sub(r"\s+", " ", (value or "")).strip()
+    visible_date = re.search(r"\b\d{1,2}\s+[A-Za-z]{3}\s+\d{4}\b", clean)
+    if visible_date:
+        clean = visible_date.group(0)
     # Common SEDAR+ formats: "2026-01-15", "Jan 15, 2026", "15-Jan-2026".
-    for fmt in ("%Y-%m-%d", "%b %d, %Y", "%d-%b-%Y", "%d %b %Y", "%Y/%m/%d"):
+    clean = re.sub(r"\s+(EST|EDT|Eastern.*)$", "", clean, flags=re.IGNORECASE)
+    for fmt in ("%Y-%m-%d", "%b %d, %Y", "%d-%b-%Y", "%d %b %Y",
+                "%Y/%m/%d", "%d %b %Y %H:%M"):
         try:
             from datetime import datetime
             return datetime.strptime(clean, fmt).date().isoformat()
@@ -444,6 +494,7 @@ def discover_documents(
     days: int = 365,
     limit: int = 60,
     headless: bool = True,
+    client: SedarplusClient | None = None,
 ) -> list[SedarDocument]:
     """Run a batch of SEDAR+ searches for reverse-merger-relevant documents.
 
@@ -457,12 +508,12 @@ def discover_documents(
     date_to = date.today().isoformat()
     seen: set[str] = set()
     out: list[SedarDocument] = []
-    with SedarplusClient(headless=headless) as client:
+    def run(active_client: SedarplusClient) -> list[SedarDocument]:
         queries = content_queries or (None,)
         for query in queries:
             for doc_type in (document_types or ("",)):
                 try:
-                    rows = client.search_documents(
+                    rows = active_client.search_documents(
                         content_query=query or "",
                         document_type=doc_type or "",
                         date_from=date_from,
@@ -480,10 +531,15 @@ def discover_documents(
                     out.append(row)
                     if len(out) >= limit:
                         return out
-    return out
+        return out
+    if client is not None:
+        return run(client)
+    with SedarplusClient(headless=headless) as owned_client:
+        return run(owned_client)
 
 
-def fetch_document_text(url: str, *, headless: bool = True) -> dict:
+def fetch_document_text(url: str, *, headless: bool = True,
+                        client: SedarplusClient | None = None) -> dict:
     """Download a single SEDAR+ document and run it through the canonical parser.
 
     Returns the ``parse_authorized_document`` shape
@@ -492,8 +548,11 @@ def fetch_document_text(url: str, *, headless: bool = True) -> dict:
     """
     from utils.filing_intelligence import parse_authorized_document
 
-    with SedarplusClient(headless=headless) as client:
+    if client is not None:
         content = client.download_document(url)
+    else:
+        with SedarplusClient(headless=headless) as owned_client:
+            content = owned_client.download_document(url)
     filename = _filename_from_url(url)
     return parse_authorized_document(content, filename)
 
