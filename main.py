@@ -1166,6 +1166,10 @@ def app_shell(session, role: str = "", sid: str = ""):
             from utils.database import db_service
             conv_msgs = db_service.get_messages(sid) or []
             messages = [{"role": m["role"], "content": m["content"]} for m in conv_msgs]
+            session["recent_user_messages"] = [
+                str(m["content"])[:240] for m in conv_msgs
+                if m.get("role") == "user" and m.get("content")
+            ][-5:]
             session["conversation_id"] = sid
         except Exception:
             pass
@@ -1262,7 +1266,7 @@ async def app_chat_sse(request, session):
     from langchain_core.messages import HumanMessage
     from agents.base import cached_agent
     from agents.registry import by_slug
-    from agents.router import route as route_slug, strip_prefix
+    from agents.router import contextualize_user_query, route_with_context, strip_prefix
     from tools.artifact import is_artifact, parse_artifact, ARTIFACT_PREFIX
     import chat_sse as sse
 
@@ -1291,9 +1295,20 @@ async def app_chat_sse(request, session):
         except Exception:
             pass
 
-    slug = route_slug(user_msg)
+    previous_user_messages = [
+        str(item)[:240] for item in session.get("recent_user_messages", [])
+        if str(item).strip()
+    ][-5:]
+    slug = route_with_context(
+        user_msg,
+        previous_user_messages=previous_user_messages,
+        active_slug=session.get("last_agent_slug"),
+    )
+    session["last_agent_slug"] = slug
+    session["recent_user_messages"] = [*previous_user_messages, user_msg[:240]][-5:]
     spec = by_slug(slug)
     stripped = strip_prefix(user_msg)
+    contextual_query = contextualize_user_query(stripped, previous_user_messages)
 
     async def event_stream():
         # Push conversation ID to client so Share button works
@@ -1318,7 +1333,10 @@ async def app_chat_sse(request, session):
         # LangGraph app path
         if hasattr(agent, "astream_events"):
             try:
-                async for ev in agent.astream_events({"messages": [HumanMessage(content=stripped)]}, version="v2"):
+                async for ev in agent.astream_events(
+                    {"messages": [HumanMessage(content=contextual_query)]},
+                    version="v2",
+                ):
                     kind = ev["event"]
                     if kind == "on_chat_model_stream":
                         chunk = ev["data"].get("chunk")
@@ -1350,7 +1368,7 @@ async def app_chat_sse(request, session):
         else:
             # Simple-LLM callable fallback
             try:
-                text = agent(stripped) if callable(agent) else str(agent)
+                text = agent(contextual_query) if callable(agent) else str(agent)
                 accumulated = text
                 yield sse.event(sse.TOKEN, {"text": text})
             except Exception as e:  # noqa: BLE001
@@ -1788,6 +1806,8 @@ def page_tools():
 def conversation_new(session):
     """Start a new conversation."""
     session.pop("conversation_id", None)
+    session.pop("recent_user_messages", None)
+    session.pop("last_agent_slug", None)
     return RedirectResponse("/", status_code=303)
 
 @rt("/conversation/{conv_id}")
@@ -1799,6 +1819,11 @@ def conversation_load(session, conv_id: str):
     from utils.database import db_service
     messages = db_service.get_messages(conv_id)
     session["conversation_id"] = conv_id
+    session["recent_user_messages"] = [
+        str(m["content"])[:240] for m in messages
+        if m.get("role") == "user" and m.get("content")
+    ][-5:]
+    session.pop("last_agent_slug", None)
     parts = []
     for m in messages:
         if m["role"] == "user":

@@ -135,6 +135,51 @@ def test_prefix_routing(msg, expected):
     assert route(msg) == expected
 
 
+def test_target_scanner_followup_keeps_accumulated_mandate():
+    from agents.router import route_with_context
+
+    prior = [
+        "vertical SaaS in Lithuania",
+        "EUR 200k revenue and above, family or founder owned, 2-3 maximum",
+        "the Baltics, accounting SaaS",
+    ]
+    assert route_with_context(
+        "5 employees, no other restriction",
+        previous_user_messages=prior,
+        active_slug="target_scanner",
+    ) == "target_scanner"
+
+
+def test_explicit_new_intent_overrides_active_target_scanner():
+    from agents.router import route_with_context
+
+    assert route_with_context(
+        "Write an IC memo for the best target",
+        previous_user_messages=["Baltic accounting SaaS targets"],
+        active_slug="target_scanner",
+    ) == "ic_memo_writer"
+
+
+def test_specialist_query_contains_prior_user_filters():
+    from agents.router import contextualize_user_query
+
+    query = contextualize_user_query(
+        "5 employees, no other restriction",
+        ["vertical SaaS in Lithuania", "the Baltics, accounting SaaS"],
+    )
+    assert "vertical SaaS in Lithuania" in query
+    assert "the Baltics, accounting SaaS" in query
+    assert query.endswith("5 employees, no other restriction")
+
+
+def test_target_scanner_prompt_proceeds_with_open_filters():
+    from agents.base import load_system_prompt
+
+    prompt = load_system_prompt("target_scanner")
+    assert "Treat omitted criteria as unconstrained" in prompt
+    assert "Never repeat a question already answered" in prompt
+
+
 FREEFORM_CASES = [
     ("Find acquisition targets in the Nordics",  "target_scanner"),
     ("Draft the investment committee memo",       "ic_memo_writer"),

@@ -217,6 +217,46 @@ def route(message: str, forced_slug: str | None = None) -> str:
     return _llm_classify(message)
 
 
+def route_with_context(
+    message: str,
+    previous_user_messages: list[str] | tuple[str, ...] | None = None,
+    active_slug: str | None = None,
+) -> str:
+    """Route a refinement without losing its active specialist mandate."""
+    prefix_slug = _prefix_match(message)
+    if prefix_slug:
+        return prefix_slug
+
+    direct_slug = _best_in_category_for(message)
+    if direct_slug:
+        return direct_slug
+
+    scores = _keyword_scores(message)
+    if scores:
+        return max(scores, key=scores.get)
+
+    previous = [str(item).strip() for item in (previous_user_messages or []) if str(item).strip()]
+    if previous and active_slug in AGENTS_BY_SLUG and len(message.split()) <= 24:
+        return active_slug
+
+    contextual = "\n".join([*previous[-5:], message]) if previous else message
+    return _llm_classify(contextual)
+
+
+def contextualize_user_query(message: str, previous_user_messages: list[str] | tuple[str, ...] | None = None) -> str:
+    """Give a specialist the compact user-only mandate history."""
+    previous = [str(item).strip() for item in (previous_user_messages or []) if str(item).strip()]
+    if not previous:
+        return message
+    prior = "\n".join(f"- {item}" for item in previous[-5:])
+    return (
+        "Continue the user's accumulated mandate. Preserve prior filters and treat the "
+        "latest turn as a refinement unless it explicitly changes them.\n\n"
+        f"Prior user criteria (oldest to newest):\n{prior}\n\n"
+        f"Latest user turn:\n{message}"
+    )
+
+
 def has_specialist_prefix(message: str) -> bool:
     """True if the message starts with a registered agent prefix."""
     return _prefix_match(message) is not None

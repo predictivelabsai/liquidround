@@ -82,7 +82,7 @@ Demo prompts: `ir-triage: CFO resigned`, `ir-compliance: check this draft`, `ir-
 
 ## The 31-agent squad — sourcing and underwriting
 
-**Deal Sourcing (4):** Target Scanner (`scan:`), Buyer Scanner (`buyers:`), Deal Triage (`triage:`), Seller Intent (`intent:`).
+**Deal Sourcing (4):** Target Scanner (`scan:`), Buyer Scanner (`buyers:`), Deal Triage (`triage:`), Seller Intent (`intent:`). Target Scanner carries mandate filters across follow-up turns, treats omitted filters as open, and proceeds with evidence-backed candidates once sector/product and geography are known.
 
 **Valuation & Underwriting (6):** Company Profiler (`profile:`), Comps Finder (`comps:`), LTM Normalizer (`ltm:`), DCF Valuer (`dcf:`), Multiples Valuer (`multi:`), Synergy Analyst (`synergy:`).
 
