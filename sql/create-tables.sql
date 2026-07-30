@@ -237,6 +237,12 @@ CREATE INDEX IF NOT EXISTS idx_lr_scoring_workflow ON liquidround.scoring_result
 CREATE INDEX IF NOT EXISTS idx_lr_research_workflow ON liquidround.research_results (workflow_id);
 
 -- Views for common queries
+-- PostgreSQL cannot CREATE OR REPLACE a view when columns added to the
+-- underlying `deals` table change the position of the aggregate columns.
+-- These are derived objects, so recreate them explicitly on baseline replay.
+DROP VIEW IF EXISTS liquidround.active_deals;
+DROP VIEW IF EXISTS liquidround.deal_summary;
+
 CREATE OR REPLACE VIEW liquidround.active_deals AS
 SELECT
     d.*,
