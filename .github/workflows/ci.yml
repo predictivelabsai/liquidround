@@ -32,6 +32,8 @@ jobs:
       MODEL_PROVIDER: xai
       DEFAULT_MODEL: grok-4-1-fast-reasoning
       DB_URL: postgresql://liquidround:liquidround@127.0.0.1:5432/liquidround
+      GOOGLE_CLIENT_ID: test-client-id
+      GOOGLE_CLIENT_SECRET: test-client-secret
       DIGEST_FREQUENCY: off
       LOCAL_AUTH_BYPASS: "true"
       ENVIRONMENT: test
