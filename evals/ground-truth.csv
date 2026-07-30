@@ -1,7 +1,7 @@
 question,expected_answer,ai_answer,result
-"What is ECM in the context of LiquidRound?","ECM stands for Equity Capital Markets. LiquidRound provides 22 specialist AI analysts for buyer-led M&A sourcing, diligence, and seller-led IPO readiness.",,
-"How many AI agents does LiquidRound have?","LiquidRound has 22 specialist AI agents organized into 5 categories: Deal Sourcing & Screening (4), Valuation & Underwriting (6), Due Diligence Stack (5), Deal Execution & Capital (5), and Research & Post-Deal (2).",,
-"What are the 5 agent categories?","The 5 categories are: Deal Sourcing & Screening, Valuation & Underwriting, Due Diligence Stack, Deal Execution & Capital, and Research & Post-Deal.",,
+"What is ECM in the context of LiquidRound?","ECM stands for Equity Capital Markets. LiquidRound provides 32 specialist AI agents for buyer-led M&A, seller-led transactions, public markets, and investor relations.",,
+"How many AI agents does LiquidRound have?","LiquidRound has 32 specialist AI agents organized into 7 categories: sourcing, underwriting, diligence, capital, portfolio, public markets, and investor relations.",,
+"What are the 7 agent categories?","The 7 categories are: Deal Sourcing & Screening, Valuation & Underwriting, Due Diligence Stack, Deal Execution & Capital, Research & Post-Deal, Public Markets & Hedge Funds, and Investor Relations & Communications.",,
 "What does the Deal Triage agent do?","The Deal Triage agent performs initial screening of potential acquisition targets, evaluating fit based on size, sector, geography, growth profile, and strategic alignment.",,
 "How does the DCF Modeler work?","The DCF Modeler builds discounted cash flow valuations using company financials, applying user-specified WACC and terminal growth rates to estimate intrinsic value.",,
 "What is the difference between buyer and seller modes?","Buyer mode focuses on acquisition target sourcing, underwriting, diligence, and IC memo drafting. Seller mode focuses on sale preparation (teasers/CIMs), buyer identification, and IPO readiness assessment.",,

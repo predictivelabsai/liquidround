@@ -135,6 +135,9 @@ def tools_comps(sess):
 
 @ar("/tools/comparables/scrape", methods=["POST"])
 async def tools_comps_scrape(request):
+    from utils.rate_limit import allow, client_key
+    if not allow(client_key(request, "company-scrape")):
+        return Div(P("Rate limit reached. Please try again later.", style="color:#EF4444"))
     form = await request.form()
     url = form.get("url", "").strip()
     if not url:
@@ -182,6 +185,9 @@ def tools_match(sess):
 
 @ar("/tools/match/scrape", methods=["POST"])
 async def tools_match_scrape(request):
+    from utils.rate_limit import allow, client_key
+    if not allow(client_key(request, "company-scrape")):
+        return Div(P("Rate limit reached. Please try again later.", style="color:#EF4444"))
     form = await request.form()
     url = form.get("url", "").strip()
     if not url:
@@ -233,6 +239,9 @@ def tools_valuation(sess):
 
 @ar("/tools/valuation/scrape", methods=["POST"])
 async def tools_valuation_scrape(request):
+    from utils.rate_limit import allow, client_key
+    if not allow(client_key(request, "company-scrape")):
+        return Div(P("Rate limit reached. Please try again later.", style="color:#EF4444"))
     form = await request.form()
     url = form.get("url", "").strip()
     if not url:

@@ -494,7 +494,8 @@ def _reg_item(name, detail, color):
 
 def _md_to_html(text):
     """Simple markdown to HTML conversion."""
-    import re
+    import html, re
+    text = html.escape(str(text or ""))
     text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
     text = re.sub(r'\*(.+?)\*', r'<em>\1</em>', text)
     text = re.sub(r'^### (.+)$', r'<h3 class="font-semibold text-gray-800 mt-3 mb-1">\1</h3>', text, flags=re.M)

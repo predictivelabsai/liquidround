@@ -18,7 +18,10 @@ def ChatMessage(role: str, content: str, agent_name: str = ""):
         return Div(
             Div(
                 P(label, cls="text-xs font-medium text-blue-700 mb-1") if agent_name else "",
-                Div(NotStr(content), cls="text-sm prose prose-sm max-w-none") if "<" in content else P(content, cls="text-sm text-gray-800"),
+                Div(
+                    NotStr(_safe_message_html(content)),
+                    cls="text-sm prose prose-sm max-w-none",
+                ),
                 cls="bg-white rounded-2xl rounded-bl-md px-4 py-3 max-w-2xl border border-gray-200 shadow-sm",
             ),
             cls="flex justify-start mb-3",
@@ -47,6 +50,11 @@ def ChatInput():
         hx_on__after_request="this.reset(); document.getElementById('right-pane').classList.remove('translate-x-full');",
         cls="mt-4",
     )
+
+
+def _safe_message_html(content: str) -> str:
+    from components.chat_shell import _content_html
+    return _content_html(content)
 
 
 def AgentProgress(agent_name: str, status: str, message: str = "", execution_time: float = 0):

@@ -32,6 +32,21 @@ _MONEY_MULTIPLIERS = {
     "million": 1_000_000,
     "thousand": 1_000,
 }
+_TARGET_BOILERPLATE = (
+    "shares by third party", "affiliate or member", "pursuant to section",
+    "this agreement", "the registrant", "the company entered", "exhibit ",
+    "schedule ", "other than", "for purposes of",
+)
+
+
+def _valid_target_name(candidate: str, public_company: str = "") -> bool:
+    lower = candidate.lower().strip()
+    return bool(
+        candidate
+        and lower != (public_company or "").lower().strip()
+        and len(candidate.split()) <= 10
+        and not any(fragment in lower for fragment in _TARGET_BOILERPLATE)
+    )
 
 
 def extract_transaction_terms(text: str, *, public_company: str = "") -> dict:
@@ -56,7 +71,7 @@ def extract_transaction_terms(text: str, *, public_company: str = "") -> dict:
             exact_names = re.findall(legal_name, candidate)
             if exact_names:
                 candidate = exact_names[-1].strip(" ,;:-")
-            if candidate and candidate.lower() != (public_company or "").lower():
+            if _valid_target_name(candidate, public_company):
                 target = candidate
                 break
 
@@ -75,7 +90,11 @@ def extract_transaction_terms(text: str, *, public_company: str = "") -> dict:
         multiplier = _MONEY_MULTIPLIERS.get(
             unit, 1_000_000_000 if unit == "bn" else 1_000_000 if unit in {"mm", "m"} else 1
         )
-        value = amount * multiplier
+        extracted_value = amount * multiplier
+        # Tiny figures adjacent to filing boilerplate are normally fees,
+        # per-share values or exhibit references, not transaction values.
+        if extracted_value >= 100_000:
+            value = extracted_value
 
     completed = any(re.search(pattern, clean, re.IGNORECASE) for pattern in (
         r"\b(?:completed|consummated|closed)\s+(?:the|its|our)\s+"

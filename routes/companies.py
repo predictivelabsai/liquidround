@@ -239,7 +239,7 @@ def companies_search(sess, name: str = "", sector: str = ""):
             page_name="Companies",
             page_context={"page": "Companies", "capabilities": "search, filter, browse company directory"},
         ),
-        Script(src="/chat.js?v=2"),
+        Script(src="/chat.js?v=4"),
         Script(src="/copilot.js"),
         cls="lr-dark app pane-closed pipeline-app",
         style="background:#0B1220;color:#E5E7EB;",
@@ -316,7 +316,7 @@ def company_detail(slug: str, sess):
                 ),
                 cls="center-pane pipeline-center",
             ),
-            Script(src="/chat.js?v=2"),
+            Script(src="/chat.js?v=4"),
             cls="lr-dark app pipeline-app",
             style="background:#0B1220;color:#E5E7EB;",
         )
@@ -474,7 +474,7 @@ def company_detail(slug: str, sess):
         ),
         center,
         right,
-        Script(src="/chat.js?v=2"),
+        Script(src="/chat.js?v=4"),
         cls="lr-dark app pipeline-app",
         style="background:#0B1220;color:#E5E7EB;",
     )
@@ -501,11 +501,14 @@ def _fin_card(label: str, value: str):
 
 def _deal_brief_html(co: dict, margin_display: str) -> str:
     """Build the deal-brief HTML string for the right pane."""
-    name = co.get("name", "")
-    sector = co.get("sector", "")
-    sub_sector = co.get("sub_sector", "")
-    stage = co.get("deal_stage", "sourced")
-    description = co.get("description") or co.get("business_description") or ""
+    import html
+    name = html.escape(str(co.get("name", "")))
+    sector = html.escape(str(co.get("sector", "")))
+    sub_sector = html.escape(str(co.get("sub_sector", "")))
+    stage = html.escape(str(co.get("deal_stage", "sourced")))
+    description = html.escape(str(
+        co.get("description") or co.get("business_description") or ""
+    ))
 
     # Tags
     tags_html = ""
@@ -537,6 +540,8 @@ def _deal_brief_html(co: dict, margin_display: str) -> str:
 
     # KV rows
     def _kv(label: str, value: str) -> str:
+        label = html.escape(str(label))
+        value = html.escape(str(value))
         return (
             f'<div style="display:flex;justify-content:space-between;'
             f'padding:4px 0;border-bottom:1px solid rgba(255,255,255,.06);">'

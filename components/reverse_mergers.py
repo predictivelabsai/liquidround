@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from fasthtml.common import *
+from urllib.parse import urlencode
 
 BG, CARD, LINE = "#0B1220", "#111A2E", "#1E293B"
 INK, MUTED, AMBER, BLUE, GREEN, RED = "#F8FAFC", "#94A3B8", "#F59E0B", "#3B82F6", "#10B981", "#EF4444"
@@ -30,16 +31,18 @@ def _badge(text: str, color: str = BLUE):
     return Span(text, style=f"color:{color};border:1px solid {color};border-radius:999px;padding:2px 7px;font-size:10px;white-space:nowrap;")
 
 
-def summary_cards(rows: list[dict]):
-    reverse = [r for r in rows if "spac" not in r["transaction_type"]]
-    spacs = [r for r in rows if "spac" in r["transaction_type"]]
-    completed = sum(str(r.get("status", "")).lower() == "completed" for r in rows)
-    canada = sum(r.get("jurisdiction") == "CA" for r in rows)
+def summary_cards(rows: list[dict], summary: dict | None = None):
+    summary = summary or {
+        "reverse": sum("spac" not in r["transaction_type"] for r in rows),
+        "spacs": sum("spac" in r["transaction_type"] for r in rows),
+        "completed": sum(str(r.get("status", "")).lower() == "completed" for r in rows),
+        "canada": sum(r.get("jurisdiction") == "CA" for r in rows),
+    }
     cards = (
-        ("Reverse mergers", len(reverse), BLUE),
-        ("SPAC / de-SPAC", len(spacs), AMBER),
-        ("Completed", completed, GREEN),
-        ("Canadian records", canada, RED),
+        ("Reverse mergers", summary["reverse"], BLUE),
+        ("SPAC / de-SPAC", summary["spacs"], AMBER),
+        ("Completed", summary["completed"], GREEN),
+        ("Canadian records", summary["canada"], RED),
     )
     return Div(*(
         Div(Div(str(value), style=f"font-size:25px;font-weight:750;color:{color}"),
@@ -91,7 +94,7 @@ def filter_bar(active_tab: str = "all", filters: dict | None = None):
     )
 
 
-def transaction_table(rows: list[dict]):
+def transaction_table(rows: list[dict], pagination: dict | None = None):
     if not rows:
         return Div(
             H3("No matching transactions yet", style=f"color:{INK};font-size:16px;margin-bottom:6px;"),
@@ -114,14 +117,52 @@ def transaction_table(rows: list[dict]):
             Td(row.get("private_target") or "—", cls="rto-td"),
             Td(str(row.get("announcement_date") or "—")[:10], cls="rto-td"),
             Td(_money(row.get("deal_value")), cls="rto-td"),
-            Td(_badge(str(row.get("status") or "candidate").title(), MUTED), cls="rto-td"),
+            Td(
+                Div(
+                    _badge(str(row.get("status") or "candidate").title(), MUTED),
+                    Span(
+                        f"{round(float(row.get('confidence') or 0) * 100)}% · "
+                        f"{str(row.get('review_status') or 'unreviewed').replace('_', ' ')}",
+                        cls="rto-confidence",
+                    ),
+                    style="display:flex;flex-direction:column;gap:5px;align-items:flex-start;",
+                ),
+                cls="rto-td",
+            ),
             Td(A("Source ↗", href=source, target="_blank", rel="noopener",
                  style=f"color:{AMBER};text-decoration:none;") if source else "—", cls="rto-td"),
         ))
-    return Div(Table(
+    table = Div(Table(
         Thead(Tr(*(Th(x, cls="rto-th") for x in
                    ("Public vehicle", "Structure", "Market", "Private target", "Announced", "Deal value", "Status", "Evidence")))),
         Tbody(*body), cls="rto-table"), cls="rto-table-wrap")
+    if not pagination or pagination.get("total_pages", 1) <= 1:
+        return table
+    current = pagination["page"]
+    total_pages = pagination["total_pages"]
+    base_query = dict(pagination.get("query") or {})
+
+    def page_link(label: str, target: int, disabled: bool = False):
+        query = {**base_query, "page": target}
+        return Span(label, cls="rto-page-link disabled") if disabled else A(
+            label, href=f"/app/reverse-mergers?{urlencode(query)}", cls="rto-page-link"
+        )
+
+    return Div(
+        table,
+        Div(
+            Span(
+                f"{pagination['total']} transactions · page {current} of {total_pages}",
+                cls="rto-page-summary",
+            ),
+            Div(
+                page_link("← Previous", max(1, current - 1), current == 1),
+                page_link("Next →", min(total_pages, current + 1), current == total_pages),
+                cls="rto-page-actions",
+            ),
+            cls="rto-pagination",
+        ),
+    )
 
 
 def methodology_panel():
@@ -251,7 +292,7 @@ def page_content(rows: list[dict], active_tab: str, news_rows: list[dict] | None
     elif active_tab == "news":
         content = merger_news_panel(news_rows or [], news_source, news_stage)
     else:
-        content = transaction_table(rows)
+        content = transaction_table(rows, (filters or {}).get("_pagination"))
     return Div(
         Div(
             Div(H1("Reverse Mergers", style=f"color:{INK};font-size:24px;font-weight:750;"),
@@ -267,7 +308,7 @@ def page_content(rows: list[dict], active_tab: str, news_rows: list[dict] | None
             ),
             cls="rto-hero",
         ),
-        summary_cards(rows),
+        summary_cards(rows, (filters or {}).get("_summary")),
         filter_bar(active_tab, filters),
         content,
         cls="rto-page",

@@ -198,9 +198,9 @@ def ipo_pipeline_page(session):
                 cls="center-pane",
             ),
             right_pane(),
-            cls="app pane-closed",
+            cls="app",
         ),
-        Script(src="/chat.js?v=2"),
+        Script(src="/chat.js?v=4"),
     )
 
 

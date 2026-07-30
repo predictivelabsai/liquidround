@@ -18,24 +18,31 @@ from pydantic import BaseModel, Field
 from utils.document_parser import DocumentParser
 from tools.artifact import emit
 
-DOC_SEARCH_PATHS = [Path("uploads"), Path("docs"), Path("docs-data")]
+PUBLIC_DOC_PATH = (Path(__file__).resolve().parent.parent / "docs-data").resolve()
+UPLOAD_ROOT = (Path(__file__).resolve().parent.parent / "uploads").resolve()
 
 
 def _resolve(filename: str) -> Optional[Path]:
-    # Accept bare filenames or absolute paths
-    p = Path(filename)
-    if p.is_absolute() and p.exists():
-        return p
-    basename = p.name
-    for folder in DOC_SEARCH_PATHS:
-        cand = folder / basename
-        if cand.exists():
-            return cand
+    """Resolve only a public demo document or the current user's opaque upload."""
+    from utils.request_context import current_user_id
+
+    basename = Path(filename or "").name
+    if not basename or basename != filename:
+        return None
+    user_id = current_user_id()
+    candidates = [PUBLIC_DOC_PATH / basename]
+    if user_id:
+        candidates.insert(0, UPLOAD_ROOT / user_id / basename)
+    for candidate in candidates:
+        resolved = candidate.resolve()
+        allowed_parent = (UPLOAD_ROOT / user_id).resolve() if user_id and resolved.parent != PUBLIC_DOC_PATH else PUBLIC_DOC_PATH
+        if resolved.parent == allowed_parent and resolved.is_file():
+            return resolved
     return None
 
 
 class DocArgs(BaseModel):
-    filename: str = Field(description="Filename (bare name is fine — searched in uploads/, docs/, docs-data/) or absolute path.")
+    filename: str = Field(description="Opaque uploaded document id or bundled demo filename. Paths are not accepted.")
 
 
 # ────────────────────────────────────────────────────────────────────────
@@ -137,15 +144,21 @@ class NoArgs(BaseModel):
 
 
 def _list_documents() -> str:
+    from utils.request_context import current_user_id
+
     rows = []
-    for folder in DOC_SEARCH_PATHS:
+    folders = [PUBLIC_DOC_PATH]
+    user_id = current_user_id()
+    if user_id:
+        folders.insert(0, UPLOAD_ROOT / user_id)
+    for folder in folders:
         if not folder.exists():
             continue
         for f in sorted(folder.iterdir()):
             if f.is_file() and f.suffix.lower() in (".pdf", ".xlsx", ".xls", ".pptx", ".ppt"):
                 rows.append({
                     "filename": f.name,
-                    "folder": folder.name,
+                    "folder": "My uploads" if user_id and folder == UPLOAD_ROOT / user_id else "Demo documents",
                     "size_kb": round(f.stat().st_size / 1024, 1),
                     "type": f.suffix[1:].lower(),
                 })

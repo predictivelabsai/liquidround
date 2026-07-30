@@ -1,0 +1,131 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: liquidround-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      XAI_API_KEY: test-key-not-used
+      MODEL_PROVIDER: xai
+      DEFAULT_MODEL: grok-4-1-fast-reasoning
+      DIGEST_FREQUENCY: off
+      LOCAL_AUTH_BYPASS: "true"
+      ENVIRONMENT: test
+      PUBLIC_BASE_URL: http://127.0.0.1:5007
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: pip install --requirement requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - run: python -m compileall -q agents components routes tools utils scripts
+      - run: python -m scripts.validate_migrations
+      - run: python -m evals.run_agent_routing_100
+      - run: pytest -q
+      - name: Start application
+        run: |
+          PORT=5007 python main.py > /tmp/liquidround-server.log 2>&1 &
+          echo $! > /tmp/liquidround-server.pid
+          for attempt in $(seq 1 60); do
+            curl --fail --silent http://127.0.0.1:5007/health/ready && break
+            sleep 1
+          done
+          curl --fail http://127.0.0.1:5007/health/ready
+      - name: Playwright E2E
+        run: LIQUIDROUND_URL=http://127.0.0.1:5007 pytest -q tests/test_e2e_smoke.py -m e2e
+      - name: Server logs
+        if: always()
+        run: tail -200 /tmp/liquidround-server.log || true
+
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: liquidround:${{ github.sha }}
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [test, docker]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Trigger Coolify deployment
+        id: deploy
+        env:
+          COOLIFY_DEPLOY_URL: ${{ secrets.COOLIFY_DEPLOY_URL }}
+          COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
+        run: |
+          response="$(
+            curl --fail --silent --show-error --retry 3 \
+              --header "Authorization: Bearer ${COOLIFY_API_TOKEN}" \
+              "${COOLIFY_DEPLOY_URL}"
+          )"
+          deployment_uuid="$(
+            DEPLOY_RESPONSE="${response}" python -c \
+              'import json, os; data=json.loads(os.environ["DEPLOY_RESPONSE"]); print(data["deployments"][0]["deployment_uuid"])'
+          )"
+          api_base="$(
+            DEPLOY_URL="${COOLIFY_DEPLOY_URL}" python -c \
+              'import os; from urllib.parse import urlsplit; url=urlsplit(os.environ["DEPLOY_URL"]); print(f"{url.scheme}://{url.netloc}/api/v1")'
+          )"
+          test -n "${deployment_uuid}"
+          echo "deployment_uuid=${deployment_uuid}" >> "${GITHUB_OUTPUT}"
+          echo "api_base=${api_base}" >> "${GITHUB_OUTPUT}"
+
+      - name: Wait for the exact deployment
+        env:
+          COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
+          DEPLOYMENT_UUID: ${{ steps.deploy.outputs.deployment_uuid }}
+          COOLIFY_API_BASE: ${{ steps.deploy.outputs.api_base }}
+          EXPECTED_COMMIT: ${{ github.sha }}
+        run: |
+          for attempt in $(seq 1 240); do
+            response="$(
+              curl --fail --silent --show-error --retry 3 \
+                --header "Authorization: Bearer ${COOLIFY_API_TOKEN}" \
+                "${COOLIFY_API_BASE}/deployments/${DEPLOYMENT_UUID}"
+            )"
+            result="$(
+              DEPLOY_RESPONSE="${response}" EXPECTED_COMMIT="${EXPECTED_COMMIT}" python -c \
+                'import json, os; data=json.loads(os.environ["DEPLOY_RESPONSE"]); status=str(data.get("status", "unknown")); commit=str(data.get("commit", "")); expected=os.environ["EXPECTED_COMMIT"]; print(f"wrong-commit:{commit}" if status == "finished" and commit and not expected.startswith(commit) and not commit.startswith(expected) else "finished" if status == "finished" else f"failed:{status}" if status in {"failed", "cancelled", "cancelled-by-user"} else f"pending:{status}")'
+            )"
+            case "${result}" in
+              finished)
+                exit 0
+                ;;
+              failed:*|wrong-commit:*)
+                echo "${result}" >&2
+                exit 1
+                ;;
+              *)
+                echo "${result}"
+                sleep 5
+                ;;
+            esac
+          done
+          echo "Timed out waiting for Coolify deployment ${DEPLOYMENT_UUID}" >&2
+          exit 1
+
+      - name: Production smoke checks
+        run: |
+          curl --fail --silent --show-error https://liquidround.ai/health/ready \
+            | grep --fixed-strings '"status":"ok"'
+          curl --fail --silent --show-error --location https://liquidround.ai/ \
+            | grep --fixed-strings 'LiquidRound'

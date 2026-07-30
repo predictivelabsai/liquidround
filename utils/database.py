@@ -176,6 +176,86 @@ class DatabaseService:
             """, (workflow_id,))
             return [{"role": r["role"], "content": r["content"], "timestamp": str(r["timestamp"])} for r in cur.fetchall()]
 
+    def get_user_messages(self, workflow_id: str, user_id: str) -> List[Dict[str, Any]]:
+        """Return messages only when the workflow belongs to the current user."""
+        with get_conn() as conn:
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            cur.execute("""
+                SELECT m.role, m.content, m.timestamp
+                FROM liquidround.messages m
+                JOIN liquidround.workflows w ON w.id = m.workflow_id
+                WHERE m.workflow_id = %s AND w.user_id = %s
+                ORDER BY m.timestamp ASC
+            """, (workflow_id, user_id))
+            return [
+                {"role": r["role"], "content": r["content"], "timestamp": str(r["timestamp"])}
+                for r in cur.fetchall()
+            ]
+
+    def conversation_belongs_to_user(self, workflow_id: str, user_id: str) -> bool:
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT 1 FROM liquidround.workflows "
+                "WHERE id = %s AND user_id = %s AND workflow_type = 'conversation'",
+                (workflow_id, user_id),
+            )
+            return cur.fetchone() is not None
+
+    def create_agent_run(
+        self,
+        *,
+        workflow_id: str | None,
+        user_id: str | None,
+        agent_slug: str,
+        router_payload: dict,
+        prompt_version: str = "",
+        model_provider: str = "",
+        model_name: str = "",
+    ) -> str:
+        run_id = str(uuid.uuid4())
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """
+                INSERT INTO liquidround.agent_runs
+                    (id, workflow_id, user_id, agent_slug, router_payload,
+                     prompt_version, model_provider, model_name)
+                VALUES (%s, %s, %s, %s, %s::jsonb, %s, %s, %s)
+                """,
+                (
+                    run_id, workflow_id, user_id, agent_slug,
+                    json.dumps(router_payload or {}), prompt_version,
+                    model_provider, model_name,
+                ),
+            )
+        return run_id
+
+    def complete_agent_run(
+        self,
+        run_id: str,
+        *,
+        status: str,
+        latency_ms: int,
+        tool_calls: list[dict] | None = None,
+        artifacts: list[dict] | None = None,
+        error_code: str | None = None,
+    ) -> None:
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """
+                UPDATE liquidround.agent_runs
+                SET status = %s, latency_ms = %s, tool_calls = %s::jsonb,
+                    artifacts = %s::jsonb, error_code = %s, completed_at = NOW()
+                WHERE id = %s
+                """,
+                (
+                    status, latency_ms, json.dumps(tool_calls or []),
+                    json.dumps(artifacts or []), error_code, run_id,
+                ),
+            )
+
     # ------------------------------------------------------------------
     # Conversations (chat history)
     # ------------------------------------------------------------------

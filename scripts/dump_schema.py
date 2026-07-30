@@ -1,7 +1,7 @@
-"""Regenerate sql/schema.json from the live database.
+"""Regenerate an ignored structural schema snapshot from the live database.
 
-Used by routes/analytics.py (text-to-SQL) to tell the LLM what tables/columns
-exist. Covers the `liquidround` and `pehero` schemas. Run after schema changes:
+This diagnostic excludes row samples and enum values. Runtime analytics uses
+an explicit allowlist in routes/analytics.py.
 
     python -m scripts.dump_schema
 """
@@ -13,9 +13,8 @@ from pathlib import Path
 from utils.database import get_conn
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "sql" / "schema.json"
+OUT = ROOT / "sql" / "schema.local.json"
 SCHEMAS = ("liquidround", "pehero")
-ENUM_MAX = 20  # text columns with <= this many distinct values get an enum hint
 
 _TYPE_MAP = {
     "integer": "INTEGER", "bigint": "BIGINT", "smallint": "INTEGER",
@@ -53,24 +52,7 @@ def main():
                 cur.execute(f'SELECT count(*) FROM {schema}."{table}"')
                 row_count = cur.fetchone()[0]
 
-                enums: dict = {}
-                if row_count:
-                    for col, dtype in cols:
-                        if dtype not in _TEXTY:
-                            continue
-                        try:
-                            cur.execute(
-                                f'SELECT DISTINCT "{col}" FROM {schema}."{table}" '
-                                f'WHERE "{col}" IS NOT NULL LIMIT {ENUM_MAX + 1}'
-                            )
-                            vals = [r[0] for r in cur.fetchall()]
-                            # only genuine categoricals: few, short, distinct values
-                            if 0 < len(vals) <= ENUM_MAX and all(len(str(v)) <= 40 for v in vals):
-                                enums[col] = sorted(vals)
-                        except Exception:
-                            conn.rollback()
-
-                out[qualified] = {"columns": columns, "row_count": row_count, "enums": enums}
+                out[qualified] = {"columns": columns, "row_count": row_count}
 
     OUT.write_text(json.dumps(out, indent=2))
     print(f"Wrote {OUT} — {len(out)} tables")

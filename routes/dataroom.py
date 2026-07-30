@@ -240,9 +240,9 @@ def dataroom_home(session):
                 cls="center-pane pipeline-center",
             ),
             right_pane(),
-            cls="app pane-closed",
+            cls="app",
         ),
-        Script(src="/chat.js?v=2"),
+        Script(src="/chat.js?v=4"),
     )
 
 
@@ -269,7 +269,12 @@ async def dataroom_upload(request: Request):
             data = await upload.read()
             if not data:
                 continue
-            filename = upload.filename or "untitled"
+            from utils.security import UPLOAD_MAX_BYTES
+            if len(data) > UPLOAD_MAX_BYTES:
+                continue
+            filename = os.path.basename(upload.filename or "untitled")[:255]
+            if not filename or filename in {".", ".."}:
+                continue
             content_type = upload.content_type or "application/octet-stream"
             cur.execute(
                 "INSERT INTO liquidround.data_room (user_id, company_slug, filename, content_type, size_bytes, data) "

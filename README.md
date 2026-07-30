@@ -53,7 +53,7 @@ flowchart TB
 
 ## AI Agent Squad
 
-31 specialist agents across 7 categories. The auto-router picks the right agent from natural language, or use a prefix shortcut (`scan:`, `dcf:`, `memo:`, `hedgefunds:`, `rto:`, `ir-triage:`, etc.).
+32 specialist agents across 7 categories. The auto-router picks the right agent from natural language, or use a prefix shortcut (`scan:`, `dcf:`, `memo:`, `hermes:`, `hedgefunds:`, `rto:`, `ir-triage:`, etc.).
 
 ```mermaid
 flowchart TD
@@ -62,8 +62,9 @@ flowchart TD
     ROUTER -->|"comps: ltm: dcf:\nmulti: synergy:"| UND["Valuation"]
     ROUTER -->|"vdr: abstract:\nlegal: ops: esg:"| DIG["Due Diligence"]
     ROUTER -->|"memo: teaser:\nbid: ipo: score:"| CAP["Capital"]
-    ROUTER -->|"research:\nintegrate:"| PORT["Portfolio"]
-    ROUTER -->|"hedgefunds:"| PUB["Public Markets"]
+    ROUTER -->|"research: hermes:\nintegrate:"| PORT["Portfolio"]
+    ROUTER -->|"hedgefunds: filings:\nreleases: rto:"| PUB["Public Markets"]
+    ROUTER -->|"write-release: ir-*:"| IR["Investor Relations"]
 
     style ROUTER fill:#F59E0B,color:#0B1220,stroke:#D97706
     style SRC fill:#3B82F6,color:#fff
@@ -72,6 +73,7 @@ flowchart TD
     style CAP fill:#10B981,color:#fff
     style PORT fill:#F97316,color:#fff
     style PUB fill:#06B6D4,color:#fff
+    style IR fill:#F59E0B,color:#0B1220
 ```
 
 <table>
@@ -120,16 +122,31 @@ flowchart TD
 </td>
 <td>
 
-**🔬 Research & Post-Deal** (2)
+**🔬 Research & Post-Deal** (3)
 - Research Analyst
+- Hermes Orchestrator
 - Integration Planner
 
 </td>
 <td>
 
-**📈 Public Markets** (1)
+**📈 Public Markets** (4)
 - Hedge Fund Analyst
-  *(13F, AUM, activist filings)*
+- SEC Filing Analyst
+- Press Release Analyst
+- Reverse Merger Analyst
+
+</td>
+</tr>
+<tr>
+<td>
+
+**✉ Investor Relations** (5)
+- IR Event Triage
+- Press Release Writer
+- IR Compliance Reviewer
+- IR Publish Agent
+- IR Distribution Planner
 
 </td>
 </tr>
@@ -140,7 +157,7 @@ See [`docs/architecture_readme.md`](docs/architecture_readme.md) for the full ar
 ## Key Features
 
 ### Chat Interface
-Three-pane layout: left nav (sessions, agents, workspace), center chat with streaming responses, right artifact canvas (tables, charts, PDF previews).
+Three-pane layout: left nav (sessions, agents, workspace), center chat with streaming responses, and an always-visible desktop news/context pane. On mobile, context opens from the floating News control.
 
 ### Public Markets Dashboard
 - **IPO Map** — global treemap sized by market cap, colored by post-IPO performance (RdYlGn)
@@ -186,6 +203,20 @@ EXA_API_KEY=...          # semantic search
 TAVILY_API_KEY=...       # web search
 DB_URL=postgresql://...  # PostgreSQL
 SESSION_SECRET=...       # session cookie signing
+PUBLIC_BASE_URL=https://liquidround.ai
+ALLOWED_ORIGINS=https://liquidround.ai,https://liquidround.com
+AGENT_TIMEOUT_SECONDS=120
+AGENT_RECURSION_LIMIT=24
+AGENT_MAX_TOOL_CALLS=12
+
+# Optional bounded delegation to an independently installed Hermes CLI
+HERMES_ENABLED=false
+HERMES_COMMAND=hermes
+HERMES_MODEL=
+HERMES_PROVIDER=
+HERMES_TOOLSETS=
+HERMES_TIMEOUT_SECONDS=90
+HERMES_SAFE_MODE=true
 ```
 
 At least one of `XAI_API_KEY` or `OPENAI_API_KEY` is required.
@@ -193,9 +224,11 @@ At least one of `XAI_API_KEY` or `OPENAI_API_KEY` is required.
 ## Testing
 
 ```bash
-pytest -q                              # unit tests (125 cases)
+python -m scripts.validate_migrations  # ordered migration manifest
+python -m evals.run_agent_routing_100  # deterministic 100-question routing eval
+pytest -q                              # unit/integration tests
 pytest -q tests/test_registry.py       # agent registry integrity
-pytest -m e2e                          # Playwright E2E (requires server on :5007)
+pytest -q tests/test_e2e_smoke.py -m e2e  # Playwright E2E (requires server on :5007)
 ```
 
 ## Tech Stack

@@ -274,9 +274,9 @@ def _render_guide(session, current_path="/app/user-guide"):
                 cls="center-pane pipeline-center",
             ),
             right_pane(),
-            cls="app pane-closed",
+            cls="app",
         ),
-        Script(src="/chat.js?v=2"),
+        Script(src="/chat.js?v=4"),
     )
 
 

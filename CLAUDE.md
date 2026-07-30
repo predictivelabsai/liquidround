@@ -53,7 +53,7 @@ python -m scripts.make_gif              # -> docs/liquidround.gif + static/liqui
 
 2. `agents/registry.py` + `agents/router.py` + `agents/base.py` + per-slug modules under `agents/<category>/<slug>.py` -- the **ECM Agent Squad** architecture, modelled after `~/dev/plai/pehero`. Each agent module exports `SPEC` + `TOOLS` + `build()`. `build_agent(spec, tools)` wraps a `create_react_agent(llm, tools, prompt=system)` LangGraph app. `cached_agent(slug)` imports the module and returns its cached graph. If the LLM can't be constructed (no API key), falls back to `build_simple_agent` -- the structural tests still pass without keys.
 
-   - **31 agents** across 7 categories: `sourcing` (4), `underwriting` (6), `diligence` (5), `capital` (5), `portfolio` (2), `public_markets` (4), `investor_relations` (5). The count is enforced by `assert len(AGENTS) == 31` in `agents/registry.py`; keep that assert honest when adding/removing agents.
+   - **32 agents** across 7 categories: `sourcing` (4), `underwriting` (6), `diligence` (5), `capital` (5), `portfolio` (3, including the configurable Hermes Orchestrator), `public_markets` (4), `investor_relations` (5). The count is enforced by `assert len(AGENTS) == 32` in `agents/registry.py`; keep that assert honest when adding/removing agents.
    - Router in `agents/router.py` picks a slug: (1) explicit prefix match (`has_specialist_prefix`), (2) keyword heuristics, (3) LLM fallback. `strip_prefix` removes the leading `xxx:` for the agent.
 
 **How they compose in the running chat:**
@@ -66,7 +66,7 @@ python -m scripts.make_gif              # -> docs/liquidround.gif + static/liqui
 
 **Chat sharing.** `POST /app/share` generates a `share_token` (UUID hex) on the `liquidround.workflows` row and returns the URL. `GET /app/s/{token}` renders a read-only view (no auth required, no input form, Copy button only). The JS `shareChat()` copies the URL to clipboard. `setSid()` is exposed as `window.setSid` so the server can push the conversation ID to the client.
 
-**`tools/` layer** -- LangChain StructuredTools consumed by the 31 agents. Each tool is a sync function wrapped with `StructuredTool.from_function(...)` and, where relevant, emits an artifact via `tools.artifact.emit(...)` (which prepends `__ARTIFACT__` + JSON). Current tools:
+**`tools/` layer** -- LangChain StructuredTools consumed by the 32 agents. Each tool is a sync function wrapped with `StructuredTool.from_function(...)` and, where relevant, emits an artifact via `tools.artifact.emit(...)` (which prepends `__ARTIFACT__` + JSON). Current tools:
 - `tools/companies.py` -- `get_company_profile`, `get_financials`, `get_peer_companies` (wraps `utils/yfinance_util`).
 - `tools/research.py` -- `exa_search`, `tavily_search`, `deep_research` (sync wrappers around async `utils/research_tools`).
 - `tools/documents.py` -- `read_document`, `extract_key_terms`, `list_documents` (wraps `utils/document_parser`).

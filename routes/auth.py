@@ -35,6 +35,7 @@ def _session_login(session, user: dict):
         "user_id": str(user["user_id"]),
         "email": user["email"],
         "display_name": user.get("display_name") or user["email"].split("@")[0],
+        "is_admin": bool(user.get("is_admin")),
     }
 
 
@@ -188,8 +189,9 @@ def signin(session, request, email: str = "", password: str = "", role: str = ""
     action = "/signin?" + "&".join(action_params) if action_params else "/signin"
     parts.append(
         Form(
-            _text_input("email", "Email", input_type="email", required=True, autofocus=True),
-            _pw_input("password", "Password"),
+            _text_input("email", "Email", input_type="email", required=True, autofocus=True,
+                        autocomplete="username"),
+            _pw_input("password", "Password", autocomplete="current-password"),
             _submit_btn("Sign In"),
             method="post", action=action, cls="flex flex-col gap-3",
         )
@@ -205,9 +207,8 @@ def forgot(request, session, email: str = "", error: str = "", msg: str = ""):
         from utils.auth import create_password_reset_token, send_password_reset_email
         token = create_password_reset_token(email)
         if token:
-            scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
-            host = request.headers.get("host", request.url.netloc)
-            send_password_reset_email(email, token, f"{scheme}://{host}")
+            from utils.security import public_base_url
+            send_password_reset_email(email, token, public_base_url())
         return RedirectResponse("/forgot?msg=If+that+email+is+registered+you+will+receive+a+reset+link", status_code=303)
 
     if session.get("user"):
@@ -599,17 +600,16 @@ def logout(session):
 if _oauth_enabled:
     @ar("/login")
     async def google_login(request):
-        scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
-        host = request.headers.get("host", request.url.netloc)
-        redirect_uri = f"{scheme}://{host}/auth/callback"
+        from utils.security import public_base_url
+        redirect_uri = f"{public_base_url()}/auth/callback"
         return await _authlib_oauth.google.authorize_redirect(request, redirect_uri)
 
     @ar("/auth/callback")
     async def auth_callback(request, session):
         try:
             token = await _authlib_oauth.google.authorize_access_token(request)
-        except Exception as e:
-            return RedirectResponse(f"/signin?error=Google+login+failed:+{e}")
+        except Exception:
+            return RedirectResponse("/signin?error=Google+login+failed")
 
         userinfo = token.get("userinfo", {})
         if not userinfo:

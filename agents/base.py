@@ -12,7 +12,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from langchain_core.tools import BaseTool
-from langgraph.prebuilt import create_react_agent
+from langchain.agents import create_agent
 
 from agents.registry import AgentSpec, by_slug
 from utils.llm_factory import create_llm
@@ -24,10 +24,25 @@ SHARED_PROMPT_FILE = Path(__file__).resolve().parent.parent / "prompts" / "share
 
 
 def load_system_prompt(slug: str) -> str:
-    """Load `prompts/shared/liquidround_context.md` + `prompts/system/<slug>.md`."""
+    """Load shared context plus the latest published database/file prompt."""
     shared = SHARED_PROMPT_FILE.read_text() if SHARED_PROMPT_FILE.exists() else ""
     specific_file = PROMPTS_DIR / f"{slug}.md"
     specific = specific_file.read_text() if specific_file.exists() else ""
+    try:
+        from utils.database import get_conn
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT content FROM liquidround.prompt_versions "
+                "WHERE slug = %s AND status = 'published' ORDER BY id DESC LIMIT 1",
+                (slug,),
+            )
+            row = cur.fetchone()
+            if row:
+                specific = row[0] if isinstance(row, (tuple, list)) else row["content"]
+    except Exception:
+        # Files remain the deployment baseline and keep offline tests deterministic.
+        pass
     if not specific:
         log.warning("no system prompt for %s — using shared context only", slug)
     return (shared + "\n\n" + specific).strip()
@@ -50,8 +65,13 @@ def build_agent(spec: AgentSpec, tools: list[BaseTool]):
     except Exception as e:  # noqa: BLE001
         log.warning("LLM construction failed for %s (%s) — using simple fallback", spec.slug, e)
         return build_simple_agent(spec)
-    # create_react_agent wires tool-use + message state automatically.
-    return create_react_agent(llm, tools, prompt=system or None)
+    # LangChain's create_agent compiles a LangGraph tool-calling graph.
+    return create_agent(
+        model=llm,
+        tools=tools,
+        system_prompt=system or None,
+        name=spec.slug,
+    )
 
 
 def build_simple_agent(spec: AgentSpec):

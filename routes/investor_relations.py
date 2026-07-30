@@ -9,12 +9,18 @@ from pathlib import Path
 
 from fasthtml.common import (
     APIRouter, Title, Script, Div, Span, H1, H2, P, A, Button, Form,
-    Input, Textarea, Select, Option, Label, NotStr,
+    Input, Textarea, Select, Option, Label, NotStr, Details, Summary,
 )
 from starlette.requests import Request
 from starlette.responses import Response, JSONResponse, FileResponse
+from starlette.responses import RedirectResponse
 
 ar = APIRouter()
+
+
+@ar("/app/investor-relations")
+def investor_relations_home():
+    return RedirectResponse("/app/investor-relations/press-release", status_code=307)
 
 
 def _field(label: str, control, help_text: str = ""):
@@ -57,9 +63,9 @@ def _shell(session, body):
                 cls="center-pane pipeline-center",
             ),
             right_pane(),
-            cls="app pane-closed",
+            cls="app",
         ),
-        Script(src="/chat.js?v=2"),
+        Script(src="/chat.js?v=4"),
         Script(src="/investor-relations.js?v=1"),
     )
 
@@ -87,6 +93,14 @@ def press_release_creator(session):
                     _field("Company", Input(name="company", cls="ir-input", placeholder="Company name or website")),
                     _field("Release type", Select(*[Option(x, value=x) for x in release_types],
                                                   name="release_type", cls="ir-input")),
+                    cls="ir-grid",
+                ),
+                _field("Approved facts and figures", Textarea(name="key_facts", rows="4", cls="ir-input",
+                                                              placeholder="Dates, amounts, locations, milestones and claims approved for disclosure…"),
+                       "Unknown facts remain visibly marked for verification."),
+                Details(
+                    Summary("Optional drafting, compliance and distribution details", cls="ir-advanced-summary"),
+                    Div(
                     _field("Language", Select(Option("English", value="English"),
                                                Option("Estonian", value="Estonian"),
                                                Option("Finnish", value="Finnish"),
@@ -99,28 +113,28 @@ def press_release_creator(session):
                                            Option("Concise / wire style", value="Concise wire style"),
                                            Option("Technical", value="Technical"),
                                            name="tone", cls="ir-input")),
-                    cls="ir-grid",
-                ),
-                _field("Audience", Input(name="audience", cls="ir-input",
-                                         placeholder="Investors, customers, media, employees…")),
-                _field("Key facts and figures", Textarea(name="key_facts", rows="4", cls="ir-input",
-                                                         placeholder="Dates, amounts, locations, milestones, approved claims…")),
-                Div(
+                        cls="ir-grid",
+                    ),
+                    _field("Audience", Input(name="audience", cls="ir-input",
+                                             placeholder="Investors, customers, media, employees…")),
+                    Div(
                     _field("Quote guidance", Textarea(name="quotes", rows="3", cls="ir-input",
                                                       placeholder="Approved quote, speaker and title — or points for a draft quote")),
                     _field("Company boilerplate", Textarea(name="boilerplate", rows="3", cls="ir-input",
                                                            placeholder="Paste an approved boilerplate, or let the agent research one")),
-                    cls="ir-grid",
-                ),
-                Div(
+                        cls="ir-grid",
+                    ),
+                    Div(
                     _field("Investor contact", Input(name="investor_contact", cls="ir-input",
                                                      placeholder="Name, email, phone")),
                     _field("Media contact", Input(name="media_contact", cls="ir-input",
                                                   placeholder="Name, email, phone")),
-                    cls="ir-grid",
+                        cls="ir-grid",
+                    ),
+                    _field("Additional instructions", Textarea(name="instructions", rows="3", cls="ir-input",
+                                                               placeholder="Target length, embargo, exchange requirements, links…")),
+                    cls="ir-advanced",
                 ),
-                _field("Additional instructions", Textarea(name="instructions", rows="3", cls="ir-input",
-                                                           placeholder="Target length, embargo, exchange requirements, links…")),
                 Button("Research and draft release", type="submit", cls="chat-send ir-generate"),
                 P("Research can take up to a minute. Legal/compliance review is still required before publication.",
                   cls="ir-help"),

@@ -1,4 +1,4 @@
-"""Tests for the 31-agent registry + router — pure unit, no network."""
+"""Tests for the 32-agent registry + router — pure unit, no network."""
 from __future__ import annotations
 
 import pytest
@@ -14,7 +14,7 @@ from agents.base import load_system_prompt
 # ── Shape invariants ────────────────────────────────────────────────────
 
 def test_exact_agent_count():
-    assert len(AGENTS) == 31, f"expected 31 agents, got {len(AGENTS)}"
+    assert len(AGENTS) == 32, f"expected 32 agents, got {len(AGENTS)}"
 
 
 def test_unique_slugs():
@@ -53,6 +53,10 @@ def test_audience_filter():
 
 @pytest.mark.parametrize("spec", AGENTS, ids=lambda s: s.slug)
 def test_every_agent_has_system_prompt(spec):
+    from agents.base import PROMPTS_DIR
+    assert (PROMPTS_DIR / f"{spec.slug}.md").is_file(), (
+        f"{spec.slug}: exact prompt file is missing"
+    )
     prompt = load_system_prompt(spec.slug)
     assert prompt, f"{spec.slug}: system prompt is empty"
     assert len(prompt) > 200, f"{spec.slug}: prompt suspiciously short ({len(prompt)} chars)"
@@ -127,6 +131,7 @@ PREFIX_CASES = [
     ("ir-publish: finalize the approved Q3 release", "ir_publish"),
     ("ir-distribute: plan distribution for earnings release", "ir_distribute"),
     ("rto: recent reverse mergers",             "reverse_merger_analyst"),
+    ("hermes: challenge this thesis",             "hermes_orchestrator"),
 ]
 
 

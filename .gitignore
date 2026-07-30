@@ -217,6 +217,13 @@ screenshots/
 
 # Local Coolify credentials (never commit)
 coolify.finespresso.org
+.sesskey
+sql/schema.json
+sql/schema.local.json
+test-data/*_[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]_*.json
+data/sec_13f/
+*-desktop.png
+*-mobile.png
 
 # Baltic company databases (too large for git — copy from pehero/data/)
 data/ee_companies.json

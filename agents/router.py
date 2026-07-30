@@ -10,10 +10,24 @@ from __future__ import annotations
 
 import logging
 import re
+from dataclasses import asdict, dataclass, field
 
 from agents.registry import AGENTS, AGENTS_BY_SLUG
 
 log = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class RouteDecision:
+    slug: str
+    intent: str
+    confidence: float
+    is_refinement: bool = False
+    extracted_entities: dict = field(default_factory=dict)
+    missing_fields: tuple[str, ...] = ()
+
+    def to_dict(self) -> dict:
+        return asdict(self)
 
 
 # Keyword hints per category — tuned to avoid false positives on generic terms.
@@ -113,6 +127,10 @@ def _best_in_category_for(message: str) -> str | None:
         return "target_scanner"
     if "find buyer" in lower or "strategic buyer" in lower:
         return "buyer_scanner"
+    if "likely to sell" in lower or "sale likelihood" in lower or "succession risk" in lower:
+        return "seller_intent"
+    if "company profile" in lower or "business model and financials" in lower:
+        return "company_profiler"
     if "ic memo" in lower or "investment memo" in lower:
         return "ic_memo_writer"
     if "teaser" in lower or "cim" in lower:
@@ -121,18 +139,36 @@ def _best_in_category_for(message: str) -> str | None:
         return "ipo_readiness"
     if "synergy" in lower or "synergies" in lower:
         return "synergy_analyst"
-    if "dcf" in lower or "discounted cash flow" in lower:
+    if "transaction comp" in lower or "trading comp" in lower or "compare to peers" in lower:
+        return "comps_finder"
+    if "dcf" in lower or "discounted cash flow" in lower or "wacc" in lower or "terminal growth" in lower:
         return "dcf_valuer"
+    if "apply peer multiples" in lower or "multiples valuation" in lower:
+        return "multiples_valuer"
     if "deep research" in lower or "research:" in lower:
         return "research_analyst"
+    if "hermes" in lower:
+        return "hermes_orchestrator"
     if "score" in lower and ("buyer" in lower or "target" in lower or "match" in lower):
         return "match_scorer"
     if "ltm" in lower or "quality of earnings" in lower or "qoe" in lower:
         return "ltm_normalizer"
     if "msa" in lower or "contract abstract" in lower:
         return "contract_abstractor"
+    if "data room" in lower or "vdr" in lower:
+        return "vdr_auditor"
+    if "litigation" in lower or "legal review" in lower or "regulatory consent" in lower:
+        return "legal_reviewer"
+    if "operational diligence" in lower or "working capital review" in lower:
+        return "operational_dd"
+    if "esg risk" in lower or "environmental liability" in lower:
+        return "esg_reviewer"
     if "100-day" in lower or "100 day" in lower or "integration" in lower:
         return "integration_planner"
+    if "bid structure" in lower or "deal structure" in lower or "earnout" in lower:
+        return "bid_strategist"
+    if "blind teaser" in lower or "draft a teaser" in lower or "draft the cim" in lower:
+        return "teaser_designer"
     if "hedge fund" in lower or "13f" in lower or "activist filing" in lower:
         return "hedge_fund_analyst"
     if "fund holdings" in lower or "institutional ownership" in lower:
@@ -222,25 +258,65 @@ def route_with_context(
     previous_user_messages: list[str] | tuple[str, ...] | None = None,
     active_slug: str | None = None,
 ) -> str:
-    """Route a refinement without losing its active specialist mandate."""
+    return decide_route(message, previous_user_messages, active_slug).slug
+
+
+def decide_route(
+    message: str,
+    previous_user_messages: list[str] | tuple[str, ...] | None = None,
+    active_slug: str | None = None,
+) -> RouteDecision:
+    """Return a typed route decision, preserving only genuine refinements."""
     prefix_slug = _prefix_match(message)
     if prefix_slug:
-        return prefix_slug
+        return RouteDecision(prefix_slug, "explicit_prefix", 1.0)
 
     direct_slug = _best_in_category_for(message)
     if direct_slug:
-        return direct_slug
+        return RouteDecision(direct_slug, "direct_intent", 0.95)
 
     scores = _keyword_scores(message)
     if scores:
-        return max(scores, key=scores.get)
+        slug = max(scores, key=scores.get)
+        return RouteDecision(slug, "keyword_intent", 0.85)
 
     previous = [str(item).strip() for item in (previous_user_messages or []) if str(item).strip()]
-    if previous and active_slug in AGENTS_BY_SLUG and len(message.split()) <= 24:
-        return active_slug
+    lower = message.lower().strip()
+    explicit_reset = any(
+        lower.startswith(value)
+        for value in ("new task", "switch task", "unrelated", "start over", "instead,")
+    )
+    refinement_markers = (
+        "no other restriction", "employees", "revenue", "ebitda", "arr", "founder",
+        "family", "sponsor", "above", "below", "minimum", "maximum", "only", "also",
+        "exclude", "include", "make it", "the baltics", "dach", "nordic", "continue",
+    )
+    looks_like_fragment = (
+        len(message.split()) <= 16
+        and (
+            any(marker in lower for marker in refinement_markers)
+            or bool(re.search(r"\d|€|\$|£", message))
+        )
+    )
+    if (
+        previous
+        and not explicit_reset
+        and active_slug in AGENTS_BY_SLUG
+        and looks_like_fragment
+    ):
+        from agents.state import extract_mandate
+        mandate = extract_mandate([*previous, message]).to_dict()
+        return RouteDecision(
+            active_slug,
+            "mandate_refinement",
+            0.9,
+            is_refinement=True,
+            extracted_entities=mandate,
+        )
 
     contextual = "\n".join([*previous[-5:], message]) if previous else message
-    return _llm_classify(contextual)
+    slug = _llm_classify(contextual)
+    return RouteDecision(slug, "llm_fallback", 0.55)
 
 
 def contextualize_user_query(message: str, previous_user_messages: list[str] | tuple[str, ...] | None = None) -> str:
@@ -248,11 +324,14 @@ def contextualize_user_query(message: str, previous_user_messages: list[str] | t
     previous = [str(item).strip() for item in (previous_user_messages or []) if str(item).strip()]
     if not previous:
         return message
+    from agents.state import extract_mandate
+    mandate = extract_mandate([*previous, message])
     prior = "\n".join(f"- {item}" for item in previous[-5:])
     return (
         "Continue the user's accumulated mandate. Preserve prior filters and treat the "
         "latest turn as a refinement unless it explicitly changes them.\n\n"
         f"Prior user criteria (oldest to newest):\n{prior}\n\n"
+        f"Structured mandate state:\n{mandate.as_prompt()}\n\n"
         f"Latest user turn:\n{message}"
     )
 

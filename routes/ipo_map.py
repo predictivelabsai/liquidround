@@ -318,9 +318,9 @@ def ipo_map_page(session, request: Request):
                 cls="center-pane",
             ),
             right_pane(),
-            cls="app pane-closed",
+            cls="app",
         ),
-        Script(src="/chat.js?v=2"),
+        Script(src="/chat.js?v=4"),
     )
 
 
@@ -384,8 +384,10 @@ async def ipo_map_signup(request: Request):
 
 def _md(text: str) -> str:
     """Minimal markdown → HTML (headings, bold, lists, paragraphs)."""
+    import html
+    safe = html.escape(text or "")
     try:
         import markdown2
-        return markdown2.markdown(text)
+        return markdown2.markdown(safe)
     except Exception:
-        return "<p>" + text.replace("\n\n", "</p><p>").replace("\n", "<br>") + "</p>"
+        return "<p>" + safe.replace("\n\n", "</p><p>").replace("\n", "<br>") + "</p>"

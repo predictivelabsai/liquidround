@@ -1,4 +1,6 @@
--- Valuation multiplier tables (Damodaran industry data)
+-- Migration 05b: valuation multiplier tables (Damodaran industry data)
+
+CREATE SCHEMA IF NOT EXISTS pehero;
 
 CREATE TABLE IF NOT EXISTS pehero.valuation_multipliers_revenue (
     id              SERIAL PRIMARY KEY,

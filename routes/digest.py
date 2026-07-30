@@ -67,9 +67,9 @@ def _deals_shell(session, center_children):
             ),
             Div(*center_children, cls="center-pane pipeline-center"),
             right_pane(),
-            cls="app pane-closed",
+            cls="app",
         ),
-        Script(src="/chat.js?v=2"),
+        Script(src="/chat.js?v=4"),
         Script(NotStr(_DEALS_JS)),
     )
 

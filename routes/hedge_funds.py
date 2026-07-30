@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import threading
 import time
 
@@ -30,7 +31,8 @@ def _warm_cache():
         log.warning("Hedge fund cache warm failed: %s", e)
 
 
-threading.Thread(target=_warm_cache, daemon=True, name="hf-cache-warm").start()
+if os.getenv("BACKGROUND_JOBS_ENABLED", "true").lower() in {"1", "true", "yes"}:
+    threading.Thread(target=_warm_cache, daemon=True, name="hf-cache-warm").start()
 
 
 @ar("/app/hedgefunds")
@@ -82,9 +84,9 @@ def hedge_funds_page(session, request):
                 cls="center-pane",
             ),
             right_pane(),
-            cls="app pane-closed",
+            cls="app",
         ),
-        Script(src="/chat.js?v=2"),
+        Script(src="/chat.js?v=4"),
     )
 
 

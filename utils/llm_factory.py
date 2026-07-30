@@ -24,7 +24,9 @@ def create_llm(
     temperature: Optional[float] = None,
 ) -> ChatOpenAI:
     provider = provider or config.default_provider
-    spec = _PROVIDERS.get(provider, _PROVIDERS["xai"])
+    if provider not in _PROVIDERS:
+        raise ValueError(f"Unsupported MODEL_PROVIDER: {provider}")
+    spec = _PROVIDERS[provider]
 
     api_key = {
         "xai": config.xai_api_key,
@@ -32,8 +34,8 @@ def create_llm(
     }.get(provider, config.xai_api_key)
 
     kwargs = dict(
-        model=model or spec["default_model"],
-        temperature=temperature or config.default_temperature,
+        model=model or config.default_model or spec["default_model"],
+        temperature=config.default_temperature if temperature is None else temperature,
         api_key=api_key,
     )
     if spec["base_url"]:

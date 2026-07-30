@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   liquidround:
     build: .
@@ -10,9 +8,10 @@ services:
     environment:
       - ENVIRONMENT=production
       - PORT=5007
-      - DEFAULT_PROVIDER=${DEFAULT_PROVIDER:-openai}
-      - DEFAULT_MODEL=${DEFAULT_MODEL:-gpt-4o-mini}
-      - DEFAULT_TEMPERATURE=${DEFAULT_TEMPERATURE:-0.7}
+      - MODEL_PROVIDER=${MODEL_PROVIDER:-xai}
+      - DEFAULT_PROVIDER=${DEFAULT_PROVIDER:-xai}
+      - DEFAULT_MODEL=${DEFAULT_MODEL:-grok-4-1-fast-reasoning}
+      - DEFAULT_TEMPERATURE=${DEFAULT_TEMPERATURE:-0}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - XAI_API_KEY=${XAI_API_KEY:-}
       - EXA_API_KEY=${EXA_API_KEY:-}
@@ -20,12 +19,25 @@ services:
       - DB_URL=${DB_URL:-}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
-      - SESSION_SECRET=${SESSION_SECRET:-liquidround-prod-secret}
+      - SESSION_SECRET=${SESSION_SECRET:?SESSION_SECRET is required}
+      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-https://liquidround.ai}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-https://liquidround.ai,https://liquidround.com}
+      - AGENT_TIMEOUT_SECONDS=${AGENT_TIMEOUT_SECONDS:-120}
+      - AGENT_RECURSION_LIMIT=${AGENT_RECURSION_LIMIT:-24}
+      - AGENT_MAX_TOOL_CALLS=${AGENT_MAX_TOOL_CALLS:-12}
+      - HERMES_ENABLED=${HERMES_ENABLED:-false}
+      - HERMES_COMMAND=${HERMES_COMMAND:-hermes}
+      - HERMES_MODEL=${HERMES_MODEL:-}
+      - HERMES_PROVIDER=${HERMES_PROVIDER:-}
+      - HERMES_TOOLSETS=${HERMES_TOOLSETS:-}
+      - HERMES_TIMEOUT_SECONDS=${HERMES_TIMEOUT_SECONDS:-90}
+      - HERMES_SAFE_MODE=${HERMES_SAFE_MODE:-true}
+      - BACKGROUND_JOBS_ENABLED=${BACKGROUND_JOBS_ENABLED:-true}
       - CH_API_KEY=${CH_API_KEY:-}
     volumes:
       - ./uploads:/app/uploads
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5007/')"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5007/health/ready')"]
       interval: 30s
       timeout: 10s
       retries: 3

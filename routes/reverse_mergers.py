@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import math
 
 from fasthtml.common import *
 
@@ -39,7 +40,7 @@ def _shell(session, request, rows, tab, news_rows=None, news_source="", news_sta
                        feed_url="/app/reverse-mergers/context-news"),
             cls="app rto-shell",
         ),
-        Script(src="/chat.js?v=3"),
+        Script(src="/chat.js?v=4"),
     )
 
 
@@ -81,10 +82,31 @@ def reverse_mergers_page(session, request):
         rows = [r for r in rows if r.get("deal_value") in (None, "")]
     if query:
         rows = [r for r in rows if query in " ".join(str(r.get(k, "")) for k in ("public_company", "private_target", "public_ticker")).lower()]
+    page = max(1, int(params.get("page", "1") or 1))
+    per_page = 50
+    total = len(rows)
+    summary = {
+        "reverse": sum("spac" not in r.get("transaction_type", "") for r in rows),
+        "spacs": sum("spac" in r.get("transaction_type", "") for r in rows),
+        "completed": sum(str(r.get("status", "")).lower() == "completed" for r in rows),
+        "canada": sum(r.get("jurisdiction") == "CA" for r in rows),
+    }
+    total_pages = max(1, math.ceil(total / per_page))
+    page = min(page, total_pages)
+    if tab not in {"news", "methodology", "import"}:
+        rows = rows[(page - 1) * per_page:page * per_page]
     return _shell(session, request, rows, tab, news_rows, news_source, news_stage, {
         "jurisdiction": jurisdiction, "status": status,
         "has_target": has_target, "has_value": has_value,
         "q": params.get("q", ""),
+        "_pagination": {
+            "page": page, "total_pages": total_pages, "total": total,
+            "query": {
+                key: value for key, value in params.items()
+                if key != "page" and value
+            },
+        },
+        "_summary": summary,
     })
 
 

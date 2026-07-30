@@ -1,7 +1,7 @@
 """
 Configuration management for LiquidRound system.
 """
-VERSION = "0.7.0"
+VERSION = "0.8.0"
 
 import os
 from typing import Dict, Any, Optional
@@ -27,6 +27,25 @@ class Config:
 
         # Environment
         self.environment = os.getenv("ENVIRONMENT", "development")
+        self.public_base_url = os.getenv("PUBLIC_BASE_URL", "http://localhost:5007").rstrip("/")
+        self.agent_timeout_seconds = max(
+            5, min(int(os.getenv("AGENT_TIMEOUT_SECONDS", "120")), 300)
+        )
+        self.agent_recursion_limit = max(
+            4, min(int(os.getenv("AGENT_RECURSION_LIMIT", "24")), 100)
+        )
+        self.agent_max_tool_calls = max(
+            1, min(int(os.getenv("AGENT_MAX_TOOL_CALLS", "12")), 50)
+        )
+
+        # Optional Hermes delegation. Disabled unless explicitly enabled.
+        self.hermes_enabled = os.getenv("HERMES_ENABLED", "false").lower() in {"1", "true", "yes"}
+        self.hermes_command = os.getenv("HERMES_COMMAND", "hermes")
+        self.hermes_model = os.getenv("HERMES_MODEL", "")
+        self.hermes_provider = os.getenv("HERMES_PROVIDER", "")
+        self.hermes_toolsets = os.getenv("HERMES_TOOLSETS", "")
+        self.hermes_timeout_seconds = max(5, min(int(os.getenv("HERMES_TIMEOUT_SECONDS", "90")), 300))
+        self.hermes_safe_mode = os.getenv("HERMES_SAFE_MODE", "true").lower() not in {"0", "false", "no"}
 
         self._validate_config()
 
@@ -37,7 +56,7 @@ class Config:
     def get_model_config(self, model: Optional[str] = None, temperature: Optional[float] = None) -> Dict[str, Any]:
         return {
             "model": model or self.default_model,
-            "temperature": temperature or self.default_temperature,
+            "temperature": self.default_temperature if temperature is None else temperature,
         }
 
     @property

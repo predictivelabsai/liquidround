@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import re
 
 import pandas as pd
@@ -25,48 +24,33 @@ log = logging.getLogger(__name__)
 
 ar = APIRouter()
 
-COMPANY_DB_SCHEMA = os.getenv("COMPANY_DB_SCHEMA", "pehero")
+ANALYTICS_TABLES: dict[str, tuple[str, ...]] = {
+    "pehero.companies": (
+        "slug", "name", "hq_city", "hq_state", "country", "sector", "sub_sector",
+        "website", "founded_year", "employees", "revenue_ltm", "ebitda_ltm",
+        "ebitda_margin", "growth_rate", "ownership", "deal_stage", "deal_type",
+        "enterprise_value", "ask_multiple", "description", "seller_intent", "created_at",
+    ),
+    "liquidround.ipo_pipeline": (
+        "company_name", "ticker", "kind", "sector", "industry", "country", "exchange",
+        "last_valuation", "last_round", "last_round_date", "last_amount_raised",
+        "funding_to_date", "total_rounds", "proposed_price", "shares_offered",
+        "deal_value", "expected_date", "employees", "website", "status", "source",
+        "last_updated", "created_at",
+    ),
+    "liquidround.reverse_merger_transactions": (
+        "jurisdiction", "transaction_type", "status", "public_company", "public_ticker",
+        "private_target", "exchange", "announcement_date", "completion_date", "deal_value",
+        "concurrent_financing", "target_ownership_pct", "source_type", "confidence",
+        "review_status", "last_verified_at",
+    ),
+}
 
 
-def _load_schema_snippet() -> str:
-    from pathlib import Path
-    schema_path = Path(__file__).resolve().parent.parent / "sql" / "schema.json"
-    if not schema_path.exists():
-        return "-- schema.json not found"
-
-    schema = json.loads(schema_path.read_text())
-    lines = [
-        "-- LiquidRound read-only PostgreSQL schema. ONLY SELECT queries.",
-        f"-- Use schema-qualified names (liquidround.* or {COMPANY_DB_SCHEMA}.*).\n",
-    ]
-    for table, info in schema.items():
-        cols = info.get("columns", [])
-        row_count = info.get("row_count", 0)
-        enums = info.get("enums", {})
-
-        col_parts = []
-        for c in cols:
-            part = c["name"]
-            ctype = c.get("type", "")
-            if "JSONB" in ctype:
-                part += " JSONB"
-            elif "DATE" in ctype or "TIMESTAMP" in ctype:
-                part += " DATE"
-            elif "NUMERIC" in ctype:
-                part += f" {ctype}"
-            if c["name"] in enums:
-                vals = " | ".join(str(v) for v in enums[c["name"]])
-                part += f"  -- {vals}"
-            col_parts.append(part)
-
-        lines.append(f"{table} ({row_count} rows) (")
-        lines.append("    " + ",\n    ".join(col_parts))
-        lines.append(")\n")
-
-    return "\n".join(lines)
-
-
-SCHEMA_SNIPPET = _load_schema_snippet()
+SCHEMA_SNIPPET = "\n".join(
+    ["-- Approved, read-only analytics relations:"]
+    + [f"{table} ({', '.join(columns)})" for table, columns in ANALYTICS_TABLES.items()]
+)
 
 
 SAMPLE_QUERIES = [
@@ -88,7 +72,7 @@ Rules:
 - Return ONLY a JSON object with exactly these keys:
   {{ "sql": "...", "chart": "bar|line|scatter|pie|none", "x": "...", "y": "...", "color": "...", "title": "..." }}
 - Never modify data. SELECT only.
-- Use schema-qualified names (liquidround.*, {COMPANY_DB_SCHEMA}.*).
+- Use only the approved schema-qualified relations listed below.
 - Limit results sensibly (≤200 rows) unless a time-series needs more.
 - For time series, order by the time column.
 - For percentages like margins, already-percent values — leave them, don't multiply.
@@ -115,17 +99,41 @@ def _guard_sql(sql: str) -> None:
     lowered = s.lower()
     if not lowered.startswith("select") and not lowered.startswith("with"):
         raise ValueError("Only SELECT / WITH queries are allowed.")
-    banned = ["insert ", "update ", "delete ", "drop ", "truncate ",
-              "alter ", "grant ", "revoke ", "create ", "copy ", ";"]
+    banned = [
+        "insert ", "update ", "delete ", "drop ", "truncate ", "alter ",
+        "grant ", "revoke ", "create ", "copy ", ";", "--", "/*", "*/",
+        "pg_", "information_schema", "current_setting", "set_config",
+        "dblink", "lo_import", "lo_export", "pg_sleep",
+    ]
     for b in banned:
         if b in lowered:
             raise ValueError(f"Disallowed keyword in SQL: {b.strip()}")
+    relations = {
+        f"{schema}.{table}".lower()
+        for schema, table in re.findall(
+            r"\b(?:from|join)\s+([a-z_][a-z0-9_]*)\.([a-z_][a-z0-9_]*)\b",
+            lowered,
+        )
+    }
+    if not relations:
+        raise ValueError("Query must use an approved schema-qualified relation.")
+    unknown = relations - set(ANALYTICS_TABLES)
+    if unknown:
+        raise ValueError(f"Relation is not available for analytics: {sorted(unknown)[0]}")
+    if re.search(r"\b(?:from|join)\s+(?![a-z_][a-z0-9_]*\.)[a-z_][a-z0-9_]*", lowered):
+        raise ValueError("All analytics relations must be schema-qualified.")
 
 
 def _run_sql(sql: str) -> pd.DataFrame:
     _guard_sql(sql)
     with get_conn() as conn:
-        return pd.read_sql_query(sql, conn)
+        with conn.cursor() as cur:
+            cur.execute("SET TRANSACTION READ ONLY")
+            cur.execute("SET LOCAL statement_timeout = '5000ms'")
+        return pd.read_sql_query(
+            f"SELECT * FROM ({sql}) AS approved_analytics_query LIMIT 201",
+            conn,
+        )
 
 
 def _chart_for(df: pd.DataFrame, spec: dict) -> dict | None:
@@ -265,7 +273,7 @@ def analytics_page(session):
                     "sample_queries": list(SAMPLE_QUERIES[:4]),
                 },
             ),
-            cls="app pane-closed",
+            cls="app",
         ),
         Script(NotStr("""
             async function runAnalytics(q) {
@@ -280,7 +288,7 @@ def analytics_page(session):
                 });
                 const data = await r.json();
                 if (data.error) {
-                    out.innerHTML = `<div class="analytics-error"><strong>Error:</strong> ${data.error}<br><pre style="margin-top:.5rem;font-size:.7rem;overflow-x:auto">${data.sql || ''}</pre></div>`;
+                    out.innerHTML = `<div class="analytics-error"><strong>Error:</strong> ${escapeAnalytics(data.error)}<br><pre style="margin-top:.5rem;font-size:.7rem;overflow-x:auto">${escapeAnalytics(data.sql || '')}</pre></div>`;
                     return;
                 }
                 const chartId = 'chart-' + Math.random().toString(36).slice(2, 8);
@@ -288,8 +296,8 @@ def analytics_page(session):
                     ? `<div class="analytics-table-wrap">${data.table}</div>` : '';
                 out.innerHTML = `
                     <div class="analytics-result">
-                        <h3>${data.title || question}</h3>
-                        <div class="sql">${data.sql}</div>
+                        <h3>${escapeAnalytics(data.title || question)}</h3>
+                        <div class="sql">${escapeAnalytics(data.sql)}</div>
                         <div id="${chartId}" class="analytics-chart"></div>
                         ${tableHtml}
                     </div>`;
@@ -299,9 +307,14 @@ def analytics_page(session):
                     document.getElementById(chartId).innerHTML = '<p style="color:var(--ink-muted);font-size:.82rem">(No chart — showing table only.)</p>';
                 }
             }
+            function escapeAnalytics(value) {
+                return String(value || '').replace(/[&<>"']/g, function(ch) {
+                    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+                });
+            }
             window.runAnalytics = runAnalytics;
         """)),
-        Script(src="/chat.js?v=2"),
+        Script(src="/chat.js?v=4"),
         Script(src="/copilot.js"),
     )
 
@@ -429,19 +442,9 @@ async def analytics_pdf():
     """Export analytics schema overview as PDF."""
     from utils.page_pdf import build_pdf, pdf_filename, Section, Row
     from starlette.responses import FileResponse
-    import json
-    from pathlib import Path
-
-    schema_path = Path(__file__).resolve().parent.parent / "sql" / "schema.json"
-    if not schema_path.exists():
-        from starlette.responses import JSONResponse
-        return JSONResponse({"error": "Schema not found"}, status_code=404)
-
-    schema = json.loads(schema_path.read_text())
     sections = []
-    for table, info in schema.items():
-        cols = info.get("columns", [])
-        rows = [Row([c["name"], c.get("type", ""), c.get("description", "")]) for c in cols[:30]]
+    for table, columns in ANALYTICS_TABLES.items():
+        rows = [Row([column, "", "Approved analytics field"]) for column in columns]
         sections.append(Section(table, headers=["Column", "Type", "Description"], rows=rows))
 
     path = build_pdf("Analytics", "Database schema reference", sections)

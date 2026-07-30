@@ -70,10 +70,22 @@ async def _fetch_website_text(url: str) -> str:
         "Accept-Language": "en,et,lt,lv;q=0.5",
     }
     try:
-        async with httpx.AsyncClient(follow_redirects=True, timeout=15.0) as client:
-            resp = await client.get(url, headers=headers)
-            resp.raise_for_status()
-            html = resp.text
+        from utils.security import validate_public_url, validate_redirect_url
+        current = validate_public_url(url)
+        async with httpx.AsyncClient(follow_redirects=False, timeout=15.0) as client:
+            for _ in range(5):
+                resp = await client.get(current, headers=headers)
+                if resp.is_redirect:
+                    current = validate_redirect_url(current, resp.headers.get("location", ""))
+                    continue
+                resp.raise_for_status()
+                content_type = resp.headers.get("content-type", "").lower()
+                if "html" not in content_type and "text/" not in content_type:
+                    raise ValueError("URL did not return an HTML page")
+                html = resp.text
+                break
+            else:
+                raise ValueError("Too many redirects")
     except Exception as e:
         log.warning("Direct fetch failed for %s: %s", url, e)
         return ""
@@ -101,9 +113,8 @@ async def scrape_company(url: str) -> CompanyProfile:
     Strategy: try Tavily first; if no results, fall back to direct HTTP fetch.
     Both paths feed content to the LLM for structured extraction.
     """
-    url = url.strip().rstrip("/")
-    if not url.startswith("http"):
-        url = f"https://{url}"
+    from utils.security import validate_public_url
+    url = validate_public_url(url).rstrip("/")
 
     domain = url.split("//")[-1].split("/")[0]
 

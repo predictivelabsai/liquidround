@@ -650,6 +650,8 @@
     window.toggleNewsPane = () => {
         const r = $("#right-pane");
         if (r) r.classList.add("open");
+        const launcher = $("#mobile-news-launcher");
+        if (launcher) launcher.hidden = true;
     };
     window.switchRightTab = (tab) => {
         const news = $("#rpane-content-news");
@@ -657,7 +659,9 @@
     };
     window.closeRightPane = () => {
         const r = $("#right-pane");
-        if (r) r.classList.add("open");
+        if (r) r.classList.remove("open");
+        const launcher = $("#mobile-news-launcher");
+        if (launcher) launcher.hidden = false;
     };
     window.toggleGroup = (id) => {
         const el = document.getElementById(id);
@@ -715,6 +719,23 @@
     };
 
     window.sendMessage = sendMessage;
+
+    // Desktop keeps the contextual news pane visible by default. On narrow
+    // screens it starts closed so the primary workflow is never obscured.
+    if (window.matchMedia("(max-width: 960px)").matches) {
+        const initialRightPane = $("#right-pane");
+        if (initialRightPane) {
+            initialRightPane.classList.remove("open");
+            const launcher = document.createElement("button");
+            launcher.id = "mobile-news-launcher";
+            launcher.className = "mobile-news-launcher";
+            launcher.type = "button";
+            launcher.textContent = "News";
+            launcher.setAttribute("aria-label", "Open news and deal context");
+            launcher.onclick = window.toggleNewsPane;
+            document.body.appendChild(launcher);
+        }
+    }
 
     // ── Auto-send from ?q= query param (used by nav links) ──────────
     const _qParam = new URLSearchParams(window.location.search).get("q");

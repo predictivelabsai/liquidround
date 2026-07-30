@@ -2,14 +2,29 @@
 LiquidRound — AI-Powered M&A Research Platform
 Chat-first FastHTML app. Deployed with uvicorn.
 """
-import os, uuid, time, asyncio, collections, json, re, threading
+import os, uuid, time, asyncio, collections, json, logging, re, threading
 from dotenv import load_dotenv
 load_dotenv()
+log = logging.getLogger(__name__)
 
 from fasthtml.common import *
 from starlette.responses import RedirectResponse, Response, JSONResponse
 from starlette.datastructures import UploadFile
 from pathlib import Path
+from utils.security import (
+    ensure_csrf_token,
+    is_admin,
+    is_local_auth_bypass,
+    safe_upload_target,
+    validate_same_origin,
+    UPLOAD_MAX_BYTES,
+)
+
+# Background work is disabled in tests and may be disabled for web-only replicas.
+_background_jobs_enabled = os.getenv(
+    "BACKGROUND_JOBS_ENABLED",
+    "false" if os.getenv("ENVIRONMENT", "").lower() == "test" else "true",
+).lower() in {"1", "true", "yes"}
 
 # Pre-fetch news in background so first request is instant
 def _prefetch_news():
@@ -19,20 +34,31 @@ def _prefetch_news():
     except Exception:
         pass
 
-_news_t = threading.Thread(target=_prefetch_news, daemon=True)
-_news_t.start()
-_news_t.join(timeout=8)
+if _background_jobs_enabled:
+    _news_t = threading.Thread(target=_prefetch_news, daemon=True)
+    _news_t.start()
 
 # ---------------------------------------------------------------------------
 # In-process scheduler — config via .env, no external cron
 # ---------------------------------------------------------------------------
 from utils.scheduler import start as _start_scheduler
-_start_scheduler()
+if _background_jobs_enabled:
+    _start_scheduler()
 
 # ---------------------------------------------------------------------------
 # App setup — auth gate on /app/* routes
 # ---------------------------------------------------------------------------
 _OG_DESC = "AI-powered M&A, IPO readiness, and public markets intelligence. A squad of specialist AI analysts in one chat-first workspace."
+_environment = os.getenv("ENVIRONMENT", "development").lower()
+_session_secret = os.getenv("SESSION_SECRET", "")
+if _environment == "production" and (
+    len(_session_secret) < 32
+    or _session_secret in {"liquidround-dev-secret-change-me", "liquidround-prod-secret"}
+):
+    raise RuntimeError("Production requires a strong SESSION_SECRET of at least 32 characters")
+if not _session_secret:
+    _session_secret = "liquidround-local-development-secret"
+
 app, rt = fast_app(
     pico=False,
     hdrs=(
@@ -61,7 +87,7 @@ app, rt = fast_app(
         Meta(name="twitter:description", content=_OG_DESC),
     ),
     static_path="static",
-    secret_key=os.getenv("SESSION_SECRET", "liquidround-dev-secret-change-me"),
+    secret_key=_session_secret,
 )
 
 
@@ -70,25 +96,52 @@ app, rt = fast_app(
 # After sign-in, users are redirected back to their original URL (including
 # shared chat links /app/s/*).
 # ---------------------------------------------------------------------------
-_AUTH_EXEMPT_PREFIXES = ("/app/news",)
+_AUTH_EXEMPT_PREFIXES = ("/app/news", "/app/s/")
+_AUTH_REQUIRED_PREFIXES = (
+    "/app", "/profile", "/conversation", "/conversations",
+    "/chat", "/upload", "/research", "/api",
+)
+_ADMIN_PREFIXES = ("/app/skills", "/app/api/prompt-version")
+_ADMIN_MUTATIONS = {
+    "/app/reverse-mergers/sync",
+    "/app/reverse-mergers/sync-sedar",
+    "/app/reverse-mergers/sync-news",
+    "/app/digest/send-all",
+    "/app/deals/generate",
+    "/app/sync/ee",
+    "/app/sync/no",
+    "/app/ipo-map/refresh",
+    "/app/ipo-pipeline/refresh",
+    "/app/spacs/refresh",
+    "/app/reverse-mergers/import",
+}
 
 
 def _auth_gate(req, session):
     path = req.url.path
-    local_auth_bypass = (
-        os.getenv("ENVIRONMENT", "").lower() != "production"
-        and os.getenv("LOCAL_AUTH_BYPASS", "").lower() in {"1", "true", "yes"}
-    )
-    if local_auth_bypass:
+    if is_local_auth_bypass():
         return None
-    if path.startswith("/app"):
-        if not any(path.startswith(p) for p in _AUTH_EXEMPT_PREFIXES):
-            user = session.get("user")
-            if not user:
-                return RedirectResponse(f"/signin?next={path}", status_code=302)
+    protected = any(path == p or path.startswith(p + "/") for p in _AUTH_REQUIRED_PREFIXES)
+    exempt = any(path.startswith(p) for p in _AUTH_EXEMPT_PREFIXES)
+    if protected and not exempt and not session.get("user"):
+        return RedirectResponse(f"/signin?next={path}", status_code=302)
+    if (
+        any(path.startswith(p) for p in _ADMIN_PREFIXES)
+        or (req.method.upper() != "GET" and path in _ADMIN_MUTATIONS)
+    ) and not is_admin(session):
+        return JSONResponse({"error": "Administrator access required"}, status_code=403)
+
+
+def _csrf_gate(req, session):
+    if is_local_auth_bypass() or req.method.upper() not in {"POST", "PUT", "PATCH", "DELETE"}:
+        return None
+    if session.get("user") and not validate_same_origin(req, session):
+        return JSONResponse({"error": "Invalid request origin"}, status_code=403)
+    ensure_csrf_token(session)
 
 
 app.before.append(_auth_gate)
+app.before.append(_csrf_gate)
 
 # Register landing-page routes FIRST so `/` resolves to the landing, not the chat
 from routes.landing import ar as landing_router
@@ -99,10 +152,8 @@ from routes.tools import ar as tools_router
 tools_router.to_app(app)
 
 # Register public blog routes (/blog, /blog/{slug}, /blog/rss)
-from routes.blog import ar as blog_router, regenerate_sitemap
+from routes.blog import ar as blog_router
 blog_router.to_app(app)
-try: regenerate_sitemap()
-except Exception: pass
 
 # Register auth routes (login/register still available)
 from routes.auth import ar as auth_router
@@ -203,6 +254,42 @@ deal_radar_router.to_app(app)
 # ---------------------------------------------------------------------------
 # News feed routes
 # ---------------------------------------------------------------------------
+@rt("/health/live")
+def health_live():
+    return JSONResponse({"status": "ok", "service": "liquidround"})
+
+
+@rt("/health/ready")
+def health_ready():
+    """Readiness includes configuration and database reachability when configured."""
+    checks = {"config": "ok"}
+    status_code = 200
+    if os.getenv("DB_URL"):
+        try:
+            from utils.database import get_conn
+            with get_conn() as conn:
+                cur = conn.cursor()
+                cur.execute("SELECT 1")
+                cur.fetchone()
+            checks["database"] = "ok"
+        except Exception:
+            checks["database"] = "unavailable"
+            status_code = 503
+    else:
+        checks["database"] = "not-configured"
+    from utils.hermes_agent import hermes_status
+    hermes = hermes_status()
+    checks["hermes"] = (
+        "ready" if hermes.enabled and hermes.available
+        else "disabled" if not hermes.enabled
+        else "unavailable"
+    )
+    return JSONResponse(
+        {"status": "ok" if status_code == 200 else "not-ready", "checks": checks},
+        status_code=status_code,
+    )
+
+
 @rt("/app/news")
 async def news_feed_json():
     from utils.news import fetch_news
@@ -1164,7 +1251,10 @@ def app_shell(session, role: str = "", sid: str = ""):
     if user and sid:
         try:
             from utils.database import db_service
-            conv_msgs = db_service.get_messages(sid) or []
+            conv_msgs = db_service.get_user_messages(sid, user["user_id"]) or []
+            if not conv_msgs and not db_service.conversation_belongs_to_user(sid, user["user_id"]):
+                sid = ""
+                raise PermissionError("Conversation does not belong to user")
             messages = [{"role": m["role"], "content": m["content"]} for m in conv_msgs]
             session["recent_user_messages"] = [
                 str(m["content"])[:240] for m in conv_msgs
@@ -1196,7 +1286,7 @@ def app_shell(session, role: str = "", sid: str = ""):
             right_pane(open_by_default=True),
             cls="app",
         ),
-        Script(src="/chat.js?v=3"),
+        Script(src="/chat.js?v=4"),
     )
 
 
@@ -1250,7 +1340,7 @@ async def app_config(session, request):
 
 @rt("/app/chat", methods=["POST"])
 async def app_chat_sse(request, session):
-    """SSE streaming chat — routes to one of the 25 ECM Squad specialists.
+    """SSE streaming chat — routes to one of the 32 ECM Squad specialists.
 
     Event stream format (pehero-compatible):
       event: agent_route  → {slug, agent, icon}
@@ -1266,8 +1356,9 @@ async def app_chat_sse(request, session):
     from langchain_core.messages import HumanMessage
     from agents.base import cached_agent
     from agents.registry import by_slug
-    from agents.router import contextualize_user_query, route_with_context, strip_prefix
+    from agents.router import contextualize_user_query, decide_route, strip_prefix
     from tools.artifact import is_artifact, parse_artifact, ARTIFACT_PREFIX
+    from utils.config import config as runtime_config
     import chat_sse as sse
 
     form = await request.form()
@@ -1299,18 +1390,43 @@ async def app_chat_sse(request, session):
         str(item)[:240] for item in session.get("recent_user_messages", [])
         if str(item).strip()
     ][-5:]
-    slug = route_with_context(
+    route_decision = decide_route(
         user_msg,
         previous_user_messages=previous_user_messages,
         active_slug=session.get("last_agent_slug"),
     )
+    slug = route_decision.slug
+    session["mandate"] = route_decision.extracted_entities or session.get("mandate", {})
     session["last_agent_slug"] = slug
     session["recent_user_messages"] = [*previous_user_messages, user_msg[:240]][-5:]
     spec = by_slug(slug)
     stripped = strip_prefix(user_msg)
     contextual_query = contextualize_user_query(stripped, previous_user_messages)
+    run_id = None
+    if user:
+        try:
+            import hashlib
+            from agents.base import load_system_prompt
+            from utils.config import config as _config
+            prompt_version = hashlib.sha256(
+                load_system_prompt(slug).encode("utf-8")
+            ).hexdigest()[:12]
+            from utils.database import db_service
+            run_id = db_service.create_agent_run(
+                workflow_id=conv_id,
+                user_id=user.get("user_id"),
+                agent_slug=slug,
+                router_payload=route_decision.to_dict(),
+                prompt_version=prompt_version,
+                model_provider=_config.default_provider,
+                model_name=_config.default_model,
+            )
+        except Exception:
+            run_id = None
 
     async def event_stream():
+        from utils.request_context import set_current_user_id, reset_current_user_id
+        context_token = set_current_user_id(user.get("user_id") if user else None)
         # Push conversation ID to client so Share button works
         if new_conv and conv_id:
             yield sse.event(sse.SESSION, {"sid": str(conv_id)})
@@ -1322,68 +1438,113 @@ async def app_chat_sse(request, session):
         })
 
         tool_calls = 0
+        tool_trace = []
+        artifact_trace = []
         accumulated = ""
+        run_error = None
+        run_started = time.monotonic()
         try:
-            agent = cached_agent(slug)
-        except Exception as e:  # noqa: BLE001
-            yield sse.event(sse.ERROR, {"message": f"agent build failed: {e}"})
-            yield sse.event(sse.DONE, {"slug": slug, "tools": 0})
-            return
-
-        # LangGraph app path
-        if hasattr(agent, "astream_events"):
             try:
-                async for ev in agent.astream_events(
-                    {"messages": [HumanMessage(content=contextual_query)]},
-                    version="v2",
-                ):
-                    kind = ev["event"]
-                    if kind == "on_chat_model_stream":
-                        chunk = ev["data"].get("chunk")
-                        text = getattr(chunk, "content", None) if chunk else None
-                        if isinstance(text, str) and text:
-                            accumulated += text
-                            yield sse.event(sse.TOKEN, {"text": text})
-                    elif kind == "on_tool_start":
-                        tool_calls += 1
-                        yield sse.event(sse.TOOL_START, {
-                            "name": ev.get("name", "?"),
-                            "args": ev["data"].get("input", {}),
-                        })
-                    elif kind == "on_tool_end":
-                        raw = ev["data"].get("output", "")
-                        output = getattr(raw, "content", None) or (raw if isinstance(raw, str) else str(raw))
-                        yield sse.event(sse.TOOL_END, {
-                            "name": ev.get("name", "?"),
-                            "output": (output or "")[:2000],
-                        })
-                        if isinstance(output, str) and output.startswith(ARTIFACT_PREFIX):
-                            try:
-                                yield sse.event(sse.ARTIFACT, parse_artifact(output))
-                            except Exception:
-                                pass
+                agent = cached_agent(slug)
             except Exception as e:  # noqa: BLE001
-                accumulated = f"Error: {e}"
-                yield sse.event(sse.ERROR, {"message": str(e)})
-        else:
-            # Simple-LLM callable fallback
-            try:
+                run_error = type(e).__name__
+                log.exception("agent build failed for %s", slug)
+                yield sse.event(
+                    sse.ERROR,
+                    {"message": "The agent could not be initialized."},
+                )
+                yield sse.event(sse.DONE, {"slug": slug, "tools": 0})
+                return
+
+            # LangGraph app path
+            if hasattr(agent, "astream_events"):
+              try:
+                async with asyncio.timeout(runtime_config.agent_timeout_seconds):
+                    async for ev in agent.astream_events(
+                        {"messages": [HumanMessage(content=contextual_query)]},
+                        version="v2",
+                        config={"recursion_limit": runtime_config.agent_recursion_limit},
+                    ):
+                        kind = ev["event"]
+                        if kind == "on_chat_model_stream":
+                            chunk = ev["data"].get("chunk")
+                            text = getattr(chunk, "content", None) if chunk else None
+                            if isinstance(text, str) and text:
+                                accumulated += text
+                                yield sse.event(sse.TOKEN, {"text": text})
+                        elif kind == "on_tool_start":
+                            tool_calls += 1
+                            if tool_calls > runtime_config.agent_max_tool_calls:
+                                raise RuntimeError("agent tool-call budget exceeded")
+                            tool_trace.append({
+                                "name": ev.get("name", "?"),
+                                "args": ev["data"].get("input", {}),
+                            })
+                            yield sse.event(sse.TOOL_START, {
+                                "name": ev.get("name", "?"),
+                                "args": ev["data"].get("input", {}),
+                            })
+                        elif kind == "on_tool_end":
+                            raw = ev["data"].get("output", "")
+                            output = getattr(raw, "content", None) or (
+                                raw if isinstance(raw, str) else str(raw)
+                            )
+                            yield sse.event(sse.TOOL_END, {
+                                "name": ev.get("name", "?"),
+                                "output": (output or "")[:2000],
+                            })
+                            if isinstance(output, str) and output.startswith(ARTIFACT_PREFIX):
+                                try:
+                                    artifact = parse_artifact(output)
+                                    artifact_trace.append(artifact)
+                                    yield sse.event(sse.ARTIFACT, artifact)
+                                except Exception:
+                                    pass
+              except TimeoutError:
+                accumulated = "The agent timed out before completing this request."
+                run_error = "AgentTimeout"
+                yield sse.event(sse.ERROR, {"message": accumulated})
+              except Exception as e:  # noqa: BLE001
+                run_error = type(e).__name__
+                log.exception("agent run failed for %s", slug)
+                accumulated = "The agent could not complete this request."
+                yield sse.event(sse.ERROR, {"message": accumulated})
+            else:
+              # Simple-LLM callable fallback
+              try:
                 text = agent(contextual_query) if callable(agent) else str(agent)
                 accumulated = text
                 yield sse.event(sse.TOKEN, {"text": text})
-            except Exception as e:  # noqa: BLE001
-                accumulated = f"Error: {e}"
-                yield sse.event(sse.ERROR, {"message": str(e)})
+              except Exception as e:  # noqa: BLE001
+                run_error = type(e).__name__
+                log.exception("fallback agent run failed for %s", slug)
+                accumulated = "The agent could not complete this request."
+                yield sse.event(sse.ERROR, {"message": accumulated})
 
-        # Persist assistant response
-        if conv_id and accumulated:
-            try:
-                from utils.database import db_service as _dbs
-                _dbs.add_message(conv_id, "assistant", accumulated[:10000])
-            except Exception:
-                pass
+            # Persist assistant response
+            if conv_id and accumulated:
+                try:
+                    from utils.database import db_service as _dbs
+                    _dbs.add_message(conv_id, "assistant", accumulated[:10000])
+                except Exception:
+                    pass
 
-        yield sse.event(sse.DONE, {"slug": slug, "tools": tool_calls})
+            yield sse.event(sse.DONE, {"slug": slug, "tools": tool_calls})
+        finally:
+            if run_id:
+                try:
+                    from utils.database import db_service as _dbs
+                    _dbs.complete_agent_run(
+                        run_id,
+                        status="failed" if run_error else "completed",
+                        latency_ms=int((time.monotonic() - run_started) * 1000),
+                        tool_calls=tool_trace,
+                        artifacts=artifact_trace,
+                        error_code=run_error,
+                    )
+                except Exception:
+                    pass
+            reset_current_user_id(context_token)
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
@@ -1817,19 +1978,17 @@ def conversation_load(session, conv_id: str):
     if not user:
         return ""
     from utils.database import db_service
-    messages = db_service.get_messages(conv_id)
+    messages = db_service.get_user_messages(conv_id, user["user_id"])
+    if not messages and not db_service.conversation_belongs_to_user(conv_id, user["user_id"]):
+        return Response("Not found", status_code=404)
     session["conversation_id"] = conv_id
     session["recent_user_messages"] = [
         str(m["content"])[:240] for m in messages
         if m.get("role") == "user" and m.get("content")
     ][-5:]
     session.pop("last_agent_slug", None)
-    parts = []
-    for m in messages:
-        if m["role"] == "user":
-            parts.append(_user_bubble(m["content"]))
-        else:
-            parts.append(_assistant_bubble(Div(NotStr(m["content"]), cls="text-sm text-gray-800 leading-relaxed")))
+    from components.chat_shell import message_bubble
+    parts = [message_bubble(m["role"], m["content"]) for m in messages]
     if not parts:
         parts.append(_assistant_bubble(P("Empty conversation.", cls="text-sm text-gray-400")))
     return Div(*parts)
@@ -1982,31 +2141,34 @@ async def chat(session, msg: str = ""):
 # File upload via chat (drag-drop or button)
 # ---------------------------------------------------------------------------
 @rt("/chat-upload")
-async def chat_upload(file: UploadFile):
+async def chat_upload(file: UploadFile, session):
     if not file or not file.filename:
         return _assistant_bubble(P("No file selected.", cls="text-sm text-red-500"))
-
-    ext = Path(file.filename).suffix.lower()
-    allowed = {".xlsx", ".xls", ".pptx", ".ppt", ".pdf"}
-    if ext not in allowed:
-        return _assistant_bubble(P(f"Unsupported: {ext}", cls="text-sm text-red-500"))
+    user = session.get("user")
+    if not user:
+        return Response("Authentication required", status_code=401)
 
     content = await file.read()
-    save_path = UPLOAD_DIR / file.filename
+    if len(content) > UPLOAD_MAX_BYTES:
+        return _assistant_bubble(P("File too large.", cls="text-sm text-red-500"))
+    try:
+        save_path, document_id = safe_upload_target(UPLOAD_DIR, user["user_id"], file.filename)
+    except ValueError as exc:
+        return _assistant_bubble(P(str(exc), cls="text-sm text-red-500"))
     save_path.write_bytes(content)
 
     from utils.document_parser import document_parser
     parsed = document_parser.parse(str(save_path))
     from components.upload_form import UploadResult
     return Div(
-        _user_bubble(f"Uploaded: {file.filename}"),
+        _user_bubble(f"Uploaded: {Path(file.filename).name}"),
         _assistant_bubble(
             UploadResult(parsed),
             Div(
                 Button(
                     "Score: Find Buyers",
                     hx_post="/chat",
-                    hx_vals=json.dumps({"msg": f"score doc:{file.filename}"}),
+                    hx_vals=json.dumps({"msg": f"score doc:{document_id}"}),
                     hx_target="#chat-area",
                     hx_swap="beforeend",
                     cls="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 mt-3",
@@ -2014,7 +2176,7 @@ async def chat_upload(file: UploadFile):
             ),
         ),
         # Open document in right pane
-        Script(f"document.getElementById('right-pane').classList.remove('translate-x-full'); htmx.ajax('GET', '/doc/panel?fn={file.filename}', '#canvas-content');"),
+        Script("if(window.toggleNewsPane)window.toggleNewsPane();"),
     )
 
 

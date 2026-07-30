@@ -5,8 +5,8 @@
 # LiquidRound AI Platform Demo
 
 <p class="subtitle">M&A · IPO · Public Markets · Investor Relations</p>
-<p class="subtitle">31 specialist agents · 7 categories · chat-first workspace</p>
-<p class="meta">Predictive Labs Ltd · LiquidRound v0.7.0</p>
+<p class="subtitle">32 specialist agents · 7 categories · chat-first workspace</p>
+<p class="meta">Predictive Labs Ltd · LiquidRound v0.8.0</p>
 
 </div>
 
@@ -28,9 +28,10 @@
 
 ## Getting started
 
-Sign in at **liquidround.ai** — choose Buyer-Led or Seller-Led. Three panes: **left** (sessions, 31 agents, Tools, IR, Public Markets), **centre** (routed chat, workspace pages), **right** (live News feed).
+Sign in at **liquidround.ai** — choose Buyer-Led or Seller-Led. Three panes: **left** (sessions, 32 agents, Tools, IR, Public Markets), **centre** (routed chat, workspace pages), **right** (live contextual News feed).
 
-On mobile, the left pane becomes a slide-in menu.
+On mobile, the left pane becomes a slide-in menu and the contextual feed starts
+closed; use the floating **News** control to open it without obscuring the chat.
 
 ![Three-pane workspace — buyer view](img/07-app-buyer.png)
 
@@ -80,7 +81,7 @@ Demo prompts: `ir-triage: CFO resigned`, `ir-compliance: check this draft`, `ir-
 
 ---
 
-## The 31-agent squad — sourcing and underwriting
+## The 32-agent squad — sourcing and underwriting
 
 **Deal Sourcing (4):** Target Scanner (`scan:`), Buyer Scanner (`buyers:`), Deal Triage (`triage:`), Seller Intent (`intent:`). Target Scanner carries mandate filters across follow-up turns, treats omitted filters as open, and proceeds with evidence-backed candidates once sector/product and geography are known.
 
@@ -90,7 +91,7 @@ Demo prompts: `ir-triage: CFO resigned`, `ir-compliance: check this draft`, `ir-
 
 ---
 
-## The 31-agent squad — diligence and capital
+## The 32-agent squad — diligence and capital
 
 **Due Diligence (5):** VDR Auditor (`vdr:`), Contract Abstractor (`abstract:`), Legal Reviewer (`legal:`), Operational DD (`ops:`), ESG Flagger (`esg:`).
 
@@ -100,9 +101,9 @@ Demo prompts: `ir-triage: CFO resigned`, `ir-compliance: check this draft`, `ir-
 
 ---
 
-## The 31-agent squad — research and public markets
+## The 32-agent squad — research and public markets
 
-**Research & Post-Deal (2):** Deep Research Analyst (`research:`), Integration Planner (`integrate:`).
+**Research & Post-Deal (3):** Deep Research Analyst (`research:`), Hermes Orchestrator (`hermes:`), Integration Planner (`integrate:`). Hermes is optional and runs inside a bounded LangGraph delegation node with configurable model/provider, safe mode, toolsets, and timeout. All graph runs also enforce configurable recursion, tool-call, and wall-clock limits.
 
 **Public Markets (4):** Hedge Fund Analyst (`hedgefunds:`), Filing Analyst (`filings:`), Press Release Analyst (`releases:`), Reverse Merger Analyst (`rto:`).
 

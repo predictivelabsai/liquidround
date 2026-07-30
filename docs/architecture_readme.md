@@ -67,8 +67,9 @@ flowchart TB
 
 ## 2. ECM Agent Squad — Multi-Agent Router
 
-31 specialist agents organised into 7 categories. The router uses a
-strict priority chain: prefix match → keyword heuristics → LLM fallback.
+32 specialist agents organised into 7 categories. The typed router uses
+prefix match → direct intent → keyword heuristics → context refinement →
+LLM fallback.
 
 ```mermaid
 flowchart TD
@@ -78,8 +79,9 @@ flowchart TD
     ROUTER -->|"comps: ltm: dcf:<br/>multi: synergy:"| UND["Valuation<br/>& Underwriting"]
     ROUTER -->|"vdr: abstract: legal:<br/>ops: esg:"| DIG["Due Diligence<br/>Stack"]
     ROUTER -->|"memo: teaser: bid:<br/>ipo: score:"| CAP["Deal Execution<br/>& Capital"]
-    ROUTER -->|"research: integrate:"| PORT["Research<br/>& Post-Deal"]
-    ROUTER -->|"hedgefunds:"| PUB["Public Markets<br/>& Hedge Funds"]
+    ROUTER -->|"research: hermes: integrate:"| PORT["Research<br/>& Post-Deal"]
+    ROUTER -->|"hedgefunds: filings:<br/>releases: rto:"| PUB["Public Markets<br/>& Hedge Funds"]
+    ROUTER -->|"write-release:<br/>ir-*:"| IR["Investor Relations<br/>& Communications"]
 
     subgraph SRC_AGENTS ["Sourcing (4 agents)"]
         SRC --> TS["target_scanner"]
@@ -113,8 +115,9 @@ flowchart TD
         CAP --> MS["match_scorer"]
     end
 
-    subgraph PORT_AGENTS ["Portfolio (2 agents)"]
+    subgraph PORT_AGENTS ["Portfolio (3 agents)"]
         PORT --> RA["research_analyst"]
+        PORT --> HO["hermes_orchestrator"]
         PORT --> IP["integration_planner"]
     end
 

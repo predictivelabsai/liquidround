@@ -28,7 +28,7 @@
 
 ## Getting started
 
-Sign in at **liquidround.ai** — choose Buyer-Led or Seller-Led. Three panes: **left** (sessions, 31 agents, Tools, IR, Public Markets), **centre** (routed chat, workspace pages), **right** (live News feed).
+Sign in at **liquidround.ai** — choose Buyer-Led or Seller-Led. Three panes: **left** (sessions, 32 agents, Tools, IR, Public Markets), **centre** (routed chat, workspace pages), **right** (live News feed).
 
 On mobile, the left pane becomes a slide-in menu.
 
@@ -80,7 +80,7 @@ Demo prompts: `ir-triage: CFO resigned`, `ir-compliance: check this draft`, `ir-
 
 ---
 
-## The 31-agent squad — sourcing and underwriting
+## The 32-agent squad — sourcing and underwriting
 
 **Deal Sourcing (4):** Target Scanner (`scan:`), Buyer Scanner (`buyers:`), Deal Triage (`triage:`), Seller Intent (`intent:`).
 
@@ -90,7 +90,7 @@ Demo prompts: `ir-triage: CFO resigned`, `ir-compliance: check this draft`, `ir-
 
 ---
 
-## The 31-agent squad — diligence and capital
+## The 32-agent squad — diligence and capital
 
 **Due Diligence (5):** VDR Auditor (`vdr:`), Contract Abstractor (`abstract:`), Legal Reviewer (`legal:`), Operational DD (`ops:`), ESG Flagger (`esg:`).
 
@@ -100,7 +100,7 @@ Demo prompts: `ir-triage: CFO resigned`, `ir-compliance: check this draft`, `ir-
 
 ---
 
-## The 31-agent squad — research and public markets
+## The 32-agent squad — research and public markets
 
 **Research & Post-Deal (2):** Deep Research Analyst (`research:`), Integration Planner (`integrate:`).
 

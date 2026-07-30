@@ -12,7 +12,7 @@ from pathlib import Path
 import logging
 import threading
 
-from fasthtml.common import (Div, Span, H1, H2, H3, P, A, NotStr, Button, Input,
+from fasthtml.common import (Div, Span, H1, H2, H3, P, A, B, I, NotStr, Button, Input,
                              Table, Thead, Tbody, Tr, Th, Td, Title, Script)
 from fasthtml.core import APIRouter
 from starlette.requests import Request
@@ -40,7 +40,7 @@ def _shell(session, *, title: str, header_title: str, header_sub: str,
     header = Div(
         Div(
             Button("☰", cls="mobile-menu-btn", onclick="toggleLeftPane()", type="button"),
-            Span(header_title, cls="chat-header-title"),
+            H1(header_title, cls="chat-header-title"),
             Span("·", cls="chat-header-dot"),
             Span(header_sub, cls="chat-header-agent"),
             cls="chat-header-left",
@@ -65,9 +65,9 @@ def _shell(session, *, title: str, header_title: str, header_sub: str,
                       current_role=session.get("role", "buyer")),
             Div(header, Div(content, cls="overflow-y-auto flex-1"), cls="center-pane"),
             right_pane(),
-            cls="app pane-closed",
+            cls="app",
         ),
-        Script(src="/chat.js?v=2"),
+        Script(src="/chat.js?v=4"),
     ]
     if extra_js:
         parts.append(Script(NotStr(extra_js)))
@@ -254,10 +254,10 @@ def _target_card(c: dict, is_featured: bool = False):
     if c.get("description"):
         parts.append(P(c["description"], style=f"font-size:12.5px;color:{INK};line-height:1.5;margin:0 0 4px;"))
     if c.get("deal_context"):
-        parts.append(P(NotStr(f"<b style='color:{AMBER};'>Deal angle:</b> {c['deal_context']}"),
+        parts.append(P(B("Deal angle:", style=f"color:{AMBER};"), " ", c["deal_context"],
                        style=f"font-size:12px;color:{MUTED};line-height:1.5;margin:0 0 4px;"))
     if c.get("thesis"):
-        parts.append(P(NotStr(f"<b>Thesis:</b> <i>{c['thesis']}</i>"),
+        parts.append(P(B("Thesis:"), " ", I(c["thesis"]),
                        style=f"font-size:12px;color:{MUTED};line-height:1.5;margin:0;"))
 
     return Div(*parts,
@@ -329,10 +329,10 @@ def _targets_content():
                 elif line.startswith("# "):
                     dive_parts.append(H2(line[2:], style=f"font-size:16px;font-weight:700;color:{INK};margin:14px 0 4px;"))
                 elif line.startswith("- ") or line.startswith("* "):
-                    dive_parts.append(P(NotStr(f"• {line[2:]}"),
+                    dive_parts.append(P(f"• {line[2:]}",
                                         style=f"font-size:12px;color:{INK};line-height:1.5;margin:2px 0 2px 12px;"))
                 elif line.startswith("> "):
-                    dive_parts.append(P(NotStr(f"<i>{line[2:]}</i>"),
+                    dive_parts.append(P(I(line[2:]),
                                         style=f"font-size:12px;color:{MUTED};line-height:1.5;margin:2px 0;"))
                 else:
                     dive_parts.append(P(line, style=f"font-size:12px;color:{INK};line-height:1.5;margin:2px 0;"))

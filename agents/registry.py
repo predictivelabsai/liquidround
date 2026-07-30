@@ -348,6 +348,17 @@ AGENTS: tuple[AgentSpec, ...] = (
         ),
     ),
     AgentSpec(
+        slug="hermes_orchestrator", name="Hermes Orchestrator",
+        category="portfolio", audience="shared", icon="◬", prefix="hermes:",
+        one_liner="Delegate bounded research and reasoning to the configured Hermes Agent.",
+        description="Runs a self-contained task through the locally configured Hermes Agent inside a dedicated LangGraph node, with explicit availability, timeout, toolset, and safe-mode controls.",
+        example_prompts=(
+            "hermes: challenge the investment thesis for this acquisition",
+            "Use Hermes to identify missing diligence questions",
+            "Hermes: produce a second-opinion analysis of this market",
+        ),
+    ),
+    AgentSpec(
         slug="integration_planner", name="Integration & 100-Day Planner",
         category="portfolio", audience="buyer", icon="⚒", prefix="integrate:",
         one_liner="Post-close integration plan with milestones and owners.",
@@ -505,4 +516,4 @@ def by_audience(audience: str) -> list[AgentSpec]:
     return [a for a in AGENTS if a.audience == audience or a.audience == "shared"]
 
 
-assert len(AGENTS) == 31, f"expected 31 agents, got {len(AGENTS)}"
+assert len(AGENTS) == 32, f"expected 32 agents, got {len(AGENTS)}"

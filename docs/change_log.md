@@ -1,5 +1,22 @@
 # LiquidRound Change Log
 
+## 0.8.0 — 2026-07-30
+
+### Added
+- Configurable Hermes Orchestrator as a bounded LangGraph specialist
+- Typed routing decisions, structured mandate refinement, and agent-run traces
+- Checked-in 100-question routing and refinement evaluation
+- Ordered migrations, pinned dependencies, CI gates, and readiness endpoints
+- Mobile News launcher with desktop context remaining visible by default
+
+### Changed
+- Hardened tenant isolation, administrator controls, uploads, outbound URL
+  fetching, analytics SQL, production secrets, OAuth callbacks, and prompt publishing
+- Restored role/currency configuration, repaired the mobile context pane,
+  consolidated navigation, added the IR hub, and paginated Reverse Mergers
+- Bounded every LangGraph run with configurable timeout, recursion, and tool-call
+  budgets; sanitized generated HTML and removed live values from schema snapshots
+
 ## 0.7.0 — 2026-07-28
 
 Investor Relations agent squad, platform demo regeneration, DB timeout fix, and

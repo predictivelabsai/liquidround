@@ -136,13 +136,9 @@ _WORKSPACE_ITEMS = [
     ("Pipelines",      "/pipeline/target",    "◆"),
     ("Deal Radar",     "/app/deal-radar",     "◉"),
     ("Data Coverage",  "/app/data-coverage",  "◈"),
-    ("Press Releases", "/app/press-releases", "◩"),
-    ("SEC Filings",    "/app/filings",        "▤"),
     ("Valuation",      "/app/valuation",      "◇"),
     ("Analytics",      "/app/analytics",      "△"),
     ("Data Room",      "/app/dataroom",       "▣"),
-    ("Documents",      "/page/documents",     "▦"),
-    ("Deal history",   "/page/deals",         "∑"),
     ("Skills",         "/app/skills",         "✎"),
     ("User Guide",     "/app/user-guide",     "?"),
 ]
@@ -256,7 +252,7 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
                 Button(
                     Span("◧", cls="cat-icon"),
                     Span("Public Markets", cls="cat-name"),
-                    Span("7", cls="cat-count"),
+                    Span("8", cls="cat-count"),
                     Span("▸", cls="cat-arrow"),
                     cls=f"cat-toggle{' open' if public_markets_open else ''}",
                     onclick="toggleGroup('sec-public-markets')",
@@ -285,39 +281,10 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
                     A(Span("◩", cls="bottom-nav-icon"), Span("Press Releases", cls="bottom-nav-label"),
                       href="/app/press-releases",
                       cls=f"bottom-nav-link{' active' if current_path.startswith('/app/press-releases') else ''}"),
-                    cls=f"agent-list{' open' if public_markets_open else ''}", id="sec-public-markets",
-                ),
-                cls="agent-group",
-            ),
-            Hr(cls="left-hr"),
-            Div(
-                Button(
-                    Span("◉", cls="cat-icon"),
-                    Span("Hedge Funds", cls="cat-name"),
-                    Span("4", cls="cat-count"),
-                    Span("▸", cls="cat-arrow"),
-                    cls="cat-toggle",
-                    onclick="toggleGroup('sec-hedge-funds')",
-                    id="btn-sec-hedge-funds",
-                    type="button",
-                ),
-                Div(
-                    A(Span("◉", cls="bottom-nav-icon"), Span("Fund Treemap", cls="bottom-nav-label"),
+                    A(Span("◉", cls="bottom-nav-icon"), Span("Hedge Fund Holdings", cls="bottom-nav-label"),
                       href="/app/hedgefunds",
                       cls=f"bottom-nav-link{' active' if current_path.startswith('/app/hedgefunds') else ''}"),
-                    A(Span("▤", cls="bottom-nav-icon"), Span("Top Holdings", cls="bottom-nav-label"),
-                      href="/app?q=hedgefunds%3A+top+funds+by+AUM",
-                      onclick="if(window.fillChat){fillChat('hedgefunds: top funds by AUM'); sendMessage(null); return false;}",
-                      cls="bottom-nav-link"),
-                    A(Span("≡", cls="bottom-nav-icon"), Span("Popular Securities", cls="bottom-nav-label"),
-                      href="/app?q=hedgefunds%3A+most+popular+securities+across+all+funds",
-                      onclick="if(window.fillChat){fillChat('hedgefunds: most popular securities across all funds'); sendMessage(null); return false;}",
-                      cls="bottom-nav-link"),
-                    A(Span("⚠", cls="bottom-nav-icon"), Span("Activist Filings", cls="bottom-nav-label"),
-                      href="/app?q=hedgefunds%3A+recent+activist+filings",
-                      onclick="if(window.fillChat){fillChat('hedgefunds: recent activist filings'); sendMessage(null); return false;}",
-                      cls="bottom-nav-link"),
-                    cls="agent-list", id="sec-hedge-funds",
+                    cls=f"agent-list{' open' if public_markets_open else ''}", id="sec-public-markets",
                 ),
                 cls="agent-group",
             ),
@@ -326,7 +293,7 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
                 Button(
                     Span("◆", cls="cat-icon"),
                     Span("Workspace", cls="cat-name"),
-                    Span("12", cls="cat-count"),
+                    Span(str(len(_WORKSPACE_ITEMS)), cls="cat-count"),
                     Span("▸", cls="cat-arrow"),
                     cls="cat-toggle",
                     onclick="toggleGroup('sec-workspace')",
@@ -336,6 +303,43 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
                 Div(
                     *_workspace_links(current_path),
                     cls="agent-list", id="sec-workspace",
+                ),
+                cls="agent-group",
+            ),
+            Hr(cls="left-hr"),
+            Div(
+                Button(
+                    Span("⚙", cls="cat-icon"),
+                    Span("Configuration", cls="cat-name"),
+                    Span("▸", cls="cat-arrow"),
+                    cls="cat-toggle",
+                    onclick="toggleGroup('sec-configuration')",
+                    id="btn-sec-configuration",
+                    type="button",
+                ),
+                Div(
+                    Div(
+                        Div(Span("Currency", cls="cfg-label"), Span("Display", cls="cfg-help"), cls="cfg-row"),
+                        Div(*(
+                            Button(
+                                Span(symbol, cls="cfg-sym"), Span(code, cls="cfg-code"),
+                                cls=f"cfg-chip{' active' if current_currency == code else ''}",
+                                data_code=code, onclick=f"setCurrency('{code}')", type="button",
+                            )
+                            for code, symbol in (("EUR", "€"), ("GBP", "£"), ("USD", "$"))
+                        ), cls="cfg-pills"),
+                        Div(Span("Role", cls="cfg-label"), Span("Workspace", cls="cfg-help"), cls="cfg-row"),
+                        Div(*(
+                            Button(
+                                label,
+                                cls=f"cfg-role-chip role-{role}{' active' if current_role == role else ''}",
+                                data_role=role, onclick=f"setRole('{role}')", type="button",
+                            )
+                            for role, label in (("buyer", "Buyer"), ("seller", "Seller"), ("both", "Both"))
+                        ), cls="cfg-role-pills"),
+                        cls="config-section",
+                    ),
+                    cls="agent-list", id="sec-configuration",
                 ),
                 cls="agent-group",
             ),
@@ -583,7 +587,7 @@ def center_pane(*, messages: list[dict] | None = None,
 
 # ───── Right pane ────────────────────────────────────────────────────
 
-def right_pane(*, open_by_default: bool = False, title: str = "News",
+def right_pane(*, open_by_default: bool = True, title: str = "News",
                subtitle: str = "Market intelligence",
                feed_url: str = "/app/news/html"):
     return Div(
@@ -593,6 +597,8 @@ def right_pane(*, open_by_default: bool = False, title: str = "News",
                 Span(subtitle, cls="right-subtitle"),
                 cls="right-header-left",
             ),
+            Button("×", cls="right-close", onclick="closeRightPane()", type="button",
+                   title="Close contextual pane"),
             cls="right-header",
         ),
         # News body (HTMX auto-refresh)

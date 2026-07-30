@@ -35,8 +35,8 @@ def _prompt_db_save(slug: str, content: str, changed_by: str = "web-editor") -> 
     with get_conn() as conn:
         cur = conn.cursor()
         cur.execute(
-            "INSERT INTO liquidround.prompt_versions (slug, content, changed_by) "
-            "VALUES (%s, %s, %s) RETURNING id",
+            "INSERT INTO liquidround.prompt_versions (slug, content, changed_by, status) "
+            "VALUES (%s, %s, %s, 'published') RETURNING id",
             (slug, content, changed_by),
         )
         row = cur.fetchone()
@@ -53,6 +53,21 @@ def _prompt_db_count(slug: str) -> int:
         )
         row = cur.fetchone()
         return row[0] if isinstance(row, (list, tuple)) else list(row.values())[0]
+
+
+def _prompt_db_latest(slug: str) -> str | None:
+    from utils.database import get_conn
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT content FROM liquidround.prompt_versions "
+            "WHERE slug = %s AND status = 'published' ORDER BY id DESC LIMIT 1",
+            (slug,),
+        )
+        row = cur.fetchone()
+        if not row:
+            return None
+        return row[0] if isinstance(row, (list, tuple)) else row["content"]
 
 
 def _prompt_db_list(slug: str, limit: int = 50) -> list[dict]:
@@ -179,9 +194,9 @@ def instructions_home(session):
                 cls="center-pane pipeline-center",
             ),
             right_pane(),
-            cls="app pane-closed",
+            cls="app",
         ),
-        Script(src="/chat.js?v=2"),
+        Script(src="/chat.js?v=4"),
     )
 
 
@@ -213,7 +228,12 @@ def instruction_edit(session, slug: str):
             pass
 
     path = PROMPTS_DIR / f"{slug}.md"
-    content = path.read_text() if path.exists() else ""
+    try:
+        content = _prompt_db_latest(slug)
+    except Exception:
+        content = None
+    if content is None:
+        content = path.read_text() if path.exists() else ""
     try:
         vc = _prompt_db_count(slug)
     except Exception:
@@ -280,9 +300,9 @@ def instruction_edit(session, slug: str):
                 cls="center-pane pipeline-center",
             ),
             right_pane(),
-            cls="app pane-closed",
+            cls="app",
         ),
-        Script(src="/chat.js?v=2"),
+        Script(src="/chat.js?v=4"),
         Script(src="/instructions.js"),
     )
 
@@ -290,22 +310,22 @@ def instruction_edit(session, slug: str):
 # ── Save endpoint ──────────────────────────────────────────────────────
 
 @ar("/app/skills/{slug}", methods=["POST"])
-async def instruction_save(request: Request, slug: str):
+async def instruction_save(request: Request, session, slug: str):
+    from utils.security import is_admin
+    if not is_admin(session):
+        return JSONResponse({"ok": False, "error": "Administrator access required"}, status_code=403)
     data = await request.json()
     content = data.get("content") or ""
 
     if slug not in AGENTS_BY_SLUG:
         return JSONResponse({"ok": False, "error": "Unknown agent"})
 
-    path = PROMPTS_DIR / f"{slug}.md"
-    path.write_text(content)
-
     try:
-        version_id = _prompt_db_save(slug, content)
+        changed_by = (session.get("user") or {}).get("email", "admin")
+        version_id = _prompt_db_save(slug, content, changed_by=changed_by)
         vc = _prompt_db_count(slug)
-    except Exception:
-        version_id = 0
-        vc = 0
+    except Exception as exc:
+        return JSONResponse({"ok": False, "error": f"Prompt save failed: {exc}"}, status_code=500)
 
     try:
         from agents.base import cached_agent
@@ -350,7 +370,10 @@ def api_prompt_version(version_id: int):
 
 
 @ar("/app/api/prompt-versions/{slug}/revert", methods=["POST"])
-async def api_revert_prompt(request: Request, slug: str):
+async def api_revert_prompt(request: Request, session, slug: str):
+    from utils.security import is_admin
+    if not is_admin(session):
+        return JSONResponse({"ok": False, "error": "Administrator access required"}, status_code=403)
     data = await request.json()
     version_id = data.get("version_id")
     if not version_id:
@@ -366,11 +389,9 @@ async def api_revert_prompt(request: Request, slug: str):
     if slug not in AGENTS_BY_SLUG:
         return JSONResponse({"ok": False, "error": "Unknown agent"})
 
-    path = PROMPTS_DIR / f"{slug}.md"
-    path.write_text(ver["content"])
-
     try:
-        _prompt_db_save(slug, ver["content"], changed_by=f"revert-from-v{version_id}")
+        actor = (session.get("user") or {}).get("email", "admin")
+        _prompt_db_save(slug, ver["content"], changed_by=f"{actor}:revert-from-v{version_id}")
         vc = _prompt_db_count(slug)
     except Exception:
         vc = 0

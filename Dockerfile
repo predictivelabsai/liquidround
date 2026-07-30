@@ -23,6 +23,6 @@ EXPOSE 5007
 # Health check so Coolify's zero-downtime deploy flips the new container green
 # quickly (start-period covers app boot + startup news fetch).
 HEALTHCHECK --interval=15s --timeout=5s --start-period=45s --retries=5 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5007/')" || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5007/health/ready')" || exit 1
 
-CMD ["python", "main.py"]
+CMD ["sh", "-c", "python -m scripts.migrate && exec python main.py"]

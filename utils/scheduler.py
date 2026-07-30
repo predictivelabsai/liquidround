@@ -159,7 +159,25 @@ def _loop(name: str, fn, freq: str, hour: int, weekday: int):
         log.info("[%s] next fire at %s (in %ds), freq=%s", name, nxt.isoformat(), int(wait), freq)
         time.sleep(max(wait, 1))
         try:
-            fn()
+            from utils.database import get_conn
+            with get_conn() as conn:
+                cur = conn.cursor()
+                cur.execute(
+                    "SELECT pg_try_advisory_lock(hashtext(%s))",
+                    (f"liquidround:scheduler:{name}",),
+                )
+                row = cur.fetchone()
+                acquired = bool(row and row[0])
+                if not acquired:
+                    log.info("[%s] skipped; another replica holds the job lock", name)
+                    continue
+                try:
+                    fn()
+                finally:
+                    cur.execute(
+                        "SELECT pg_advisory_unlock(hashtext(%s))",
+                        (f"liquidround:scheduler:{name}",),
+                    )
         except Exception:
             log.exception("[%s] job failed", name)
 

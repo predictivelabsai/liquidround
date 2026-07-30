@@ -230,7 +230,7 @@ def build_pptx(source: Path, output: Path, stamp: str) -> None:
           "M&A · IPO · Public Markets · Investor Relations",
           size=24, color=white, align=PP_ALIGN.CENTER)
     _text(slide, Inches(1), Inches(4.5), Inches(11), Inches(0.6),
-          "31 specialist agents · 7 categories · chat-first workspace",
+          "32 specialist agents · 7 categories · chat-first workspace",
           size=16, color=muted, align=PP_ALIGN.CENTER)
     _text(slide, Inches(1), Inches(5.5), Inches(11), Inches(0.5),
           f"Predictive Labs Ltd · {stamp}",

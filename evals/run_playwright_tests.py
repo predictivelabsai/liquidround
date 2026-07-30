@@ -52,10 +52,10 @@ def _js_landing_desktop():
   const gif = document.querySelector('img[src*="liquidround.gif"]');
   r.T14 = !!gif;
   r.T15 = gif ? (gif.complete && gif.naturalWidth > 0) : false;
-  r.T16 = document.body.innerText.includes('22');
+  r.T16 = document.body.innerText.includes('32');
   r.T17 = document.body.innerText.toLowerCase().includes('sides');
-  const cats = ['Sourcing','Underwriting','Diligence','Execution','Research'];
-  r.T18 = cats.filter(c => document.body.innerText.includes(c)).length >= 5;
+  const cats = ['Sourcing','Underwriting','Diligence','Execution','Research','Public Markets','Investor Relations'];
+  r.T18 = cats.filter(c => document.body.innerText.includes(c)).length >= 7;
   r.T19 = document.body.innerText.includes('Predictive Labs');
   r.T20 = document.body.scrollHeight > window.innerHeight;
   return r;
@@ -114,9 +114,9 @@ def _js_app_desktop():
   const lp = document.querySelector('.left-pane');
   r.T45 = lp ? lp.offsetWidth >= 280 : false;
   r.T46 = text.toUpperCase().includes('SESSIONS');
-  r.T47 = ['Sourcing','Underwriting','Diligence','Execution','Research'].filter(c => text.includes(c)).length >= 5;
+  r.T47 = ['Sourcing','Underwriting','Diligence','Execution','Research','Public Markets','Investor Relations'].filter(c => text.includes(c)).length >= 7;
   r.T48 = text.toUpperCase().includes('WORKSPACE');
-  const ws = ['Companies','Pipelines','Valuation','Analytics','Data Room','Documents','Deal history','Instructions','Help'];
+  const ws = ['Companies','Pipelines','Deal Radar','Data Coverage','Valuation','Analytics','Data Room','Skills','User Guide'];
   r.T49 = ws.filter(l => text.includes(l)).length >= 9;
   r.T50 = text.toUpperCase().includes('SETTINGS') && text.includes('Profile');
   const vb = Array.from(document.querySelectorAll('span')).find(s => s.textContent.match(/v\\d+\\.\\d+/));
@@ -165,9 +165,9 @@ TEST_NAMES = {
     "T13": "Landing: Seller-Led CTA -> /signin?role=seller",
     "T14": "Landing: demo GIF element exists",
     "T15": "Landing: GIF loaded",
-    "T16": "Landing: stats 22 agents",
+    "T16": "Landing: stats 32 agents",
     "T17": "Landing: stats 2 sides",
-    "T18": "Landing: 5 agent categories",
+    "T18": "Landing: 7 agent categories",
     "T19": "Landing: footer copyright",
     "T20": "Landing: page scrollable",
     "T21": "Landing mobile: page loads",
@@ -188,7 +188,7 @@ TEST_NAMES = {
     "T36": "Sign-in: Google OAuth button",
     "T37": "Sign-in: submit button",
     "T38": "Nav: Platform page loads",
-    "T39": "Nav: Agents page 22 agents",
+    "T39": "Nav: Agents page 32 agents",
     "T40": "Nav: agent detail link exists",
     "T41": "Nav: How it works page",
     "T42": "Nav: Pricing page",
@@ -196,7 +196,7 @@ TEST_NAMES = {
     "T44": "App: CSS grid layout",
     "T45": "App: left pane 300px",
     "T46": "App: Sessions section",
-    "T47": "App: 5 agent categories",
+    "T47": "App: 7 agent categories",
     "T48": "App: Workspace section",
     "T49": "App: 9 workspace links",
     "T50": "App: Settings + Profile link",

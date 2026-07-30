@@ -69,6 +69,7 @@ def blog_index_section(digests: list[dict], page: int, total_pages: int):
 
 
 def blog_post_section(archive: dict):
+    from utils.html_sanitizer import sanitize_html
     return Div(
         Div(
             A("← All Digests", href="/blog",
@@ -79,7 +80,7 @@ def blog_post_section(archive: dict):
         P(str(archive.get("digest_date", "")),
           cls="text-sm mono mb-8", style=f"color:{INK_MUTED};"),
         Div(
-            NotStr(archive.get("blog_html", "")),
+            NotStr(sanitize_html(archive.get("blog_html", ""))),
             cls="blog-content",
         ),
         Div(
