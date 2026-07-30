@@ -13,10 +13,25 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: liquidround
+          POSTGRES_PASSWORD: liquidround
+          POSTGRES_DB: liquidround
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready --username=liquidround --dbname=liquidround"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     env:
       XAI_API_KEY: test-key-not-used
       MODEL_PROVIDER: xai
       DEFAULT_MODEL: grok-4-1-fast-reasoning
+      DB_URL: postgresql://liquidround:liquidround@127.0.0.1:5432/liquidround
       DIGEST_FREQUENCY: off
       LOCAL_AUTH_BYPASS: "true"
       ENVIRONMENT: test
@@ -31,6 +46,7 @@ jobs:
       - run: python -m playwright install --with-deps chromium
       - run: python -m compileall -q agents components routes tools utils scripts
       - run: python -m scripts.validate_migrations
+      - run: python -m scripts.migrate
       - run: python -m evals.run_agent_routing_100
       - run: pytest -q
       - name: Start application
