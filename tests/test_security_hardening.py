@@ -8,11 +8,20 @@ import pytest
 from routes.analytics import _guard_sql
 from utils.hermes_agent import run_hermes
 from utils.security import (
+    is_admin,
     safe_upload_target,
     validate_public_url,
     validate_same_origin,
 )
 from utils.html_sanitizer import sanitize_html
+
+
+def test_local_bypass_does_not_elevate_explicit_non_admin(monkeypatch):
+    monkeypatch.setenv("ENVIRONMENT", "test")
+    monkeypatch.setenv("LOCAL_AUTH_BYPASS", "true")
+    assert is_admin({})
+    assert not is_admin({"user": {"is_admin": False}})
+    assert is_admin({"user": {"is_admin": True}})
 
 
 def test_analytics_accepts_only_approved_relations():

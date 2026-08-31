@@ -35,10 +35,12 @@ def is_local_auth_bypass() -> bool:
 
 
 def is_admin(session: dict | None) -> bool:
-    """Use the database-backed admin flag; local bypass remains test-only."""
+    """Use the database-backed flag; bypass only elevates an absent test user."""
+    user = (session or {}).get("user") or {}
+    if user:
+        return bool(user.get("is_admin"))
     if is_local_auth_bypass():
         return True
-    user = (session or {}).get("user") or {}
     return bool(user.get("is_admin"))
 
 
