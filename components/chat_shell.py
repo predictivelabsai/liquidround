@@ -165,6 +165,7 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
         "/app/reverse-mergers", "/app/prospectus", "/app/filings",
         "/app/press-releases",
     ))
+    configuration_open = current_path.startswith("/app/news-feeds")
     if user_email:
         signin_block = Div(
             Span("◇", cls="user-mark"),
@@ -312,7 +313,7 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
                     Span("⚙", cls="cat-icon"),
                     Span("Configuration", cls="cat-name"),
                     Span("▸", cls="cat-arrow"),
-                    cls="cat-toggle",
+                    cls=f"cat-toggle{' open' if configuration_open else ''}",
                     onclick="toggleGroup('sec-configuration')",
                     id="btn-sec-configuration",
                     type="button",
@@ -337,9 +338,16 @@ def left_pane(*, user_email: str | None = None, sessions: list[dict] | None = No
                             )
                             for role, label in (("buyer", "Buyer"), ("seller", "Seller"), ("both", "Both"))
                         ), cls="cfg-role-pills"),
+                        A(
+                            Span("◫", cls="bottom-nav-icon"),
+                            Span("News feeds", cls="bottom-nav-label"),
+                            Span("Manage", cls="cfg-help"),
+                            href="/app/news-feeds",
+                            cls=f"bottom-nav-link cfg-news-link{' active' if configuration_open else ''}",
+                        ),
                         cls="config-section",
                     ),
-                    cls="agent-list", id="sec-configuration",
+                    cls=f"agent-list{' open' if configuration_open else ''}", id="sec-configuration",
                 ),
                 cls="agent-group",
             ),

@@ -1,5 +1,13 @@
 # LiquidRound Change Log
 
+## 0.8.1 — 2026-08-31
+
+### Changed
+- Made agent skill edits private to each signed-in user, with personal history and runtime prompt isolation.
+- Kept Hermes Orchestrator, IR Publish, and IR Distribution as administrator-controlled workspace defaults.
+- Unified verified Google SSO with an existing password account by normalized email and made administrator emails deployment-configurable.
+- Added per-user RSS source configuration with automatic feed discovery, safe URL validation, and enable/disable controls; ERR is disabled for the operator account.
+
 ## 0.8.0 — 2026-07-30
 
 ### Added

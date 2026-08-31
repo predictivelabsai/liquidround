@@ -2,7 +2,7 @@
 
 /app/skills              → list all agent skills
 /app/skills/<slug>       → WYSIWYG editor (default) + markdown toggle + version history
-POST /app/skills/<slug>  → persist to file + liquidround.prompt_versions
+POST /app/skills/<slug>  → persist a personal or admin-controlled version
 
 API:
 GET  /app/api/prompt-versions/<slug>       → version list
@@ -24,104 +24,39 @@ from starlette.responses import JSONResponse
 from starlette.responses import RedirectResponse
 
 from agents.registry import AGENTS, AGENTS_BY_SLUG
+from utils.prompts import (
+    count_prompt_versions,
+    get_latest_prompt,
+    get_prompt_version,
+    get_prompt_versions,
+    is_admin_protected_skill,
+    prompt_scope_user_id,
+    save_prompt_version,
+)
+from utils.security import is_admin
 
 ar = APIRouter()
 
 PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts" / "system"
 
 
-def _prompt_db_save(slug: str, content: str, changed_by: str = "web-editor") -> int:
-    from utils.database import get_conn
-    with get_conn() as conn:
-        cur = conn.cursor()
-        cur.execute(
-            "INSERT INTO liquidround.prompt_versions (slug, content, changed_by, status) "
-            "VALUES (%s, %s, %s, 'published') RETURNING id",
-            (slug, content, changed_by),
-        )
-        row = cur.fetchone()
-        conn.commit()
-        return row[0] if isinstance(row, (list, tuple)) else row["id"]
+def _scope_for(session, slug: str) -> str | None:
+    user = session.get("user") or {}
+    return prompt_scope_user_id(slug, user.get("user_id"))
 
 
-def _prompt_db_count(slug: str) -> int:
-    from utils.database import get_conn
-    with get_conn() as conn:
-        cur = conn.cursor()
-        cur.execute(
-            "SELECT COUNT(*) FROM liquidround.prompt_versions WHERE slug = %s", (slug,)
-        )
-        row = cur.fetchone()
-        return row[0] if isinstance(row, (list, tuple)) else list(row.values())[0]
+def _can_edit(session, slug: str) -> bool:
+    return not is_admin_protected_skill(slug) or is_admin(session)
 
 
-def _prompt_db_latest(slug: str) -> str | None:
-    from utils.database import get_conn
-    with get_conn() as conn:
-        cur = conn.cursor()
-        cur.execute(
-            "SELECT content FROM liquidround.prompt_versions "
-            "WHERE slug = %s AND status = 'published' ORDER BY id DESC LIMIT 1",
-            (slug,),
-        )
-        row = cur.fetchone()
-        if not row:
-            return None
-        return row[0] if isinstance(row, (list, tuple)) else row["content"]
-
-
-def _prompt_db_list(slug: str, limit: int = 50) -> list[dict]:
-    from utils.database import get_conn
-    with get_conn() as conn:
-        cur = conn.cursor()
-        cur.execute(
-            "SELECT COUNT(*) FROM liquidround.prompt_versions WHERE slug = %s", (slug,)
-        )
-        row = cur.fetchone()
-        total = row[0] if isinstance(row, (list, tuple)) else list(row.values())[0]
-
-        cur.execute(
-            "SELECT id, slug, content, changed_by, created_at "
-            "FROM liquidround.prompt_versions WHERE slug = %s ORDER BY id DESC LIMIT %s",
-            (slug, limit),
-        )
-        col_names = [desc[0] for desc in cur.description]
-        rows = [dict(zip(col_names, r)) for r in cur.fetchall()]
-
-        versions = []
-        for i, r in enumerate(rows):
-            versions.append({
-                "id": r["id"],
-                "version": total - i,
-                "slug": r["slug"],
-                "preview": (r["content"] or "")[:200],
-                "changed_by": r["changed_by"] or "",
-                "created_at": r["created_at"].isoformat() if r.get("created_at") else "",
-            })
-        return versions
-
-
-def _prompt_db_get(version_id: int) -> dict | None:
-    from utils.database import get_conn
-    with get_conn() as conn:
-        cur = conn.cursor()
-        cur.execute(
-            "SELECT id, slug, content, changed_by, created_at "
-            "FROM liquidround.prompt_versions WHERE id = %s",
-            (version_id,),
-        )
-        col_names = [desc[0] for desc in cur.description]
-        row = cur.fetchone()
-        if not row:
-            return None
-        r = dict(zip(col_names, row))
-        return {
-            "id": r["id"],
-            "slug": r["slug"],
-            "content": r["content"],
-            "changed_by": r["changed_by"] or "",
-            "created_at": r["created_at"].isoformat() if r.get("created_at") else "",
-        }
+def _skill_access_error(slug: str) -> JSONResponse:
+    return JSONResponse(
+        {
+            "ok": False,
+            "error": f"{AGENTS_BY_SLUG[slug].name} is managed by an administrator",
+        },
+        status_code=403,
+    )
 
 
 # ── List page ──────────────────────────────────────────────────────────
@@ -147,7 +82,21 @@ def instructions_home(session):
     for a in AGENTS:
         path = PROMPTS_DIR / f"{a.slug}.md"
         exists = path.exists()
-        size = path.stat().st_size if exists else 0
+        protected = is_admin_protected_skill(a.slug)
+        editable = _can_edit(session, a.slug)
+        try:
+            version_count = count_prompt_versions(
+                a.slug,
+                user_id=_scope_for(session, a.slug),
+            )
+        except Exception:
+            version_count = 0
+        if protected:
+            state_label = "Admin controlled" if not editable else "Admin default"
+        elif version_count:
+            state_label = f"Your versions · {version_count}"
+        else:
+            state_label = "Personal"
         items.append(A(
             Div(
                 Span(a.icon, cls="instr-icon"),
@@ -155,8 +104,8 @@ def instructions_home(session):
                     Div(a.name, cls="instr-name"),
                     Div(a.one_liner, cls="instr-sub"),
                 ),
-                Span(f"{size}b" if exists else "missing", cls="instr-size"),
-                cls="instr-row",
+                Span(state_label if exists else "Missing default", cls="instr-size"),
+                cls=f"instr-row{' instr-row-locked' if protected and not editable else ''}",
             ),
             href=f"/app/skills/{a.slug}",
             cls="instr-link",
@@ -180,14 +129,18 @@ def instructions_home(session):
                         Button("☰", cls="mobile-menu-btn", onclick="toggleLeftPane()", type="button"),
                         Span("Skills", cls="chat-header-title"),
                         Span("·", cls="chat-header-dot"),
-                        Span(f"{len(AGENTS)} agents", cls="chat-header-agent"),
+                        Span(f"{len(AGENTS)} skills", cls="chat-header-agent"),
                         cls="chat-header-left",
                     ),
                     cls="chat-header",
                 ),
                 Div(
-                    P("Manage the skills and operating instructions used by each agent. Changes take effect immediately.",
-                      cls="instr-intro"),
+                    P(
+                        "Personalize each agent for your workflow. Your edits are private to "
+                        "your account and take effect on your next chat; sensitive operational "
+                        "skills are marked Admin controlled.",
+                        cls="instr-intro",
+                    ),
                     *items,
                     cls="instr-list",
                 ),
@@ -202,7 +155,7 @@ def instructions_home(session):
 
 # ── Editor page ────────────────────────────────────────────────────────
 
-@ar("/app/skills/{slug}")
+@ar("/app/skills/{slug}", methods=["GET"])
 def instruction_edit(session, slug: str):
     from components.chat_shell import left_pane, right_pane
 
@@ -216,6 +169,9 @@ def instruction_edit(session, slug: str):
 
     user = session.get("user")
     email = user.get("email") if user else None
+    protected = is_admin_protected_skill(slug)
+    editable = _can_edit(session, slug)
+    scope_user_id = _scope_for(session, slug)
 
     sessions_list = []
     if user and user.get("user_id"):
@@ -229,15 +185,39 @@ def instruction_edit(session, slug: str):
 
     path = PROMPTS_DIR / f"{slug}.md"
     try:
-        content = _prompt_db_latest(slug)
+        content = get_latest_prompt(slug, user_id=scope_user_id)
     except Exception:
         content = None
     if content is None:
         content = path.read_text() if path.exists() else ""
     try:
-        vc = _prompt_db_count(slug)
+        vc = count_prompt_versions(slug, user_id=scope_user_id)
     except Exception:
         vc = 0
+
+    if protected:
+        access_note = Div(
+            Span("Admin controlled", cls="instr-access-label"),
+            Span(
+                "This operational skill is shared across the workspace. "
+                + ("You can edit the global default." if editable else "You can review it, but only an administrator can change it."),
+                cls="instr-access-copy",
+            ),
+            cls="instr-access-note instr-access-admin",
+        )
+    else:
+        personal_copy = (
+            "This personal version is active for your account. Further edits and "
+            "version history remain private to you."
+            if vc
+            else "Edits and version history are private to your account. Until you "
+            "save, this agent uses the workspace default."
+        )
+        access_note = Div(
+            Span("Your skill", cls="instr-access-label"),
+            Span(personal_copy, cls="instr-access-copy"),
+            cls="instr-access-note",
+        )
 
     return (
         Title(f"Edit — {spec.name} · LiquidRound"),
@@ -269,13 +249,17 @@ def instruction_edit(session, slug: str):
                 ),
                 Div(
                     P(spec.one_liner, cls="instr-sub-big"),
+                    access_note,
                     Div(
                         Button("Editor", cls="instr-tab active", id="tab-editor",
                                onclick="switchTab('editor')"),
                         Button("Markdown", cls="instr-tab", id="tab-markdown",
                                onclick="switchTab('markdown')"),
-                        Button("History", cls="instr-tab", id="tab-history",
-                               onclick="switchTab('history')"),
+                        *(
+                            [Button("History", cls="instr-tab", id="tab-history",
+                                    onclick="switchTab('history')")]
+                            if editable else []
+                        ),
                         cls="instr-tab-bar",
                     ),
                     Textarea(content, name="content", id="instr-markdown-src",
@@ -283,18 +267,24 @@ def instruction_edit(session, slug: str):
                     Div(id="instr-editor-pane", cls="instr-pane"),
                     Div(
                         Textarea(content, id="instr-markdown-textarea",
-                                 cls="instr-textarea", spellcheck="false", rows="28"),
+                                 cls="instr-textarea", spellcheck="false", rows="28",
+                                 readonly=not editable),
                         id="instr-markdown-pane", cls="instr-pane", style="display:none",
                     ),
                     Div(id="instr-history-pane", cls="instr-pane", style="display:none"),
                     Div(
-                        Div(id="save-status", cls="save-status"),
-                        Button("Save", type="button", cls="chat-send instr-save",
-                               onclick="savePrompt()"),
+                        *(
+                            [Div(id="save-status", cls="save-status"),
+                             Button("Save personal version" if not protected else "Save admin default",
+                                    type="button", cls="chat-send instr-save",
+                                    onclick="savePrompt()")]
+                            if editable else [Span("Read only", cls="instr-readonly-label")]
+                        ),
                         A("Cancel", href="/app/skills", cls="back-to-chat-btn"),
                         cls="instr-actions",
                     ),
                     Input(type="hidden", id="instr-slug", value=slug),
+                    Input(type="hidden", id="instr-editable", value="true" if editable else "false"),
                     cls="instr-edit",
                 ),
                 cls="center-pane pipeline-center",
@@ -311,19 +301,29 @@ def instruction_edit(session, slug: str):
 
 @ar("/app/skills/{slug}", methods=["POST"])
 async def instruction_save(request: Request, session, slug: str):
-    from utils.security import is_admin
-    if not is_admin(session):
-        return JSONResponse({"ok": False, "error": "Administrator access required"}, status_code=403)
-    data = await request.json()
-    content = data.get("content") or ""
-
     if slug not in AGENTS_BY_SLUG:
-        return JSONResponse({"ok": False, "error": "Unknown agent"})
+        return JSONResponse({"ok": False, "error": "Unknown agent"}, status_code=404)
+    if not _can_edit(session, slug):
+        return _skill_access_error(slug)
+
+    data = await request.json()
+    content = (data.get("content") or "").strip()
+    if not content:
+        return JSONResponse({"ok": False, "error": "Skill content cannot be empty"}, status_code=400)
+    if len(content) > 100_000:
+        return JSONResponse({"ok": False, "error": "Skill content is too large"}, status_code=413)
 
     try:
-        changed_by = (session.get("user") or {}).get("email", "admin")
-        version_id = _prompt_db_save(slug, content, changed_by=changed_by)
-        vc = _prompt_db_count(slug)
+        user = session.get("user") or {}
+        scope_user_id = _scope_for(session, slug)
+        changed_by = user.get("email", "web-editor")
+        version_id = save_prompt_version(
+            slug,
+            content,
+            changed_by=changed_by,
+            user_id=scope_user_id,
+        )
+        vc = count_prompt_versions(slug, user_id=scope_user_id)
     except Exception as exc:
         return JSONResponse({"ok": False, "error": f"Prompt save failed: {exc}"}, status_code=500)
 
@@ -350,18 +350,31 @@ def instruction_legacy(slug: str):
 # ── Version API ────────────────────────────────────────────────────────
 
 @ar("/app/api/prompt-versions/{slug}")
-def api_prompt_versions(slug: str):
+def api_prompt_versions(session, slug: str):
+    if slug not in AGENTS_BY_SLUG:
+        return JSONResponse({"error": "Unknown agent"}, status_code=404)
+    if not _can_edit(session, slug):
+        return _skill_access_error(slug)
     try:
-        versions = _prompt_db_list(slug)
+        versions = get_prompt_versions(slug, user_id=_scope_for(session, slug))
     except Exception:
         versions = []
     return JSONResponse({"slug": slug, "versions": versions})
 
 
 @ar("/app/api/prompt-version/{version_id}")
-def api_prompt_version(version_id: int):
+def api_prompt_version(session, version_id: int):
+    user = session.get("user") or {}
+    if not user.get("user_id"):
+        return JSONResponse({"error": "Authentication required"}, status_code=401)
     try:
-        ver = _prompt_db_get(version_id)
+        # Ordinary users may only access their own versions. Administrators
+        # may additionally access global versions for protected skills.
+        ver = get_prompt_version(version_id, user_id=user["user_id"])
+        if not ver and is_admin(session):
+            global_ver = get_prompt_version(version_id, user_id=None)
+            if global_ver and is_admin_protected_skill(global_ver["slug"]):
+                ver = global_ver
     except Exception:
         ver = None
     if not ver:
@@ -371,30 +384,37 @@ def api_prompt_version(version_id: int):
 
 @ar("/app/api/prompt-versions/{slug}/revert", methods=["POST"])
 async def api_revert_prompt(request: Request, session, slug: str):
-    from utils.security import is_admin
-    if not is_admin(session):
-        return JSONResponse({"ok": False, "error": "Administrator access required"}, status_code=403)
+    if slug not in AGENTS_BY_SLUG:
+        return JSONResponse({"ok": False, "error": "Unknown agent"}, status_code=404)
+    if not _can_edit(session, slug):
+        return _skill_access_error(slug)
     data = await request.json()
     version_id = data.get("version_id")
     if not version_id:
         return JSONResponse({"ok": False, "error": "Missing version_id"})
 
     try:
-        ver = _prompt_db_get(version_id)
+        scope_user_id = _scope_for(session, slug)
+        ver = get_prompt_version(version_id, user_id=scope_user_id)
     except Exception:
         ver = None
     if not ver or ver["slug"] != slug:
         return JSONResponse({"ok": False, "error": "Version not found or slug mismatch"})
 
-    if slug not in AGENTS_BY_SLUG:
-        return JSONResponse({"ok": False, "error": "Unknown agent"})
-
     try:
-        actor = (session.get("user") or {}).get("email", "admin")
-        _prompt_db_save(slug, ver["content"], changed_by=f"{actor}:revert-from-v{version_id}")
-        vc = _prompt_db_count(slug)
-    except Exception:
-        vc = 0
+        actor = (session.get("user") or {}).get("email", "web-editor")
+        save_prompt_version(
+            slug,
+            ver["content"],
+            changed_by=f"{actor}:revert-from-v{version_id}",
+            user_id=scope_user_id,
+        )
+        vc = count_prompt_versions(slug, user_id=scope_user_id)
+    except Exception as exc:
+        return JSONResponse(
+            {"ok": False, "error": f"Prompt revert failed: {exc}"},
+            status_code=500,
+        )
 
     try:
         from agents.base import cached_agent

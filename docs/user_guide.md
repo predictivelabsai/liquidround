@@ -6,7 +6,7 @@
 
 <p class="subtitle">M&A · IPO · Public Markets · Investor Relations</p>
 <p class="subtitle">32 specialist agents · 7 categories · chat-first workspace</p>
-<p class="meta">Predictive Labs Ltd · LiquidRound v0.8.0</p>
+<p class="meta">Predictive Labs Ltd · LiquidRound v0.8.1</p>
 
 </div>
 
@@ -32,6 +32,10 @@ Sign in at **liquidround.ai** — choose Buyer-Led or Seller-Led. Three panes: *
 
 On mobile, the left pane becomes a slide-in menu and the contextual feed starts
 closed; use the floating **News** control to open it without obscuring the chat.
+
+Open **Configuration → News feeds** to enable or disable built-in sources or add
+an RSS, Atom, or publication URL. LiquidRound detects the feed title and badge;
+changes apply to your personal right-hand News pane.
 
 ![Three-pane workspace — buyer view](img/07-app-buyer.png)
 
@@ -211,7 +215,9 @@ Search companies by name, sector, geography. Open profiles, financials, deal bri
 
 ## Skills
 
-Open **Workspace → Skills** at `/app/skills` to review and edit the operating prompt for each agent. WYSIWYG and Markdown modes, version history, reverting. Saved changes clear the agent cache immediately.
+Open **Workspace → Skills** at `/app/skills` to personalize the operating prompt for each agent. Most skills are tied to your account: only you can see their version history, and your saved instructions are applied to your next agent chat without changing another user's experience. The editor supports WYSIWYG and Markdown modes, version history, and reverting.
+
+Three operational skills are deliberately **Admin controlled** because they can delegate execution or govern external publication: Hermes Orchestrator, IR Publish, and IR Distribution. Members can review these instructions, while administrators manage the shared default.
 
 IR skills: IR Event Triage, Press Release Writer, IR Compliance Reviewer, IR Publish Agent, IR Distribution Planner.
 
@@ -221,7 +227,7 @@ IR skills: IR Event Triage, Press Release Writer, IR Compliance Reviewer, IR Pub
 
 ## Exports, account, and training
 
-**Exports:** XLSX, DOCX, branded PDF, CSV, press-release Markdown/Word/PDF. **Account:** profile, password, currency (EUR/GBP/USD), role, deal preferences, digest notifications. **Training:** Deal Street scenario-based RPG. **Keyboard:** Enter = send, Shift+Enter = newline.
+**Exports:** XLSX, DOCX, branded PDF, CSV, press-release Markdown/Word/PDF. **Account:** profile, password, currency (EUR/GBP/USD), role, deal preferences, digest notifications. Password and verified Google sign-in with the same email resolve to one LiquidRound account. **Training:** Deal Street scenario-based RPG. **Keyboard:** Enter = send, Shift+Enter = newline.
 
 ![Pricing](img/06-pricing.png)
 

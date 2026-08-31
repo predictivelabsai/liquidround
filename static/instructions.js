@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', function() {
 function initQuillEditor() {
     var pane = document.getElementById('instr-editor-pane');
     if (!pane) return;
+    var editableInput = document.getElementById('instr-editable');
+    var editable = !editableInput || editableInput.value === 'true';
     pane.innerHTML = '';
 
     var quillDiv = document.createElement('div');
@@ -18,14 +20,15 @@ function initQuillEditor() {
 
     instrQuill = new Quill(quillDiv, {
         theme: 'snow',
-        modules: { toolbar: [
+        readOnly: !editable,
+        modules: { toolbar: editable ? [
             ['bold', 'italic', 'underline', 'strike'],
             [{'header': [1, 2, 3, false]}],
             [{'list': 'ordered'}, {'list': 'bullet'}],
             ['link', 'code-block'],
             ['clean']
-        ]},
-        placeholder: 'Edit prompt content…'
+        ] : false},
+        placeholder: editable ? 'Edit skill content…' : ''
     });
 
     var md = document.getElementById('instr-markdown-src').value;
@@ -135,6 +138,8 @@ function quillToMarkdown() {
 }
 
 async function savePrompt() {
+    var editableInput = document.getElementById('instr-editable');
+    if (editableInput && editableInput.value !== 'true') return;
     var src = document.getElementById('instr-markdown-src');
     var mdTextarea = document.getElementById('instr-markdown-textarea');
 

@@ -201,7 +201,10 @@ async def generate_release(request: Request):
     try:
         llm = create_llm(temperature=0.2)
         response = await llm.ainvoke([
-            SystemMessage(content=load_system_prompt("press_release_writer")),
+            SystemMessage(content=load_system_prompt(
+                "press_release_writer",
+                user_id=((request.session.get("user") or {}).get("user_id")),
+            )),
             HumanMessage(content=prompt),
         ])
         markdown = str(response.content).strip()

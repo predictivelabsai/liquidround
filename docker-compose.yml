@@ -19,6 +19,7 @@ services:
       - DB_URL=${DB_URL:-}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - ADMIN_EMAILS=${ADMIN_EMAILS:-kaljuvee@gmail.com}
       - SESSION_SECRET=${SESSION_SECRET:?SESSION_SECRET is required}
       - PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-https://liquidround.ai}
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-https://liquidround.ai,https://liquidround.com}

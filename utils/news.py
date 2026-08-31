@@ -7,6 +7,8 @@ and Baltic regional feeds, returning a unified list sorted by publish date.
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import json
 import logging
 import os
 from datetime import datetime, timezone
@@ -14,27 +16,13 @@ from time import mktime
 
 import feedparser
 
-log = logging.getLogger(__name__)
+from utils.news_feeds import active_news_feeds, download_feed_document
 
-FEEDS: list[dict] = [
-    # M&A / ECM / capital markets
-    {"name": "Mergermarket",     "url": "https://www.mergermarket.com/info/rss",                 "icon": "MM"},
-    {"name": "GlobalCapital",    "url": "https://www.globalcapital.com/rss",                     "icon": "GC"},
-    {"name": "PitchBook News",   "url": "https://pitchbook.com/news/feed",                       "icon": "PB"},
-    # Global financial
-    {"name": "Financial Times",  "url": "https://www.ft.com/rss/home",                           "icon": "FT"},
-    {"name": "Wall Street Journal", "url": "https://feeds.a.dj.com/rss/RSSWorldNews.xml",        "icon": "WSJ"},
-    {"name": "Bloomberg",        "url": "https://feeds.bloomberg.com/markets/news.rss",           "icon": "BBG"},
-    {"name": "Reuters Business", "url": "https://www.reutersagency.com/feed/?taxonomy=best-sectors&post_type=best", "icon": "RTR"},
-    {"name": "BBC Business",     "url": "http://feeds.bbci.co.uk/news/business/rss.xml",          "icon": "BBC"},
-    # Baltic
-    {"name": "ERR News",         "url": "https://news.err.ee/rss",                                "icon": "ERR"},
-    {"name": "Baltic Times",     "url": "https://www.baltictimes.com/rss.xml",                    "icon": "BT"},
-]
+log = logging.getLogger(__name__)
 
 NEWS_TTL = int(os.getenv("NEWS_TTL_SECONDS", "30"))
 
-_cache: dict = {"articles": [], "fetched_at": None}
+_cache: dict[str, dict] = {}
 
 
 def _parse_date(entry) -> datetime:
@@ -63,7 +51,7 @@ def _extract_image(entry) -> str | None:
 
 def _fetch_one(feed: dict) -> list[dict]:
     try:
-        parsed = feedparser.parse(feed["url"])
+        parsed = feedparser.parse(download_feed_document(feed["url"]))
     except Exception as e:
         log.warning("RSS fetch failed for %s: %s", feed["name"], e)
         return []
@@ -88,14 +76,23 @@ def _fetch_one(feed: dict) -> list[dict]:
     return articles
 
 
-async def fetch_news() -> list[dict]:
-    """Fetch all RSS feeds and return merged, deduplicated, sorted list."""
+def clear_news_cache() -> None:
+    _cache.clear()
+
+
+async def fetch_news(user_id: str | None = None) -> list[dict]:
+    """Fetch enabled RSS feeds and return a merged, deduplicated list."""
+    feeds = active_news_feeds(user_id)
+    signature = hashlib.sha256(
+        json.dumps([(f["key"], f["url"]) for f in feeds], separators=(",", ":")).encode()
+    ).hexdigest()
     now = datetime.now(tz=timezone.utc)
-    if _cache["fetched_at"] and (now - _cache["fetched_at"]).total_seconds() < NEWS_TTL:
-        return _cache["articles"]
+    cached = _cache.get(signature)
+    if cached and (now - cached["fetched_at"]).total_seconds() < NEWS_TTL:
+        return cached["articles"]
 
     results = await asyncio.gather(
-        *[asyncio.to_thread(_fetch_one, f) for f in FEEDS],
+        *[asyncio.to_thread(_fetch_one, feed) for feed in feeds],
         return_exceptions=True,
     )
 
@@ -113,7 +110,6 @@ async def fetch_news() -> list[dict]:
     all_articles.sort(key=lambda a: a["published"], reverse=True)
     all_articles = all_articles[:50]
 
-    _cache["articles"] = all_articles
-    _cache["fetched_at"] = now
-    log.info("Fetched %d news articles from %d feeds", len(all_articles), len(FEEDS))
+    _cache[signature] = {"articles": all_articles, "fetched_at": now}
+    log.info("Fetched %d news articles from %d feeds", len(all_articles), len(feeds))
     return all_articles

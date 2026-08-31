@@ -618,20 +618,19 @@ if _oauth_enabled:
         google_id = userinfo.get("sub", "")
         email = userinfo.get("email", "")
         name = userinfo.get("name", "")
+        email_verified = userinfo.get("email_verified")
 
-        if not email:
-            return RedirectResponse("/signin?error=Google+did+not+provide+email")
-
-        from utils.auth import get_user_by_google_id, get_user_by_email, create_user, link_google_id
-
-        user = get_user_by_google_id(google_id) if google_id else None
-        if not user:
-            user = get_user_by_email(email)
-            if user and google_id:
-                link_google_id(email, google_id)
-            elif not user:
-                user = create_user(email=email, google_id=google_id, display_name=name)
-
+        from utils.auth import resolve_google_user
+        try:
+            user = resolve_google_user(
+                google_id=google_id,
+                email=email,
+                display_name=name,
+                email_verified=email_verified,
+            )
+        except ValueError as exc:
+            error = str(exc).replace(" ", "+")
+            return RedirectResponse(f"/signin?error={error}")
         if user:
             _session_login(session, user)
         else:

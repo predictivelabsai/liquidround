@@ -84,6 +84,15 @@ def test_seller_role_and_configuration(page):
     assert page.locator(".cfg-chip").count() == 3
     assert page.locator(".cfg-role-chip").count() == 3
     assert page.locator(".cfg-role-chip.role-seller.active").count() == 1
+    assert page.get_by_role("link", name="News feeds Manage").count() == 1
+
+
+def test_news_feed_configuration_page(page):
+    page.goto(BASE_URL + "/app/news-feeds")
+    page.wait_for_selector(".news-feeds-page", timeout=10_000)
+    assert page.locator(".news-feed-card").count() >= 10
+    assert page.locator('[data-feed-key="err-news"]').count() == 1
+    assert page.locator("#sec-configuration.open").count() == 1
 
 
 def test_sample_cards_and_hermes_launcher(page):

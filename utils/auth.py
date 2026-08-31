@@ -17,6 +17,19 @@ from utils.database import get_conn
 logger = logging.getLogger(__name__)
 
 
+def configured_admin_emails() -> frozenset[str]:
+    """Return normalized emails granted administration by deployment config."""
+    return frozenset(
+        item.strip().lower()
+        for item in os.getenv("ADMIN_EMAILS", "").split(",")
+        if item.strip()
+    )
+
+
+def is_configured_admin_email(email: str) -> bool:
+    return email.strip().lower() in configured_admin_emails()
+
+
 # ---------------------------------------------------------------------------
 # Password hashing
 # ---------------------------------------------------------------------------
@@ -40,18 +53,26 @@ def create_user(
     google_id: str = None,
     display_name: str = None,
 ) -> Optional[Dict]:
+    normalized_email = email.lower().strip()
     pw_hash = hash_password(password) if password else None
     try:
         with get_conn() as conn:
             cur = conn.cursor(cursor_factory=RealDictCursor)
             cur.execute(
                 """
-                INSERT INTO liquidround.users (email, password_hash, google_id, display_name)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO liquidround.users
+                    (email, password_hash, google_id, display_name, is_admin)
+                VALUES (%s, %s, %s, %s, %s)
                 ON CONFLICT (email) DO NOTHING
                 RETURNING user_id, email, display_name, is_admin, created_at
                 """,
-                (email.lower().strip(), pw_hash, google_id, display_name),
+                (
+                    normalized_email,
+                    pw_hash,
+                    google_id,
+                    display_name,
+                    is_configured_admin_email(normalized_email),
+                ),
             )
             row = cur.fetchone()
             if row:
@@ -104,17 +125,71 @@ def authenticate(email: str, password: str) -> Optional[Dict]:
     if not pw_hash:
         return None  # Google-only account
     if verify_password(password, pw_hash):
-        return user
+        return ensure_configured_admin(user)
     return None
 
 
 def link_google_id(email: str, google_id: str):
+    """Link Google to the existing email account and return that same user."""
+    if not email or not google_id:
+        return None
     with get_conn() as conn:
-        cur = conn.cursor()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
         cur.execute(
-            "UPDATE liquidround.users SET google_id = %s, updated_at = NOW() WHERE email = %s",
-            (google_id, email.lower().strip()),
+            "UPDATE liquidround.users SET google_id = %s, updated_at = NOW() "
+            "WHERE lower(email) = %s AND (google_id IS NULL OR google_id = %s) "
+            "RETURNING *",
+            (google_id, email.lower().strip(), google_id),
         )
+        row = cur.fetchone()
+        if not row:
+            logger.warning("Google identity could not be linked to the existing email account")
+            return None
+        # Let the surrounding connection commit before a configured-admin
+        # promotion opens its own transaction in ``resolve_google_user``.
+        return _user_dict(row)
+
+
+def ensure_configured_admin(user: Optional[Dict]) -> Optional[Dict]:
+    """Promote configured operator emails and return the refreshed user dict."""
+    if not user or user.get("is_admin") or not is_configured_admin_email(user.get("email", "")):
+        return user
+    with get_conn() as conn:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute(
+            "UPDATE liquidround.users SET is_admin = TRUE, updated_at = NOW() "
+            "WHERE user_id = %s RETURNING *",
+            (user["user_id"],),
+        )
+        row = cur.fetchone()
+        return _user_dict(row) if row else user
+
+
+def resolve_google_user(
+    *,
+    google_id: str,
+    email: str,
+    display_name: str = "",
+    email_verified: bool | str | int = False,
+) -> Optional[Dict]:
+    """Resolve Google SSO onto one canonical email account."""
+    if not email:
+        raise ValueError("Google did not provide email")
+    if email_verified not in {True, "true", "True", 1}:
+        raise ValueError("Google email is not verified")
+
+    user = get_user_by_google_id(google_id) if google_id else None
+    if not user:
+        user = get_user_by_email(email)
+        if user and google_id:
+            user = link_google_id(email, google_id)
+        elif not user:
+            user = create_user(
+                email=email,
+                google_id=google_id or None,
+                display_name=display_name or None,
+            )
+    return ensure_configured_admin(user)
 
 
 # ---------------------------------------------------------------------------

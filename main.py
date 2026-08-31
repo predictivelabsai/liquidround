@@ -96,12 +96,13 @@ app, rt = fast_app(
 # After sign-in, users are redirected back to their original URL (including
 # shared chat links /app/s/*).
 # ---------------------------------------------------------------------------
-_AUTH_EXEMPT_PREFIXES = ("/app/news", "/app/s/")
+_AUTH_EXEMPT_PATHS = {"/app/news", "/app/news/html", "/app/news/search"}
+_AUTH_EXEMPT_PREFIXES = ("/app/s/",)
 _AUTH_REQUIRED_PREFIXES = (
     "/app", "/profile", "/conversation", "/conversations",
     "/chat", "/upload", "/research", "/api",
 )
-_ADMIN_PREFIXES = ("/app/skills", "/app/api/prompt-version")
+_ADMIN_PREFIXES = ()
 _ADMIN_MUTATIONS = {
     "/app/reverse-mergers/sync",
     "/app/reverse-mergers/sync-sedar",
@@ -122,7 +123,7 @@ def _auth_gate(req, session):
     if is_local_auth_bypass():
         return None
     protected = any(path == p or path.startswith(p + "/") for p in _AUTH_REQUIRED_PREFIXES)
-    exempt = any(path.startswith(p) for p in _AUTH_EXEMPT_PREFIXES)
+    exempt = path in _AUTH_EXEMPT_PATHS or any(path.startswith(p) for p in _AUTH_EXEMPT_PREFIXES)
     if protected and not exempt and not session.get("user"):
         return RedirectResponse(f"/signin?next={path}", status_code=302)
     if (
@@ -247,6 +248,10 @@ help_router.to_app(app)
 from routes.instructions import ar as instructions_router
 instructions_router.to_app(app)
 
+# Register per-user contextual news feed configuration
+from routes.news_feeds import ar as news_feeds_router
+news_feeds_router.to_app(app)
+
 # Register Deal Radar + Methodology + Data Coverage routes
 from routes.deal_radar import ar as deal_radar_router
 deal_radar_router.to_app(app)
@@ -291,18 +296,20 @@ def health_ready():
 
 
 @rt("/app/news")
-async def news_feed_json():
+async def news_feed_json(session):
     from utils.news import fetch_news
-    articles = await fetch_news()
+    user_id = (session.get("user") or {}).get("user_id")
+    articles = await fetch_news(user_id)
     return JSONResponse({"articles": articles})
 
 
 @rt("/app/news/html")
-async def news_feed_html():
+async def news_feed_html(session):
     """HTMX HTML fragment — renders news items for the right pane."""
     from utils.news import fetch_news
     from datetime import datetime, timezone
-    articles = await fetch_news()
+    user_id = (session.get("user") or {}).get("user_id")
+    articles = await fetch_news(user_id)
 
     def _time_ago(iso: str) -> str:
         try:
@@ -1409,7 +1416,7 @@ async def app_chat_sse(request, session):
             from agents.base import load_system_prompt
             from utils.config import config as _config
             prompt_version = hashlib.sha256(
-                load_system_prompt(slug).encode("utf-8")
+                load_system_prompt(slug, user_id=user.get("user_id")).encode("utf-8")
             ).hexdigest()[:12]
             from utils.database import db_service
             run_id = db_service.create_agent_run(
@@ -2080,7 +2087,15 @@ async def chat(session, msg: str = ""):
     # Process with render agent
     response_text = ""
     try:
-        result_components = await render_agent.process(msg, active_role=session.get("role", "buyer"))
+        from utils.request_context import set_current_user_id, reset_current_user_id
+        context_token = set_current_user_id(user.get("user_id") if user else None)
+        try:
+            result_components = await render_agent.process(
+                msg,
+                active_role=session.get("role", "buyer"),
+            )
+        finally:
+            reset_current_user_id(context_token)
         if result_components:
             parts.append(_assistant_bubble(*result_components))
             response_text = msg  # Fallback: store the query as context
