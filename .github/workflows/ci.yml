@@ -143,7 +143,24 @@ jobs:
 
       - name: Production smoke checks
         run: |
-          curl --fail --silent --show-error https://liquidround.ai/health/ready \
-            | grep --fixed-strings '"status":"ok"'
-          curl --fail --silent --show-error --location https://liquidround.ai/ \
-            | grep --fixed-strings 'LiquidRound'
+          ready=false
+          for attempt in $(seq 1 12); do
+            if curl --fail --silent --show-error https://liquidround.ai/health/ready \
+              | grep --quiet --fixed-strings '"status":"ok"'; then
+              ready=true
+              break
+            fi
+            sleep 5
+          done
+          test "${ready}" = true
+
+          landing=false
+          for attempt in $(seq 1 12); do
+            if curl --fail --silent --show-error --location https://liquidround.ai/ \
+              | grep --quiet --fixed-strings 'LiquidRound'; then
+              landing=true
+              break
+            fi
+            sleep 5
+          done
+          test "${landing}" = true
