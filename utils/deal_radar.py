@@ -20,9 +20,12 @@ log = logging.getLogger("deal_radar")
 SLUG = "deal_radar_synergy"
 
 BUYER_WATCHLIST = [
-    # Vertical-market-software serial acquirers
+    # Vertical-market-software serial acquirers (Canada + Roper)
     "CSU.TO", "TOI.V", "LMN.V", "VIT-B.ST", "ENGH.TO", "ROP",
-    # Enterprise software / tech strategics
+    # US / Canada tech SaaS serial acquirers & strategics (corp-dev GTM primary)
+    "CRM", "NOW", "ADBE", "INTU", "WDAY", "TEAM", "SNOW", "DDOG",
+    "SHOP.TO", "OTEX.TO", "DSGX.TO",
+    # Enterprise software / tech strategics (EU)
     "SAP", "SIE.DE", "NEM.DE",
     # Fintech / payments
     "ADYEN.AS", "NEXI.MI", "WISE.L", "PYPL",

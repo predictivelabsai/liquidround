@@ -77,7 +77,7 @@ CATEGORIES: list[dict] = [
 
 AGENTS: tuple[AgentSpec, ...] = (
     # ─────────────────────────────────────────────────────────────────────
-    # Deal Sourcing & Screening (4)
+    # Deal Sourcing & Screening (5)
     # ─────────────────────────────────────────────────────────────────────
     AgentSpec(
         slug="target_scanner", name="Target Scanner",
@@ -101,6 +101,19 @@ AGENTS: tuple[AgentSpec, ...] = (
             "Find strategic buyers for a Baltic renewable energy platform",
             "Who are the active PE sponsors in mid-market European industrials?",
             "Identify buyers for a Nordic fintech with EUR 50M GMV",
+        ),
+    ),
+
+    AgentSpec(
+        slug="corpdev_outreach", name="Corp-Dev Outreach",
+        category="sourcing", audience="shared", icon="✉", prefix="outreach:",
+        one_liner="Draft human-approved outreach to US/CA SaaS corp-dev & M&A contacts.",
+        description="Turns Deal Radar buyer tickers into draft email/LinkedIn sequences for corporate development, M&A, and strategy contacts. Sales Nav paste + filings corroboration; never auto-sends.",
+        example_prompts=(
+            "outreach: Draft intro to corp-dev at CRM about a Baltic vertical SaaS target",
+            "outreach: Sequence for Head of M&A at NOW using Deal Radar pair #12",
+            "Write a LinkedIn note to Corporate Strategy at SHOP.TO",
+            "outreach: Prioritize contacts for CSU.TO and suggest day-0 / day-5 drafts",
         ),
     ),
     AgentSpec(
@@ -516,4 +529,4 @@ def by_audience(audience: str) -> list[AgentSpec]:
     return [a for a in AGENTS if a.audience == audience or a.audience == "shared"]
 
 
-assert len(AGENTS) == 32, f"expected 32 agents, got {len(AGENTS)}"
+assert len(AGENTS) == 33, f"expected 33 agents, got {len(AGENTS)}"

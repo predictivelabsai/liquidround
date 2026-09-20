@@ -1,4 +1,4 @@
-"""Local/CI Playwright smoke tests for the current 32-agent product shell."""
+"""Local/CI Playwright smoke tests for the current 33-agent product shell."""
 from __future__ import annotations
 
 import os
@@ -61,10 +61,10 @@ def test_landing_has_hero_and_two_ctas(page):
     assert page.get_by_text("Seller-Led").count() >= 1
 
 
-def test_agents_page_shows_32_cards(page):
+def test_agents_page_shows_33_cards(page):
     page.goto(BASE_URL + "/agents")
     page.wait_for_selector(".agent-card", timeout=10_000)
-    assert page.locator(".agent-card").count() == 32
+    assert page.locator(".agent-card").count() == 33
 
 
 def test_app_buyer_role_renders_current_shell(page):
@@ -73,7 +73,7 @@ def test_app_buyer_role_renders_current_shell(page):
     assert page.locator(".left-pane").count() == 1
     assert page.locator("#right-pane.open").count() == 1
     assert page.locator(".cfg-role-chip.role-buyer.active").count() == 1
-    assert page.locator(".agent-item").count() == 32
+    assert page.locator(".agent-item").count() == 33
     assert page.locator(".cat-toggle").count() >= 7
 
 

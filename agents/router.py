@@ -127,6 +127,14 @@ def _best_in_category_for(message: str) -> str | None:
         return "target_scanner"
     if "find buyer" in lower or "strategic buyer" in lower:
         return "buyer_scanner"
+    if (
+        "corp-dev" in lower
+        or "corpdev" in lower
+        or "corporate development outreach" in lower
+        or "outreach sequence" in lower
+        or ("outreach" in lower and ("corp" in lower or "m&a" in lower or "mna" in lower))
+    ):
+        return "corpdev_outreach"
     if "likely to sell" in lower or "sale likelihood" in lower or "succession risk" in lower:
         return "seller_intent"
     if "company profile" in lower or "business model and financials" in lower:
