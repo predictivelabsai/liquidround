@@ -1,0 +1,24 @@
+# US + Canada tech/SaaS serial acquirers & strategics for corp-dev outreach.
+# One Yahoo Finance ticker per line. Comments (#) and blanks ignored.
+# Keep in sync with scripts/enrich_corpdev_contacts.SAAS_BUYER_WATCHLIST_US_CA.
+CRM
+NOW
+ADBE
+INTU
+WDAY
+TEAM
+SNOW
+DDOG
+NET
+ZM
+OKTA
+HUBS
+SHOP.TO
+OTEX.TO
+DSGX.TO
+CSU.TO
+TOI.V
+LMN.V
+ENGH.TO
+ROP
+PYPL

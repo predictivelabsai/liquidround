@@ -1,4 +1,4 @@
-"""Tests for the 32-agent registry + router — pure unit, no network."""
+"""Tests for the 33-agent registry + router — pure unit, no network."""
 from __future__ import annotations
 
 import pytest
@@ -14,7 +14,7 @@ from agents.base import load_system_prompt
 # ── Shape invariants ────────────────────────────────────────────────────
 
 def test_exact_agent_count():
-    assert len(AGENTS) == 32, f"expected 32 agents, got {len(AGENTS)}"
+    assert len(AGENTS) == 33, f"expected 33 agents, got {len(AGENTS)}"
 
 
 def test_unique_slugs():
@@ -111,6 +111,7 @@ PREFIX_CASES = [
     ("vdr: audit NovaTech",                 "vdr_auditor"),
     ("scan: Nordic renewables",             "target_scanner"),
     ("buyers: SaaS EUR 15M",                "buyer_scanner"),
+    ("outreach: draft to CRM corp-dev",      "corpdev_outreach"),
     ("synergy: Siemens + Harju",            "synergy_analyst"),
     ("abstract: top customer MSAs",         "contract_abstractor"),
     ("esg: environmental risks",            "esg_reviewer"),
