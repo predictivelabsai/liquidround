@@ -1,5 +1,10 @@
 # LiquidRound Change Log
 
+## 0.8.2 — 2026-10-12
+
+### Changed
+- Capped the hedge-fund SQLAlchemy pool at 2 + 3 overflow with 5-minute recycle and pre-ping, and named all Postgres connections `liquidround` (`DB_APPLICATION_NAME` overrides). The shared Postgres server was near its connection limit.
+
 ## 0.8.1 — 2026-08-31
 
 ### Changed

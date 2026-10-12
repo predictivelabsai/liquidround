@@ -3,6 +3,7 @@ Database service layer for LiquidRound workflow management.
 PostgreSQL backend using the liquidround schema.
 """
 import json
+import os
 import uuid
 from datetime import datetime
 from typing import Dict, Any, List, Optional
@@ -39,7 +40,8 @@ def get_conn():
     so that unreachable or locked DB queries don't hang the worker forever.
     """
     conn = psycopg2.connect(_get_db_url(), connect_timeout=10,
-                            options="-c statement_timeout=30000")
+                            options="-c statement_timeout=30000",
+                            application_name=os.getenv("DB_APPLICATION_NAME", "liquidround"))
     try:
         yield conn
         conn.commit()

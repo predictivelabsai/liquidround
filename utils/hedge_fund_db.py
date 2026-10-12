@@ -85,7 +85,10 @@ def _ensure_engine():
     if _engine is None:
         if not DB_URL:
             raise ValueError("DB_URL not set")
-        _engine = create_engine(DB_URL)
+        _engine = create_engine(
+            DB_URL, pool_size=2, max_overflow=3, pool_recycle=300, pool_pre_ping=True,
+            connect_args={"application_name": os.getenv("DB_APPLICATION_NAME", "liquidround")},
+        )
         _SessionLocal = sessionmaker(bind=_engine)
     return _SessionLocal
 
